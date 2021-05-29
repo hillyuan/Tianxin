@@ -840,6 +840,33 @@ endFill(LinearObjContainer & loc) const
     A->fillComplete(A->getDomainMap(),A->getRangeMap());
 }
 
+template <typename Traits,typename LocalOrdinalT>
+void 
+TpetraLinearObjFactory<Traits,LocalOrdinalT>::
+readVector(const std::string & identifier,LinearObjContainer & loc,int id) const
+{
+  TpetraLinearObjContainer & eloc = Teuchos::dyn_cast<TpetraLinearObjContainer>(loc);
+
+   // extract the vector from linear object container
+  Teuchos::RCP< VectorType > vec;
+  switch(id) {
+  case LinearObjContainer::X:
+    vec = eloc.get_x();
+    break;
+  case LinearObjContainer::DxDt:
+    vec = eloc.get_dxdt();
+    break;
+  case LinearObjContainer::F:
+    vec = eloc.get_f();
+    break;
+  default:
+    TEUCHOS_ASSERT(false);
+    break;
+  };
+  
+  vec = Tpetra::MatrixMarket::Reader<CrsMatrixType>::readVectorFile(identifier, comm_, map_);
+}
+
 }
 
 #endif // __Panzer_TpetraLinearObjFactory_impl_hpp__
