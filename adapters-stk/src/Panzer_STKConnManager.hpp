@@ -232,6 +232,15 @@ public:
 	{
 		return stkMeshDB_->getGhostGlobalCellIDs();
 	}
+	
+	/** Get the node connectivity of a given element
+     *
+     * \param[in] elmtLid elemental local index
+     *
+     * \param[out] nodesgid Vector of global nodes IDs.
+     */
+    void getElementalNodeConnectivity(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const;
+    int getNodeRank() const {return stkMeshDB_->getNodeRank();}
 
 
 protected:
