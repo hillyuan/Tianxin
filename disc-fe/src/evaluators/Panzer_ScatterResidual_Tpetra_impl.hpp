@@ -404,7 +404,7 @@ public:
 
        // Sum residual
        if(fillResidual)
-         Kokkos::atomic_fetch_add(&r_data(lid,0), scatterField.val());
+         Kokkos::atomic_add(&r_data(lid,0), scatterField.val());
 
        // loop over the sensitivity indices: all DOFs on a cell
        for(int sensIndex=0;sensIndex<numIds;++sensIndex)
@@ -437,7 +437,7 @@ public:
     for(std::size_t basis=0; basis < offsets.extent(0); basis++) {
        int offset = offsets(basis);
        LO lid    = lids(cell,offset);
-       Kokkos::atomic_fetch_add(&r_data(lid,0), field(cell,basis));
+       Kokkos::atomic_add(&r_data(lid,0), field(cell,basis));
 
    } // end basis
   }
@@ -461,7 +461,7 @@ evaluateFields(typename TRAITS::EvalData workset)
   globalIndexer_->getElementLIDs(this->wda(workset).cell_local_ids_k,scratch_lids_);
 
   ScatterResidual_Residual_Functor<ScalarT,LO,GO,NodeT> functor;
-  functor.r_data = r->template getLocalView<PHX::Device>();
+  functor.r_data = r->getLocalViewDevice(Tpetra::Access::ReadWrite);
   functor.lids = scratch_lids_;
 
   // for each field, do a parallel for loop
@@ -480,7 +480,7 @@ evaluateFields(typename TRAITS::EvalData workset)
 {
    typedef TpetraLinearObjContainer<double,LO,GO,NodeT> LOC;
 
-   typedef typename LOC::CrsMatrixType::local_matrix_type LocalMatrixT;
+   typedef typename LOC::CrsMatrixType::local_matrix_device_type LocalMatrixT;
 
    // for convenience pull out some objects from workset
    std::string blockId = this->wda(workset).block_id;
@@ -504,8 +504,8 @@ evaluateFields(typename TRAITS::EvalData workset)
    ScatterResidual_Jacobian_Functor<ScalarT,LO,GO,NodeT,LocalMatrixT> functor;
    functor.fillResidual = (r!=Teuchos::null);
    if(functor.fillResidual)
-     functor.r_data = r->template getLocalView<PHX::Device>();
-   functor.jac = Jac->getLocalMatrix();
+     functor.r_data = r->getLocalViewDevice(Tpetra::Access::OverwriteAll);
+   functor.jac = Jac->getLocalMatrixDevice();
    functor.lids = scratch_lids_;
 
    // for each field, do a parallel for loop

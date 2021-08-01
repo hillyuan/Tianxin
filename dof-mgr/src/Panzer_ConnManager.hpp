@@ -45,12 +45,10 @@
 
 #include <vector>
 
-
 // Teuchos includes
 #include "Teuchos_RCP.hpp"
 #include "Shards_CellTopology.hpp"
 #include "PanzerDofMgr_config.hpp"
-#include "Phalanx_KokkosDeviceTypes.hpp"
 
 namespace panzer {
 
@@ -61,10 +59,9 @@ class FieldPattern; // from DOFManager
   public:
 
     using GlobalOrdinal = panzer::GlobalOrdinal;
-    using LocalOrdinal = panzer::LocalOrdinal;
+    using LocalOrdinal = int;
 
-    ConnManager()
-    {};
+    virtual ~ConnManager() {}
 
     /** Tell the connection manager to build the connectivity assuming
      * a particular field pattern.
@@ -107,11 +104,6 @@ class FieldPattern; // from DOFManager
 
     /** What are the blockIds included in this connection manager */
     virtual void getElementBlockIds(std::vector<std::string> & elementBlockIds) const = 0;
-	virtual void getMyElementGIDs(std::vector<panzer::GlobalOrdinal> & elements) const {};
-	virtual void getElementGIDs(const std::string & blockID,std::vector<panzer::GlobalOrdinal> & elements) const {};
-	virtual void getFaceGIDs(const std::string & blockName,std::vector<panzer::GlobalOrdinal> & faces) const {};
-	  
-    virtual void getSkinMesh(std::vector<panzer::GlobalOrdinal> & elements, int& sideRank) const {};
 
     /** Returns the cellTopologies linked to element blocks in this connection manager */
     virtual void getElementBlockTopologies(std::vector<shards::CellTopology> & elementBlockTopologies) const = 0;
@@ -143,18 +135,6 @@ class FieldPattern; // from DOFManager
      * input.
      */
     virtual bool hasAssociatedNeighbors() const = 0;
-
-    /// Get the local cell IDs for the workset getLocalCellIDs
-	virtual PHX::View<panzer::GlobalOrdinal*> getOwnedGlobalCellID() const
-    {
-		PHX::View<panzer::GlobalOrdinal*> global_ids_;
-		return global_ids_;
-	}
-    virtual PHX::View<panzer::GlobalOrdinal*> getGhostGlobalCellID() const
-	{
-		PHX::View<panzer::GlobalOrdinal*> global_ids_;
-		return global_ids_;
-	}
   };
 
 }

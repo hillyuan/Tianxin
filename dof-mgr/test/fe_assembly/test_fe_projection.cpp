@@ -1,12 +1,11 @@
 // @HEADER
-// ***********************************************************************
+// ************************************************************************
 //
-//           Panzer: A partial differential equation assembly
-//       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2011) Sandia Corporation
+//                           Intrepid2 Package
+//                 Copyright (2007) Sandia Corporation
 //
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
+// Under terms of Contract DE-AC04-94AL85000, there is a non-exclusive
+// license for use of this work by or on behalf of the U.S. Government.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -35,34 +34,28 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Questions? Contact Roger P. Pawlowski (rppawlo@sandia.gov) and
-// Eric C. Cyr (eccyr@sandia.gov)
-// ***********************************************************************
+// Questions? Contact Kyungjoo Kim  (kyukim@sandia.gov), or
+//                    Mauro Perego  (mperego@sandia.gov)
+//
+// ************************************************************************
 // @HEADER
 
-#ifndef PANZER_STK_LOCAL_MESH_UTILITIES_HPP
-#define PANZER_STK_LOCAL_MESH_UTILITIES_HPP
+/** \file test_01.cpp
+    \brief  Test for checking orientation tools for hexahedral elements.
+    \author Created by Mauro Perego
+*/
 
-#include "Teuchos_RCP.hpp"
+#include "Kokkos_Core.hpp"
+#include "test_fe_projection.hpp"
 
-namespace panzer
-{
-  struct LocalMeshInfo;
+
+int main(int argc, char *argv[]) {
+
+  Teuchos::GlobalMPISession mpiScope (&argc, &argv);
+  Kokkos::ScopeGuard kokkosScope (argc, argv);
+  
+  const int r_val = Discretization::Example::feProjection<double,PHX::Device>(argc, argv);
+
+  return r_val;
 }
 
-namespace panzer_stk
-{
-  class STK_Interface;
-
-  /**
-   * \brief Create a structure containing information about the local portion of a given element block
-   *
-   * \param[in] mesh Reference to STK mesh interface
-   *
-   * \returns Structure containing local mesh information
-   */
-  Teuchos::RCP<panzer::LocalMeshInfo>
-  generateLocalMeshInfo(const panzer_stk::STK_Interface & mesh);
-}
-
-#endif

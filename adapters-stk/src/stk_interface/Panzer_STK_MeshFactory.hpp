@@ -112,7 +112,6 @@ public:
 
          // rebuild mesh internals
          mesh.buildLocalElementIDs();
-		 mesh.buildLocalNodeIDs();
        }
      }
      else if(enableRebalance_) {
@@ -122,7 +121,6 @@ public:
 
        // rebuild mesh internals
        mesh.buildLocalElementIDs();
-       mesh.buildLocalNodeIDs();
      }
    }
 

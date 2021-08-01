@@ -7,6 +7,7 @@ SET(UNIT_TEST_DRIVER
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
   LocalMesh_Tests
   SOURCES setup_sublocal_mesh_info.cpp 
+          local_partitioning_utilities.cpp
           setup_partitioned_workset_utilities.cpp
           ${UNIT_TEST_DRIVER}
   COMM mpi

@@ -161,7 +161,7 @@ TEUCHOS_UNIT_TEST(setupPartitionedWorksetUtilities, basic)
   }
 
   // Existing block partition
- /* {
+  {
     panzer::WorksetDescriptor description("block0",panzer::WorksetSizeType::ALL_ELEMENTS,true);
 
     // It shouldn't return any worksets
@@ -261,7 +261,7 @@ TEUCHOS_UNIT_TEST(setupPartitionedWorksetUtilities, basic)
       TEST_EQUALITY(workset.numGhostCells(),0);
       TEST_EQUALITY(workset.numVirtualCells(),1);
     }
-  }*/
+  }
 
 
 }

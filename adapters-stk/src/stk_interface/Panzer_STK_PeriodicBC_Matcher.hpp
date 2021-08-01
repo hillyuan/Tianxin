@@ -75,12 +75,6 @@ namespace periodic_helpers {
                      const Matcher & matcher,
                      const std::vector<std::pair<std::size_t,std::size_t> > & current, const std::string type_ = "coord");
 
-   template <typename Matcher>
-   Teuchos::RCP<std::vector<std::pair<std::size_t,std::size_t> > >
-   matchGlobalPeriodicSides(const std::string & left,const std::string & right,
-                     const STK_Interface & mesh,
-                     const Matcher & matcher, const std::string type_ = "coord");
-
    /** This returns all the global IDs and coordinates for 
      * a particular side. By "all" that means across all processors.
      */
@@ -159,10 +153,6 @@ public:
                   const Teuchos::RCP<const std::vector<std::pair<std::size_t,std::size_t> > >  & currentState = Teuchos::null
                   ) const = 0;
 
-   virtual 
-   Teuchos::RCP<std::vector<std::pair<std::size_t,std::size_t> > >
-   getGlobalMatchedPair(const STK_Interface & mesh ) const = 0;
-
    /** Return a one line string that describes this periodic
      * boundary condition.
      */
@@ -216,12 +206,6 @@ public:
          return periodic_helpers::matchPeriodicSides(left_,right_,mesh,matcher_,type_); 
       else
          return periodic_helpers::matchPeriodicSides(left_,right_,mesh,matcher_,*currentState,type_); 
-   }
-
-   Teuchos::RCP<std::vector<std::pair<std::size_t,std::size_t> > >
-   getGlobalMatchedPair(const STK_Interface & mesh ) const
-   { 
-      return periodic_helpers::matchGlobalPeriodicSides(left_,right_,mesh,matcher_,type_); 
    }
 
    std::string getString() const 

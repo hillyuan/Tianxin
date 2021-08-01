@@ -57,44 +57,6 @@ namespace periodic_helpers {
 
 template <typename Matcher>
 Teuchos::RCP<std::vector<std::pair<std::size_t,std::size_t> > >
-matchGlobalPeriodicSides(const std::string & left,const std::string & right,
-                     const STK_Interface & mesh,
-                     const Matcher & matcher,
-                     const std::string type_)
-{
-  using Teuchos::Tuple;
-  using Teuchos::RCP;
-  using Teuchos::rcp;
-
-  // First step is to globally distribute all the node ids and coordinates
-  // on the left hand side: requires All-2-All!
-  /////////////////////////////////////////////////////////////////////////
-  std::pair<RCP<std::vector<std::size_t> >,
-            RCP<std::vector<Tuple<double,3> > > > idsAndCoords = panzer_stk::periodic_helpers::getSideIdsAndCoords(mesh,left,type_);
-  std::vector<std::size_t> & sideIds_left = *idsAndCoords.first;
-  //std::vector<Tuple<double,3> > & sideCoords = *idsAndCoords.second;
-
-  idsAndCoords = panzer_stk::periodic_helpers::getSideIdsAndCoords(mesh,right,type_);
-  std::vector<std::size_t> & sideIds_right = *idsAndCoords.first;
-
-  // Now using only local operations, find the right hand side nodes owned
-  // by this processor and the matching ones on the left that were previously calculated
-  /////////////////////////////////////////////////////////////////////////
-  Teuchos::RCP<std::vector<std::pair<std::size_t,std::size_t> > > MatchedIds
-    = Teuchos::rcp(new std::vector<std::pair<std::size_t,std::size_t> >); 
-
-  for(std::size_t localNode=0;localNode<sideIds_left.size();localNode++) { 
-      std::size_t gid_left = sideIds_left[localNode];
-      //const Tuple<double,3> & local_coord = local_side_coords[localNode];
-      std::size_t gid_right = sideIds_right[localNode];
-      MatchedIds->push_back(std::make_pair(gid_left,gid_right));
-   }
-
-   return MatchedIds;
-}
-
-template <typename Matcher>
-Teuchos::RCP<std::vector<std::pair<std::size_t,std::size_t> > >
 matchPeriodicSides(const std::string & left,const std::string & right,
                      const STK_Interface & mesh,
                      const Matcher & matcher,

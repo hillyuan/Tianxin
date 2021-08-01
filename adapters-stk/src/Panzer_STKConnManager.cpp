@@ -76,9 +76,8 @@ private:
 };
 
 STKConnManager::STKConnManager(const Teuchos::RCP<const STK_Interface> & stkMeshDB)
-   : stkMeshDB_(stkMeshDB), ownedElementCount_(0), initialized(false)
+   : stkMeshDB_(stkMeshDB), ownedElementCount_(0)
 {
-  elements_ = Teuchos::rcp(new std::vector<stk::mesh::Entity>);
 }
 
 Teuchos::RCP<panzer::ConnManager>
@@ -89,8 +88,7 @@ STKConnManager::noConnectivityClone() const
 
 void STKConnManager::clearLocalElementMapping()
 {
-   elements_->clear();
-  // elements_ = Teuchos::null;
+   elements_ = Teuchos::null;
 
    elementBlocks_.clear();
    elmtLidToConn_.clear();
@@ -110,7 +108,11 @@ void STKConnManager::buildLocalElementMapping()
    std::vector<std::string> blockIds;
    stkMeshDB_->getElementBlockNames(blockIds);
 
-   for( auto blockId : blockIds) {
+   std::size_t blockIndex=0;
+   for(std::vector<std::string>::const_iterator idItr=blockIds.begin();
+       idItr!=blockIds.end();++idItr,++blockIndex) {
+      std::string blockId = *idItr;
+
       // grab elements on this block
       std::vector<stk::mesh::Entity> blockElmts;
       stkMeshDB_->getMyElements(blockId,blockElmts);
@@ -126,7 +128,11 @@ void STKConnManager::buildLocalElementMapping()
 
    ownedElementCount_ = elements_->size();
 
-   for(auto blockId : blockIds ) {
+   blockIndex=0;
+   for(std::vector<std::string>::const_iterator idItr=blockIds.begin();
+       idItr!=blockIds.end();++idItr,++blockIndex) {
+      std::string blockId = *idItr;
+
       // grab elements on this block
       std::vector<stk::mesh::Entity> blockElmts;
       stkMeshDB_->getNeighborElements(blockId,blockElmts);
@@ -145,10 +151,11 @@ void STKConnManager::buildLocalElementMapping()
 
    // allocate space for element LID to Connectivty map
    // connectivity size
+   elmtLidToConn_.clear();
    elmtLidToConn_.resize(elements_->size(),0);
+
+   connSize_.clear();
    connSize_.resize(elements_->size(),0);
-	
-	initialized = true;
 }
 
 void
@@ -246,7 +253,7 @@ void STKConnManager::buildConnectivity(const panzer::FieldPattern & fp)
 
    // get element info from STK_Interface
    // object and build a local element mapping.
-   if(!initialized) buildLocalElementMapping();
+   buildLocalElementMapping();
 
    // Build sub cell ID counts and offsets
    //    ID counts = How many IDs belong on each subcell (number of mesh DOF used)
@@ -303,7 +310,7 @@ std::string STKConnManager::getBlockId(STKConnManager::LocalOrdinal localElmtId)
 
    return stkMeshDB_->containingBlockId(element);
 }
-	
+
 void STKConnManager::applyPeriodicBCs(const panzer::FieldPattern & fp, GlobalOrdinal nodeOffset, GlobalOrdinal edgeOffset,
                                       GlobalOrdinal faceOffset, GlobalOrdinal /* cellOffset */)
 {
@@ -440,24 +447,6 @@ const std::vector<STKConnManager::LocalOrdinal>&
 STKConnManager::getAssociatedNeighbors(const LocalOrdinal& el) const
 {
   return elmtToAssociatedElmts_[el];
-}
-	
-void STKConnManager::
-getElementalNodeConnectivity(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const
-{
-	 stk::mesh::Entity element = (*elements_)[elmtLid];
-     nodesgid.clear();
-
-	 stk::mesh::BulkData& bulkData = *stkMeshDB_->getBulkData();
-   	 const stk::mesh::EntityRank rank = stkMeshDB_->getNodeRank();
-
-     const size_t num_rels = bulkData.num_connectivity(element, rank);
-     stk::mesh::Entity const* relations = bulkData.begin(element, rank);
-     for(std::size_t sc=0; sc<num_rels; ++sc) {
-       stk::mesh::Entity nd = relations[sc];
-	   auto id = bulkData.identifier(nd);
-       nodesgid.emplace_back(id);
-	 }
 }
 
 }

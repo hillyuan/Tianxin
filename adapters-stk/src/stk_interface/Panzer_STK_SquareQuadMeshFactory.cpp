@@ -154,14 +154,12 @@ void SquareQuadMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::P
 
    // add node and element information
    buildElements(parallelMach,mesh);
-	
-   
 
    // finish up the edges
 #ifndef ENABLE_UNIFORM
    mesh.buildSubcells();
 #endif
-   
+   mesh.buildLocalElementIDs();
 
    // now that edges are built, sidsets can be added
 #ifndef ENABLE_UNIFORM
@@ -170,10 +168,7 @@ void SquareQuadMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::P
 
    // add nodesets
    addNodeSets(mesh);
-	
-   mesh.applyPeriodicCondition();
-   mesh.buildLocalElementIDs();
-   mesh.buildLocalNodeIDs();
+
    // calls Stk_MeshFactory::rebalance
    this->rebalance(mesh);
 }

@@ -125,21 +125,6 @@ public:
      */
    virtual void getElementBlockIds(std::vector<std::string> & elementBlockIds) const
    { return stkMeshDB_->getElementBlockNames(elementBlockIds); }
-	
-   virtual void getMyElementGIDs(std::vector<panzer::GlobalOrdinal> & elements) const final
-   { return stkMeshDB_->getMyElementGIDs(elements); }
-	
-   virtual void getElementGIDs(const std::string & blockID,std::vector<panzer::GlobalOrdinal> & elements)  const final
-   { return stkMeshDB_->getMyElementGIDs(blockID, elements); }
-	
-   virtual void getFaceGIDs(const std::string & blockName,std::vector<panzer::GlobalOrdinal> & faces) const final
-   { return stkMeshDB_->getFaceGIDs(blockName, faces); }
-	
-   virtual void getSkinMesh(std::vector<panzer::GlobalOrdinal> & elements, int& sideRank) const final
-   {   stk::mesh::EntityRank rank;
-	   stkMeshDB_->getSkinMesh(elements, rank); 
-	   sideRank = rank;
-   }
    /** What are the cellTopologies linked to element blocks in this connection manager?
     */
    virtual void getElementBlockTopologies(std::vector<shards::CellTopology> & elementBlockTopologies) const{
@@ -221,28 +206,6 @@ public:
       */
     virtual bool hasAssociatedNeighbors() const;
 
-    void setInitialState(bool init)
-    {initialized = init;}
-	
-	virtual PHX::View<panzer::GlobalOrdinal*> getOwnedGlobalCellID() const final
-    {
-		return stkMeshDB_->getOwnedGlobalCellIDs();
-	}
-    virtual PHX::View<panzer::GlobalOrdinal*> getGhostGlobalCellID() const final
-	{
-		return stkMeshDB_->getGhostGlobalCellIDs();
-	}
-	
-	/** Get the node connectivity of a given element
-     *
-     * \param[in] elmtLid elemental local index
-     *
-     * \param[out] nodesgid Vector of global nodes IDs.
-     */
-    void getElementalNodeConnectivity(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const;
-    int getNodeRank() const {return stkMeshDB_->getNodeRank();}
-
-
 protected:
    /** Apply periodic boundary conditions associated with the mesh object.
      *
@@ -285,9 +248,6 @@ protected:
    std::vector<std::string> sidesetsToAssociate_;
    std::vector<bool> sidesetYieldedAssociations_;
    std::vector<std::vector<LocalOrdinal> > elmtToAssociatedElmts_;
-
-private:
-  bool initialized;
 };
 
 }

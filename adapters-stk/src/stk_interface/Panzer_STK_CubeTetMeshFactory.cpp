@@ -155,18 +155,15 @@ void CubeTetMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::Para
 
    // finish up the edges and faces
    mesh.buildSubcells();
+   mesh.buildLocalElementIDs();
+   mesh.buildLocalEdgeIDs();
+   mesh.buildLocalFaceIDs();
 
    // now that edges are built, sidets can be added
    addSideSets(mesh);
    addNodeSets(mesh);
    addEdgeBlocks(mesh);
    addFaceBlocks(mesh);
-
-   mesh.applyPeriodicCondition();
-   mesh.buildLocalElementIDs();
-   mesh.buildLocalEdgeIDs();
-   mesh.buildLocalFaceIDs();
-   mesh.buildLocalNodeIDs();
 
    // calls Stk_MeshFactory::rebalance
    this->rebalance(mesh);
