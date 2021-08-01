@@ -61,7 +61,6 @@
 
 #include <PanzerAdaptersSTK_config.hpp>
 #include <Kokkos_ViewFactory.hpp>
-#include "Phalanx_KokkosDeviceTypes.hpp"
 
 #include <unordered_map>
 
@@ -181,6 +180,12 @@ public:
                            const std::vector<std::string> & coordField,
                            const std::string & dispPrefix);
 
+   /** Add a vector of strings to the Information Records block.  Each string
+     * will be it's own record.  The info records will be deduped before they
+     * are added to IOSS.
+     */
+   void addInformationRecords(const std::vector<std::string> & info_records);
+
    //////////////////////////////////////////
 
    /** Initialize the mesh with the current dimension This also calls
@@ -282,31 +287,19 @@ public:
    /** Get a vector of elements owned by this processor
      */
    void getMyElements(std::vector<stk::mesh::Entity> & elements) const;
-   void getMyElementGIDs(std::vector<panzer::GlobalOrdinal> & elements) const;
-   void getMyElementGIDs(std::set<panzer::GlobalOrdinal> & elements) const;
-   Kokkos::View<panzer::GlobalOrdinal*> getOwnedGlobalCellIDs() const;
-   Kokkos::View<panzer::GlobalOrdinal*> getGhostGlobalCellIDs() const;
 
-   /** Get a vector of elements owned by this processor on a particular block ID */
+   /** Get a vector of elements owned by this processor on a particular block ID
+     */
    void getMyElements(const std::string & blockID,std::vector<stk::mesh::Entity> & elements) const;
-   void getMyElementGIDs(const std::string & blockID,std::vector<panzer::GlobalOrdinal> & elements) const;
-	
-   /** Get skin boundary sides */
-   void getSkinMesh(std::vector<panzer::GlobalOrdinal> & elements, stk::mesh::EntityRank& sideRank) const;
 
    /** Get a vector of elements that share an edge/face with an owned element. Note that these elements
      * are not owned.
      */
    void getNeighborElements(std::vector<stk::mesh::Entity> & elements) const;
 
-   /** Get a vector of elements not owned by this processor but in a particular block */
+   /** Get a vector of elements not owned by this processor but in a particular block
+     */
    void getNeighborElements(const std::string & blockID,std::vector<stk::mesh::Entity> & elements) const;
-	
-   /** Get a vector of nodes owned by this processor */
-   void getMyNodes(std::vector<stk::mesh::Entity> & nodes) const;
-	
-   /** Get a vector of nodes in this processor */
-   void getAllNodes(std::vector<stk::mesh::Entity> & nodes) const;
 
    /** Get a vector of edges owned by this processor
      */
@@ -372,7 +365,6 @@ public:
      * \param[in,out] faces Vector of entities containing the requested faces.
      */
    void getMyFaces(const std::string & faceBlockName,const std::string & blockName,std::vector<stk::mesh::Entity> & faces) const;
-   void getFaceGIDs(const std::string & blockName,std::vector<panzer::GlobalOrdinal> & faces) const;
 
    /** Get Entities corresponding to the locally owned part of the face block requested.
      * The Entites in the vector should be a dimension
@@ -440,17 +432,7 @@ public:
      * \param[in,out] nodes Vector of entities containing the requested nodes.
      */
 
-   void getMyNodeSet(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const;
-   void getMyNodeSetId(const std::string & nodesetName,const std::string & blockName,std::vector<stk::mesh::EntityId> & nodes) const;
-
-   /** Get Entities corresponding to the node set requested. The Entites in the vector should be of dimension
-     * <code>0</code>.
-     *
-     * \param[in] nodesetName Name of node set
-     * \param[in,out] nodes Vector of entities containing the requested nodes.
-     */
-   void getOwnedNodeSet(const std::string & nodesetName, std::vector<stk::mesh::Entity> & nodes) const;
-   void getOwnedNodeSetId(const std::string & nodesetName, std::vector<stk::mesh::EntityId> & nodeIds) const;
+   void getMyNodes(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const;
 
    /**
     * Searches for connected entity by rank and relation id. Returns
@@ -513,7 +495,8 @@ public:
    *                      results.
    */
   void
-  writeToExodus(double timestep);
+  writeToExodus(
+    double timestep);
 
   /**
    *  \brief Add an `int` global variable to the information to be written to
@@ -535,7 +518,9 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus(const std::string& key, const int& value);
+  addGlobalToExodus(
+    const std::string& key,
+    const int&         value);
 
   /**
    *  \brief Add a `double` global variable to the information to be written to
@@ -557,7 +542,9 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus( const std::string& key, const double& value);
+  addGlobalToExodus(
+    const std::string& key,
+    const double&      value);
 
   /**
    *  \brief Add a `std::vector<int>` global variable to the information to be
@@ -579,7 +566,9 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus( const std::string& key, const std::vector<int>& value);
+  addGlobalToExodus(
+    const std::string&      key,
+    const std::vector<int>& value);
 
   /**
    *  \brief Add a `std::vector<double>` global variable to the information to
@@ -601,7 +590,9 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus( const std::string& key, const std::vector<double>& value);
+  addGlobalToExodus(
+    const std::string&         key,
+    const std::vector<double>& value);
 
    // Accessor functions
    //////////////////////////////////////////
@@ -774,12 +765,6 @@ public:
      */
    inline stk::mesh::EntityId elementGlobalId(stk::mesh::Entity elmt) const
    { return bulkData_->identifier(elmt); }
-	
-   /** Is an edge local to this processor? */
-   bool isNodeLocal(stk::mesh::Entity node) const;
-
-   /** Is an edge local to this processor? */
-   bool isNodeLocal(stk::mesh::EntityId gid) const;
 
    /** Is an edge local to this processor?
      */
@@ -826,12 +811,12 @@ public:
    /** Get a face's global index
      */
    inline stk::mesh::EntityId faceGlobalId(std::size_t lid) const
-   { return bulkData_->identifier((*orderedEdgeVector_)[lid]); }
+   { return bulkData_->identifier((*orderedFaceVector_)[lid]); }
 
    /** Get a face's global index
      */
-   inline stk::mesh::EntityId faceGlobalId(stk::mesh::Entity edge) const
-   { return bulkData_->identifier(edge); }
+   inline stk::mesh::EntityId faceGlobalId(stk::mesh::Entity face) const
+   { return bulkData_->identifier(face); }
 
   /** Get an Entity's parallel owner (process rank)
    */
@@ -1089,9 +1074,6 @@ public:
    /** Build fields and parts from the meta data
      */
    void initializeFromMetaData();
-	
-   /** Setup local element IDs */
-   void buildLocalNodeIDs();
 
    /** Setup local element IDs
      */
@@ -1135,12 +1117,6 @@ public:
 
    std::pair<Teuchos::RCP<std::vector<std::pair<std::size_t,std::size_t> > >, Teuchos::RCP<std::vector<unsigned int> > >
    getPeriodicNodePairing() const;
-
-   /** Apply a periodic boundary condition.
-     *
-     * \note This function add constraint into mesh structure.
-     */
-   void applyPeriodicCondition();
 
    /** check for a valid block id
      */
@@ -1347,6 +1323,9 @@ protected:
    std::map<std::pair<std::string,std::string>,SolutionFieldType*> fieldNameToEdgeField_;
    std::map<std::pair<std::string,std::string>,SolutionFieldType*> fieldNameToFaceField_;
 
+   // use a set to maintain a list of unique information records
+   std::set<std::string> informationRecords_;
+
    unsigned dimension_;
 
    bool initialized_;
@@ -1407,16 +1386,18 @@ protected:
 #endif
 
    // uses lazy evaluation
-   mutable Teuchos::RCP<std::vector<stk::mesh::Entity> > orderedNodeVector_;
    mutable Teuchos::RCP<std::vector<stk::mesh::Entity> > orderedElementVector_;
+
+   // uses lazy evaluation
    mutable Teuchos::RCP<std::vector<stk::mesh::Entity> > orderedEdgeVector_;
+
+   // uses lazy evaluation
    mutable Teuchos::RCP<std::vector<stk::mesh::Entity> > orderedFaceVector_;
 
    // for element block weights
    std::map<std::string,double> blockWeights_;
 
    std::unordered_map<stk::mesh::EntityId,std::size_t> localIDHash_;
-   std::unordered_map<stk::mesh::EntityId,std::size_t> localNodeIDHash_;
    std::unordered_map<stk::mesh::EntityId,std::size_t> localEdgeIDHash_;
    std::unordered_map<stk::mesh::EntityId,std::size_t> localFaceIDHash_;
 

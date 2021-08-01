@@ -53,7 +53,6 @@
 #include <stk_mesh/base/GetEntities.hpp>
 #include <stk_mesh/base/GetBuckets.hpp>
 #include <stk_mesh/base/CreateAdjacentEntities.hpp>
-#include <stk_mesh/base/SkinBoundary.hpp> 
 
 // #include <stk_rebalance/Rebalance.hpp>
 // #include <stk_rebalance/Partition.hpp>
@@ -62,7 +61,6 @@
 
 #include <stk_util/parallel/ParallelReduce.hpp>
 #include <stk_util/parallel/CommSparse.hpp>
-#include </home/yuan/programs/solver/Trilinos/install/include/stk_search_util/PeriodicBoundarySearch.hpp>
 
 #ifdef PANZER_HAVE_IOSS
 #include <Ionit_Initializer.h>
@@ -281,6 +279,11 @@ void STK_Interface::addMeshCoordFields(const std::string & blockId,
          fieldNameToSolution_[key] = field;
       }
    }
+}
+
+void STK_Interface::addInformationRecords(const std::vector<std::string> & info_records)
+{
+   informationRecords_.insert(info_records.begin(), info_records.end());
 }
 
 void STK_Interface::initialize(stk::ParallelMachine parallelMach,bool setupIO,
@@ -713,6 +716,10 @@ setupExodusFile(const std::string& filename,
       meshData_->add_field(meshIndex_, *fields[i]);
     }
   }
+
+  // convert the set to a vector
+  std::vector<std::string> deduped_info_records(informationRecords_.begin(),informationRecords_.end());
+  meshData_->add_info_records(meshIndex_, deduped_info_records);
 #else
   TEUCHOS_ASSERT(false)
 #endif
@@ -1143,74 +1150,6 @@ void STK_Interface::getMyElements(std::vector<stk::mesh::Entity> & elements) con
    stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(elementRank),elements);
 }
 
-Kokkos::View<panzer::GlobalOrdinal*> STK_Interface::getOwnedGlobalCellIDs() const
-{
-   std::vector<stk::mesh::Entity> elements;
-   Kokkos::View<panzer::GlobalOrdinal*> owned_cell_global_ids;
-
-   this->getMyElements( elements );
-   std::size_t ne = elements.size();
-
-   owned_cell_global_ids = PHX::View<panzer::GlobalOrdinal*>("owned_global_cells",ne);
-
-   for( std::size_t id=0; id<ne; ++id ) {
-     owned_cell_global_ids(id) = bulkData_->identifier( elements[id] ) -1;
-   }
-	
-	return owned_cell_global_ids;
-}
-
-Kokkos::View<panzer::GlobalOrdinal*> STK_Interface::getGhostGlobalCellIDs() const
-{
-   std::vector<stk::mesh::Entity> elements;
-   Kokkos::View<panzer::GlobalOrdinal*> ghost_cell_global_ids;
-//bulkData_->dump_all_mesh_info(std::cout);
-   stk::mesh::Selector ownedPart = !metaData_->locally_owned_part();
-   stk::mesh::EntityRank elementRank = getElementRank();
-   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(elementRank),elements);
-   std::size_t ne = elements.size();
-
-   ghost_cell_global_ids = PHX::View<panzer::GlobalOrdinal*>("ghost_global_cells",ne);
-
-   for( std::size_t id=0; id<ne; ++id ) {
-     ghost_cell_global_ids(id) = bulkData_->identifier( elements[id] ) -1;
-   }
-	
-   return ghost_cell_global_ids;
-}
-	
-void STK_Interface::getMyElementGIDs(std::vector<panzer::GlobalOrdinal> & elementGIDs) const
-{
-   // setup local ownership
-   stk::mesh::Selector ownedPart = (metaData_->locally_owned_part() | metaData_->globally_shared_part());
-
-   // grab elements
-   std::vector<stk::mesh::Entity> elements;
-   stk::mesh::EntityRank elementRank = getElementRank();
-   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(elementRank),elements);
-	
-   elementGIDs.clear();
-   for( auto element: elements ) {
-	   elementGIDs.emplace_back( bulkData_->identifier( element )-1 );
-   }
-}
-
-void STK_Interface::getMyElementGIDs(std::set<panzer::GlobalOrdinal> & elementGIDs) const
-{
-   // setup local ownership
-   stk::mesh::Selector ownedPart = (metaData_->locally_owned_part() | metaData_->globally_shared_part());
-
-   // grab elements
-   std::vector<stk::mesh::Entity> elements;
-   stk::mesh::EntityRank elementRank = getElementRank();
-   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(elementRank),elements);
-	
-   elementGIDs.clear();
-   for( auto element: elements ) {
-	   elementGIDs.insert( bulkData_->identifier( element )-1 );
-   }
-}
-
 void STK_Interface::getMyElements(const std::string & blockID,std::vector<stk::mesh::Entity> & elements) const
 {
    stk::mesh::Part * elementBlock = getElementBlockPart(blockID);
@@ -1224,45 +1163,6 @@ void STK_Interface::getMyElements(const std::string & blockID,std::vector<stk::m
    // grab elements
    stk::mesh::EntityRank elementRank = getElementRank();
    stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(elementRank),elements);
-}
-	
-void STK_Interface::getMyElementGIDs(const std::string & blockID,std::vector<panzer::GlobalOrdinal> & elementGIDs) const
-{
-   stk::mesh::Part * elementBlock = getElementBlockPart(blockID);
-
-   TEUCHOS_TEST_FOR_EXCEPTION(elementBlock==0,std::logic_error,"Could not find element block \"" << blockID << "\"");
-
-   // setup local ownership
-   // stk::mesh::Selector block = *elementBlock;
-   stk::mesh::Selector ownedBlock = metaData_->locally_owned_part() & (*elementBlock);
-
-   // grab elements
-   stk::mesh::EntityRank elementRank = getElementRank();
-   std::vector<stk::mesh::Entity> elements;
-   stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(elementRank),elements);
-	
-   elementGIDs.clear();
-   for( auto element: elements ) {
-	   elementGIDs.emplace_back( bulkData_->identifier( element )-1 );
-   }
-}
-	
-void STK_Interface::getSkinMesh(std::vector<panzer::GlobalOrdinal> & sideIDs, stk::mesh::EntityRank& sideRank) const
-{
-   stk::mesh::Selector ownedPart = metaData_->locally_owned_part();
-   sideRank = metaData_->side_rank();
-   stk::mesh::Part &skinPart = metaData_->declare_part("skin", sideRank);
-	
-   stk::mesh::create_exposed_block_boundary_sides(*bulkData_, ownedPart, {&skinPart});
-   stk::mesh::Selector selector(skinPart);
-   stk::mesh::EntityVector boundarySides;
-   stk::mesh::get_selected_entities(selector,bulkData_->buckets(sideRank),boundarySides);
-
-   // grab elements
-   sideIDs.clear();
-   for( auto element: boundarySides ) {
-	   sideIDs.emplace_back( bulkData_->identifier( element )-1 );
-   }
 }
 
 void STK_Interface::getNeighborElements(std::vector<stk::mesh::Entity> & elements) const
@@ -1287,26 +1187,6 @@ void STK_Interface::getNeighborElements(const std::string & blockID,std::vector<
    // grab elements
    stk::mesh::EntityRank elementRank = getElementRank();
    stk::mesh::get_selected_entities(neighborBlock,bulkData_->buckets(elementRank),elements);
-}
-	
-void STK_Interface::getMyNodes(std::vector<stk::mesh::Entity> & nodes) const
-{
-   // setup local ownership
-   stk::mesh::Selector ownedPart = metaData_->locally_owned_part();
-
-   // grab elements
-   stk::mesh::EntityRank nodeRank = getNodeRank();
-   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(nodeRank),nodes);
-}
-
-void STK_Interface::getAllNodes(std::vector<stk::mesh::Entity> & nodes) const
-{
-   // setup local ownership
-   stk::mesh::Selector ownedPart = (metaData_->locally_owned_part() | metaData_->globally_shared_part());
-
-   // grab elements
-   stk::mesh::EntityRank nodeRank = getNodeRank();
-   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(nodeRank),nodes);
 }
 
 void STK_Interface::getMyEdges(std::vector<stk::mesh::Entity> & edges) const
@@ -1417,23 +1297,6 @@ void STK_Interface::getMyFaces(const std::string & faceBlockName,const std::stri
    // grab elements
    stk::mesh::get_selected_entities(owned_block,bulkData_->buckets(getFaceRank()),faces);
 }
-	
-void STK_Interface::getFaceGIDs(const std::string & blockName,std::vector<panzer::GlobalOrdinal> & faceIDs)  const
-{
-   stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
-                      "Unknown element block \"" << blockName << "\"");
-
-   stk::mesh::Selector element_block = *elmtPart;
-   stk::mesh::Selector owned_block = metaData_->locally_owned_part() & element_block;
-
-   std::vector<stk::mesh::Entity> faces;
-   stk::mesh::get_selected_entities(owned_block,bulkData_->buckets(getFaceRank()),faces);
-
-   faceIDs.clear();
-   for( auto face: faces )
-	   faceIDs.emplace_back( bulkData_->identifier( face )-1 );
-}
 
 void STK_Interface::getAllFaces(const std::string & faceBlockName,std::vector<stk::mesh::Entity> & faces) const
 {
@@ -1523,7 +1386,7 @@ void STK_Interface::getAllSides(const std::string & sideName,const std::string &
    stk::mesh::get_selected_entities(sideBlock,bulkData_->buckets(getSideRank()),sides);
 }
 
-void STK_Interface::getMyNodeSet(const std::string & nodesetName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const
+void STK_Interface::getMyNodes(const std::string & nodesetName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const
 {
    stk::mesh::Part * nodePart = getNodeset(nodesetName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
@@ -1538,63 +1401,6 @@ void STK_Interface::getMyNodeSet(const std::string & nodesetName,const std::stri
 
    // grab elements
    stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getNodeRank()),nodes);
-}
-	
-void STK_Interface::getMyNodeSetId(const std::string & nodesetName,const std::string & blockName,std::vector<stk::mesh::EntityId> & nodeIds) const
-{
-   stk::mesh::Part * nodePart = getNodeset(nodesetName);
-   stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,SidesetException,
-                      "Unknown node set \"" << nodesetName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
-                      "Unknown element block \"" << blockName << "\"");
-
-   stk::mesh::Selector nodeset = *nodePart;
-   stk::mesh::Selector block = *elmtPart;
-   stk::mesh::Selector ownedBlock = metaData_->locally_owned_part() & block & nodeset;
-
-   // grab elements
-   std::vector<stk::mesh::Entity> nodes;
-   stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getNodeRank()),nodes);
-	
-   nodeIds.clear();
-   for( const auto n: nodes )
-   {
-	   nodeIds.emplace_back( bulkData_->identifier(n) );
-   }
-}
-	
-void STK_Interface::getOwnedNodeSet(const std::string & nodesetName,std::vector<stk::mesh::Entity> & nodes) const
-{
-   stk::mesh::Part * nodePart = getNodeset(nodesetName);
-   TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,std::logic_error,
-                      "Unknown side set \"" << nodesetName << "\"");
-
-   stk::mesh::Selector nodeset = *nodePart;
-   stk::mesh::Selector ownedBlock = metaData_->locally_owned_part() & nodeset;
-
-   // grab nodes
-   stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getNodeRank()),nodes);
-}
-
-void STK_Interface::getOwnedNodeSetId(const std::string & nodesetName,std::vector<stk::mesh::EntityId> & nodeIds) const
-{
-   stk::mesh::Part * nodePart = getNodeset(nodesetName);
-   TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,std::logic_error,
-                      "Unknown side set \"" << nodesetName << "\"");
-
-   stk::mesh::Selector nodeset = *nodePart;
-   stk::mesh::Selector ownedBlock = metaData_->locally_owned_part() & nodeset;
-
-   // grab nodes
-   std::vector<stk::mesh::Entity> nodes;
-   stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getNodeRank()),nodes);
-	
-   nodeIds.clear();
-   for( const auto n: nodes )
-   {
-	   nodeIds.emplace_back( bulkData_->identifier(n) );
-   }
 }
 
 void STK_Interface::getElementBlockNames(std::vector<std::string> & names) const
@@ -1667,21 +1473,6 @@ std::size_t STK_Interface::elementLocalId(stk::mesh::EntityId gid) const
    std::unordered_map<stk::mesh::EntityId,std::size_t>::const_iterator itr = localIDHash_.find(gid);
    TEUCHOS_ASSERT(itr!=localIDHash_.end());
    return itr->second;
-}
-	
-bool STK_Interface::isNodeLocal(stk::mesh::Entity edge) const
-{
-   return isNodeLocal(bulkData_->identifier(edge));
-}
-
-bool STK_Interface::isNodeLocal(stk::mesh::EntityId gid) const
-{
-   std::unordered_map<stk::mesh::EntityId,std::size_t>::const_iterator itr = localNodeIDHash_.find(gid);
-	//std::cout <<  getComm()->getRank() << "  finde: " << gid << "," << (itr==localNodeIDHash_.end()) << std::endl;
-   if (itr==localNodeIDHash_.end())
-	   return false;
-   else
-	   return true;
 }
 
 bool STK_Interface::isEdgeLocal(stk::mesh::Entity edge) const
@@ -1981,25 +1772,6 @@ void STK_Interface::applyElementLoadBalanceWeights()
     }
   }
 }
-	
-void STK_Interface::buildLocalNodeIDs()
-{
-   currentLocalId_ = 0;
-
-   orderedNodeVector_ = Teuchos::null; // forces rebuild of ordered lists
-
-   // might be better (faster) to do this by buckets
-   std::vector<stk::mesh::Entity> nodes;
-   getMyNodes(nodes);
-
-   for(stk::mesh::Entity node : nodes) {
-      localNodeIDHash_[bulkData_->identifier(node)] = currentLocalId_;
-      currentLocalId_++;
-   }
-
-   // copy edges into the ordered edge vector
-   orderedNodeVector_ = Teuchos::rcp(new std::vector<stk::mesh::Entity>(nodes));
-}
 
 void STK_Interface::buildLocalEdgeIDs()
 {
@@ -2086,151 +1858,6 @@ STK_Interface::getPeriodicNodePairing() const
    }
 
    return std::make_pair(vec,type_vec);
-}
-
-void
-STK_Interface::applyPeriodicCondition()
-{
-   typedef stk::mesh::GetCoordinates<VectorFieldType> CoordinateFunctor;
-   typedef stk::mesh::PeriodicBoundarySearch<CoordinateFunctor> PeriodicSearch;
-
-   PeriodicSearch pbc_search(*bulkData_, CoordinateFunctor(*bulkData_, *coordinatesField_));
-   //this->print(std::cout);
-   //std::cout << mpiComm_->getRank() << "," << sidesets.size() << std::endl;
-   
-   const int parallel_rank = bulkData_->parallel_rank();
-   std::vector<stk::mesh::EntityProc> send_nodes;
-   const std::vector<Teuchos::RCP<const PeriodicBC_MatcherBase> > & bcVector = getPeriodicBCVector();
-   for(std::size_t i=0;i<bcVector.size();i++) {
-      std::string left = bcVector[i]->getLeftSidesetName();
-      std::string right = bcVector[i]->getRightSidesetName();
-      std::string type = bcVector[i]->getType();
-      //stk::mesh::EntityRank rank;
-      stk::mesh::Part* leftPart;
-      stk::mesh::Part* rightPart;
-      std::vector<stk::mesh::Entity> leftEntities;
-      std::vector<stk::mesh::Entity> rightEntities;
-      if(type == "coord"){
-         //rank = getNodeRank();
-         //rank = getSideRank();
-         leftPart = getSideset(left);
-         rightPart = getSideset(right);
-         //getAllSides(left,leftEntities);
-         //getAllSides(right,rightEntities);
-         TEUCHOS_TEST_FOR_EXCEPTION(leftPart==0,std::logic_error,
-                      "Unknown side set \"" << left << "\"");
-         TEUCHOS_TEST_FOR_EXCEPTION(rightPart==0,std::logic_error,
-                      "Unknown side set \"" << right << "\"");
-      } else if(type == "edge"){
-         //rank = getEdgeRank();
-         leftPart = getSideset(left);
-         rightPart = getSideset(right);
-      } else if(type == "face"){
-         //rank = getFaceRank();
-      } else {
-         std::stringstream ss;
-         ss << "Can't do BCs of type " << type  << std::endl;
-         TEUCHOS_TEST_FOR_EXCEPTION(true,std::runtime_error, ss.str())
-      }
-
-      const stk::mesh::Selector side_left = *leftPart;
-      const stk::mesh::Selector side_right = *rightPart;
-
-      pbc_search.add_linear_periodic_pair(side_left, side_right);
-      pbc_search.find_periodic_nodes(bulkData_->parallel());
-
-      auto search_results = pbc_search.get_pairs();    
-
-      for( unsigned j=0; j<search_results.size(); ++j) {
-         stk::mesh::Entity domain_node = bulkData_->get_entity( search_results[j].first.id() );
-         stk::mesh::Entity range_node = bulkData_->get_entity( search_results[j].second.id() );
-		  
-		 bool isOwnedDomain = bulkData_->is_valid(domain_node) ? bulkData_->bucket(domain_node).owned() : false;
-         bool isOwnedRange = bulkData_->is_valid(range_node) ? bulkData_->bucket(range_node).owned() : false;
-         int domain_proc = search_results[j].first.proc();
-         int range_proc = search_results[j].second.proc();
-		  
-		 if (range_proc == domain_proc) continue;
-		  
-		 if (isOwnedDomain && domain_proc == parallel_rank) {  // if in owned domain
-			 if (range_proc == parallel_rank) continue;        // if range in the same proc, do nothing
-			 
-			 //stk::ThrowRequire(bulkData_->parallel_owner_rank(domain_node) == domain_proc);
-			 if( bulkData_->is_communicated_with_proc(domain_node, range_proc) ) continue;
-			 
-			 unsigned numElems = bulkData_->num_elements(domain_node);
-             if(numElems > 0)
-             {
-                 const stk::mesh::Entity* elems = bulkData_->begin_elements(domain_node);
-                 for(unsigned k = 0; k < numElems; k++)
-                 {
-					 if( !(bulkData_->bucket(elems[k]).owned()) ) continue;
-				//	 if( bulkData_->in_send_ghost(bulkData_->entity_key(elems[k]), range_proc) ) continue;
-					 if( bulkData_->is_communicated_with_proc(elems[k], range_proc) ) continue;
-					 send_nodes.emplace_back(elems[k], range_proc);
-					 
-				//	 std::cout << "On proc " << parallel_rank << " we are sending domain element "
-                //        << bulkData_->identifier(elems[k]) << " to proc " << range_proc << std::endl;
-                 }
-            }
-		 }
-		 else if (isOwnedRange && range_proc == parallel_rank)
-         {
-          	 if (domain_proc == parallel_rank) continue;
-			 if( bulkData_->is_communicated_with_proc(range_node, domain_proc) ) continue;
-			 
-			 unsigned numElems = bulkData_->num_elements(range_node);
-             if(numElems > 0)
-             {
-                 const stk::mesh::Entity* elems = bulkData_->begin_elements(range_node);
-                 for(unsigned k = 0; k < numElems; k++)
-                 {
-					 if( !(bulkData_->bucket(elems[k]).owned()) ) continue;
-				//	 if( bulkData_->in_shared(elems[k], domain_proc) ) continue;
-					 if( bulkData_->is_communicated_with_proc(elems[k], domain_proc) ) continue;
-                     send_nodes.emplace_back(elems[k], domain_proc); 
-				//	 std::cout << "On proc " << parallel_rank << " we are sending range element "
-                //        << bulkData_->identifier(elems[k]) << " to proc " << domain_proc << std::endl;
-                 }
-            }
-		 }
-	   }
-
-        /* if( ( bulkData_->is_valid(entity_pair.first) && bulkData_->bucket(entity_pair.first).owned() )
-            || ( bulkData_->is_valid(entity_pair.second) && bulkData_->bucket(entity_pair.second).owned() ) ) {
-            stk::mesh::EntityId constraintId = j+1;
-            stk::mesh::Entity constraintEntity = bulkData_->declare_constraint(constraintId);
-
-            if( bulkData_->is_valid(entity_pair.first) && bulkData_->bucket(entity_pair.first).owned() ) {
-               bulkData_->declare_relation(constraintEntity, entity_pair.first, 0);
-               std::cout << mpiComm_->getRank() << ", left "  << bulkData_->identifier(entity_pair.first) << std::endl;
-            }
-            if( bulkData_->is_valid(entity_pair.second) && bulkData_->bucket(entity_pair.second).owned() ) {
-               bulkData_->declare_relation(constraintEntity, entity_pair.second, 1);
-               std::cout << mpiComm_->getRank() << ", right "  << bulkData_->identifier(entity_pair.second) << std::endl;
-            }
-         }*/
-      
-   }
-   this->beginModification();
-   //bulkData_->modification_begin();
-   stk::mesh::Ghosting &periodic_ghosts = bulkData_->create_ghosting("periodic_ghosts");
-   //auto & auro = bulkData_->shared_ghosting();
-   bulkData_->change_ghosting(periodic_ghosts, send_nodes);
-   //pbc_search.create_ghosting("periodic_ghosts");
-   //stk::mesh::fixup_ghosted_to_shared_nodes(bulkData_);
-   //bulkData_->modification_end();
-   this->endModification();
-
-//   const std::vector<stk::mesh::Ghosting*> ghost = bulkData_->ghostings();
-//   for( auto a: ghost ) 
-//    std::cout << *a << std::endl;
-//	std::cout << *ghost[1] << std::endl;
-//	std::cout << periodic_ghosts << std::endl;
-
-//	auto ghost_cells = getGhostGlobalCellIDs();
-//	for( int i=0; i<ghost_cells.extent(0); i++ )
-//      std::cout << parallel_rank << ","  << i << "," << ghost_cells(i) << std::endl;
 }
 
 bool STK_Interface::validBlockId(const std::string & blockId) const

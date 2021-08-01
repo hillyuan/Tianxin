@@ -76,6 +76,24 @@ fillLocalCellIDs(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
                  PHX::View<panzer::GlobalOrdinal*> & ghost_cells,
                  PHX::View<panzer::GlobalOrdinal*> & virtual_cells);
 
+/** Create a set of partitions given a descriptor containing:
+ * 1) Volume worksets
+ *  - Element Block Name
+ *  - Workset Size
+ * 2) Sideset worksets
+ *  - Element Block Name
+ *  - Sideset Name
+ *  - Workset Size
+ *
+ * \param[in] mesh_info Reference to fully constructed mesh_info
+ * \param[in] description Workset descriptor defining area to partition
+ * \param[out] partitions Set of local mesh partitions for given region of mesh_info
+ *
+ */
+void
+generateLocalMeshPartitions(const panzer::LocalMeshInfo & mesh_info,
+                            const panzer::WorksetDescriptor & description,
+                            std::vector<panzer::LocalMeshPartition> & partitions);
 
 namespace partitioning_utilities
 {

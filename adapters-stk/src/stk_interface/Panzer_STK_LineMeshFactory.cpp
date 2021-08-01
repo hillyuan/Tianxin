@@ -107,14 +107,10 @@ void LineMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::Paralle
 
    // finish up the edges
    mesh.buildSubcells();
-   
+   mesh.buildLocalElementIDs();
 
    // now that edges are built, sidets can be added
    addSideSets(mesh);
-	
-   mesh.applyPeriodicCondition();
-   mesh.buildLocalElementIDs();
-   mesh.buildLocalNodeIDs();
 
    // calls Stk_MeshFactory::rebalance
    this->rebalance(mesh);

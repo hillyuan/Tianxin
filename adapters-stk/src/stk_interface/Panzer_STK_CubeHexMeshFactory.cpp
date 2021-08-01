@@ -170,6 +170,7 @@ void CubeHexMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::Para
       out << "CubeHexMesh: NOT building sub cells" << std::endl;
    }
 
+   mesh.buildLocalElementIDs();
    if(buildSubcells_) {
       mesh.buildLocalEdgeIDs();
       mesh.buildLocalFaceIDs();
@@ -184,10 +185,6 @@ void CubeHexMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::Para
       addEdgeBlocks(mesh);
       addFaceBlocks(mesh);
    }
-	
-   mesh.applyPeriodicCondition();
-   mesh.buildLocalElementIDs();
-   mesh.buildLocalNodeIDs();
    
    mesh.endModification();
 

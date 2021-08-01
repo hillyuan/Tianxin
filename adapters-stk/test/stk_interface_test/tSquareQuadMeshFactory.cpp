@@ -659,8 +659,8 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshFactory, sideset_nodeset)
 
    std::vector<stk::mesh::Entity> nodes;
    std::vector<stk::mesh::Entity> nodes_o;
-   mesh->getMyNodeSet("lower_left","eblock-0_0",nodes); 
-   mesh->getMyNodeSet("origin","eblock-0_0",nodes_o); 
+   mesh->getMyNodes("lower_left","eblock-0_0",nodes); 
+   mesh->getMyNodes("origin","eblock-0_0",nodes_o); 
    if(rank==0) {
       { 
          std::vector<std::size_t> localNodeIds;

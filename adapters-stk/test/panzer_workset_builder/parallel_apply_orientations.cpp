@@ -177,8 +177,7 @@ testApplyOrientations(const bool by_container,
   Kokkos::deep_copy(basis_vector,basis_vector_device);
 
   // Note that this is for a partitioned workset, which will have 1 owned cells, 1 ghost cell, and 3 virtual cells for a total of 5 cells
-  //TEST_EQUALITY(basis_vector.extent_int(0),5); // cells
-  TEST_EQUALITY(basis_vector.extent_int(0),2); // cells: 1 owned cells, 1 ghost cell
+  TEST_EQUALITY(basis_vector.extent_int(0),5); // cells
   TEST_EQUALITY(basis_vector.extent_int(1),4); // basis
   TEST_EQUALITY(basis_vector.extent_int(2),4); // points
   TEST_EQUALITY(basis_vector.extent_int(3),2); // vector dim
