@@ -57,6 +57,7 @@
 #include "Tpetra_MultiVector.hpp"
 #include "Tpetra_Vector.hpp"
 #include "Tpetra_CrsMatrix.hpp"
+#include "MatrixMarket_Tpetra.hpp"
 
 namespace panzer {
 
@@ -840,12 +841,13 @@ endFill(LinearObjContainer & loc) const
     A->fillComplete(A->getDomainMap(),A->getRangeMap());
 }
 
-template <typename Traits,typename LocalOrdinalT>
+template <typename Traits,typename ScalarT,typename LocalOrdinalT,typename GlobalOrdinalT,typename NodeT>
 void 
-TpetraLinearObjFactory<Traits,LocalOrdinalT>::
+TpetraLinearObjFactory<Traits,ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>::
 readVector(const std::string & identifier,LinearObjContainer & loc,int id) const
 {
-  TpetraLinearObjContainer & eloc = Teuchos::dyn_cast<TpetraLinearObjContainer>(loc);
+  TpetraLinearObjContainer<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & eloc 
+  = Teuchos::dyn_cast<TpetraLinearObjContainer<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>>(loc);
 
    // extract the vector from linear object container
   Teuchos::RCP< VectorType > vec;
@@ -864,7 +866,8 @@ readVector(const std::string & identifier,LinearObjContainer & loc,int id) const
     break;
   };
   
-  vec = Tpetra::MatrixMarket::Reader<CrsMatrixType>::readVectorFile(identifier, comm_, map_);
+  RCP<const Tpetra::Map<LocalOrdinalT,GlobalOrdinalT,NodeT> > rm = this->getMap();
+  vec = Tpetra::MatrixMarket::Reader<CrsMatrixType>::readVectorFile(identifier, comm_, rm);
 }
 
 }
