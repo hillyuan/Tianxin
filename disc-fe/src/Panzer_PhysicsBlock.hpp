@@ -280,7 +280,7 @@ namespace panzer {
     Teuchos::RCP<const Teuchos::ParameterList> getParameterList() const
     { return m_input_parameters; }
 	
-	bool isDotDOt() const;
+	bool isDotDot() const;
 
   protected:
     void initialize(const Teuchos::RCP<Teuchos::ParameterList>& input_parameters,

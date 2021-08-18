@@ -785,7 +785,7 @@ Teuchos::RCP<panzer::GlobalData> panzer::PhysicsBlock::globalData() const
 }
 
 // *******************************************************************
-bool panzer::PhysicsBlock::isDotDOt() const
+bool panzer::PhysicsBlock::isDotDot() const
 {
 	bool dotdot = false;
 	if( m_build_transient_support ) {
