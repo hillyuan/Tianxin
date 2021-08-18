@@ -14,10 +14,6 @@ TRIBITS_ADD_ADVANCED_TEST(
   CurlLaplacianExample
   EXCLUDE_IF_NOT_TRUE ${${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS}
   TEST_0 EXEC CurlLaplacianExample
-    ARGS --use-epetra --output-filename="base-curl-test-"
-    PASS_REGULAR_EXPRESSION "ALL PASSED: Epetra"
-    NUM_MPI_PROCS 4
-  TEST_1 EXEC CurlLaplacianExample
     ARGS --use-tpetra --output-filename="base-curl-test-"
     PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
     NUM_MPI_PROCS 4

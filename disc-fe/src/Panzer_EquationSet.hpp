@@ -129,6 +129,8 @@ namespace panzer {
     virtual std::string getElementBlockId() const = 0;
 
     virtual std::string getType() const = 0;
+	
+	virtual bool suport_xdotdot() const = 0;
 
     ///@}
 

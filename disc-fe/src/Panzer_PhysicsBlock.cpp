@@ -785,3 +785,16 @@ Teuchos::RCP<panzer::GlobalData> panzer::PhysicsBlock::globalData() const
 }
 
 // *******************************************************************
+bool panzer::PhysicsBlock::isDotDOt() const
+{
+	bool dotdot = false;
+	if( m_build_transient_support ) {
+  		for (auto eq_set : m_equation_sets) {
+      	//	EquationSet_TemplateManager<panzer::Traits> eqstm = *(*eq_set);
+      		dotdot = dotdot || eq_set->getAsObject<panzer::Traits::Residual>()->suport_xdotdot();
+		}
+    }
+    return dotdot;
+}
+
+// *******************************************************************

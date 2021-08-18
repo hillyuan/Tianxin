@@ -279,6 +279,8 @@ namespace panzer {
     // return the Physics Block parameter list
     Teuchos::RCP<const Teuchos::ParameterList> getParameterList() const
     { return m_input_parameters; }
+	
+	bool isDotDOt() const;
 
   protected:
     void initialize(const Teuchos::RCP<Teuchos::ParameterList>& input_parameters,

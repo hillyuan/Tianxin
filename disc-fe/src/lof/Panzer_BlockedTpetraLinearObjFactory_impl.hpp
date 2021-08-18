@@ -152,6 +152,9 @@ globalToGhostContainer(const LinearObjContainer & in,LinearObjContainer & out,in
 
    if ( !is_null(b_in.get_dxdt()) && !is_null(b_out.get_dxdt()) && ((mem & LOC::DxDt)==LOC::DxDt))
      globalToGhostThyraVector(b_in.get_dxdt(),b_out.get_dxdt());
+ 
+   if ( !is_null(b_in.get_d2xdt2()) && !is_null(b_out.get_d2xdt2()) && ((mem & LOC::D2xDt2)==LOC::D2xDt2))
+     globalToGhostThyraVector(b_in.get_d2xdt2(),b_out.get_d2xdt2());
 
    if ( !is_null(b_in.get_f()) && !is_null(b_out.get_f()) && ((mem & LOC::F)==LOC::F))
       globalToGhostThyraVector(b_in.get_f(),b_out.get_f());
@@ -428,6 +431,9 @@ initializeContainer(int mem,BTLOC & loc) const
 
    if((mem & LOC::DxDt) == LOC::DxDt)
       loc.set_dxdt(getThyraDomainVector());
+  
+   if((mem & LOC::D2xDt2) == LOC::D2xDt2)
+      loc.set_d2xdt2(getThyraDomainVector());
 
    if((mem & LOC::F) == LOC::F)
       loc.set_f(getThyraRangeVector());
@@ -449,6 +455,9 @@ initializeGhostedContainer(int mem,BTLOC & loc) const
 
    if((mem & LOC::DxDt) == LOC::DxDt)
       loc.set_dxdt(getGhostedThyraDomainVector());
+  
+   if((mem & LOC::D2xDt2) == LOC::D2xDt2)
+      loc.set_d2xdt2(getGhostedThyraDomainVector());
 
    if((mem & LOC::F) == LOC::F) {
       loc.set_f(getGhostedThyraRangeVector());

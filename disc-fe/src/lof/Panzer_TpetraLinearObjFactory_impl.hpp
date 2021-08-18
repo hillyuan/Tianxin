@@ -141,6 +141,9 @@ globalToGhostContainer(const LinearObjContainer & in,
   
    if ( !is_null(t_in.get_dxdt()) && !is_null(t_out.get_dxdt()) && ((mem & LOC::DxDt)==LOC::DxDt))
      globalToGhostTpetraVector(*t_in.get_dxdt(),*t_out.get_dxdt(),true);
+ 
+   if ( !is_null(t_in.get_d2xdt2()) && !is_null(t_out.get_d2xdt2()) && ((mem & LOC::D2xDt2)==LOC::D2xDt2))
+     globalToGhostTpetraVector(*t_in.get_d2xdt2(),*t_out.get_d2xdt2(),true);
 
    if ( !is_null(t_in.get_f()) && !is_null(t_out.get_f()) && ((mem & LOC::F)==LOC::F))
       globalToGhostTpetraVector(*t_in.get_f(),*t_out.get_f(),false);
@@ -411,6 +414,9 @@ initializeContainer(int mem,TpetraLinearObjContainer<ScalarT,LocalOrdinalT,Globa
 
    if((mem & LOC::DxDt) == LOC::DxDt)
       loc.set_dxdt(getTpetraColVector());
+  
+   if((mem & LOC::D2xDt2) == LOC::D2xDt2)
+      loc.set_d2xdt2(getTpetraColVector());
     
    if((mem & LOC::F) == LOC::F)
       loc.set_f(getTpetraVector());
@@ -846,28 +852,32 @@ void
 TpetraLinearObjFactory<Traits,ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>::
 readVector(const std::string & identifier,LinearObjContainer & loc,int id) const
 {
-  TpetraLinearObjContainer<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & eloc 
-  = Teuchos::dyn_cast<TpetraLinearObjContainer<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>>(loc);
+  using Teuchos::RCP;
+	
+  RCP<const MapType> map = Teuchos::null;  //dummy
+//  RCP<VectorType> tx = Thyra::TpetraOperatorVectorExtraction<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>::getTpetraVector(vec);
+  RCP<VectorType> ptr_tx = Tpetra::MatrixMarket::Reader<Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>>
+	   		::readVectorFile(identifier, comm_, map);
+ // TEUCHOS_ASSERT(ptr_tx->is_null());
 
-   // extract the vector from linear object container
-  Teuchos::RCP< VectorType > vec;
+  ContainerType & tloc = Teuchos::dyn_cast<ContainerType>(loc);
   switch(id) {
   case LinearObjContainer::X:
-    vec = eloc.get_x();
+    tloc.set_x(ptr_tx);
     break;
   case LinearObjContainer::DxDt:
-    vec = eloc.get_dxdt();
+    tloc.set_dxdt(ptr_tx);
+    break;
+  case LinearObjContainer::D2xDt2:
+    tloc.set_d2xdt2(ptr_tx);
     break;
   case LinearObjContainer::F:
-    vec = eloc.get_f();
+    tloc.set_f(ptr_tx);
     break;
   default:
     TEUCHOS_ASSERT(false);
     break;
   };
-  
-  RCP<const Tpetra::Map<LocalOrdinalT,GlobalOrdinalT,NodeT> > rm = this->getMap();
-  vec = Tpetra::MatrixMarket::Reader<CrsMatrixType>::readVectorFile(identifier, comm_, rm);
 }
 
 }

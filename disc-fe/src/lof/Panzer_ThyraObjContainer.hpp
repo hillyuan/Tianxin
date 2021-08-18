@@ -68,6 +68,9 @@ public:
 
    virtual void set_dxdt_th(const Teuchos::RCP<Thyra::VectorBase<ScalarT> > & in) = 0;
    virtual Teuchos::RCP<Thyra::VectorBase<ScalarT> > get_dxdt_th() const = 0;
+   
+   virtual void set_d2xdt2_th(const Teuchos::RCP<Thyra::VectorBase<ScalarT> > & in) = 0;
+   virtual Teuchos::RCP<Thyra::VectorBase<ScalarT> > get_d2xdt2_th() const = 0;
 
    virtual void set_f_th(const Teuchos::RCP<Thyra::VectorBase<ScalarT> > & in) = 0;
    virtual Teuchos::RCP<Thyra::VectorBase<ScalarT> > get_f_th() const = 0;
@@ -79,6 +82,7 @@ public:
    {
      set_x_th(Teuchos::null);
      set_dxdt_th(Teuchos::null);
+     set_d2xdt2_th(Teuchos::null);
      set_f_th(Teuchos::null);
      set_A_th(Teuchos::null);
    }

@@ -94,6 +94,9 @@ public:
 
    inline void set_dxdt(const Teuchos::RCP<VectorType> & in) { set_dxdt_th(in); }
    inline Teuchos::RCP<VectorType> get_dxdt() const { return get_dxdt_th(); }
+   
+   inline void set_d2xdt2(const Teuchos::RCP<VectorType> & in) { set_d2xdt2_th(in); }
+   inline Teuchos::RCP<VectorType> get_d2xdt2() const { return get_d2xdt2_th(); }
 
    inline void set_f(const Teuchos::RCP<VectorType> & in) { set_f_th(in); }
    inline Teuchos::RCP<VectorType> get_f() const { return get_f_th(); }
@@ -111,6 +114,9 @@ public:
 
    void set_dxdt_th(const Teuchos::RCP<VectorType> & in) { dxdt = in; }
    Teuchos::RCP<VectorType> get_dxdt_th() const { return dxdt; }
+   
+   void set_d2xdt2_th(const Teuchos::RCP<VectorType> & in) { d2xdt2 = in; }
+   Teuchos::RCP<VectorType> get_d2xdt2_th() const { return d2xdt2; }
 
    void set_f_th(const Teuchos::RCP<VectorType> & in) { f = in; }
    Teuchos::RCP<VectorType> get_f_th() const { return f; }
@@ -122,7 +128,7 @@ public:
    void endFill();
 
 private:
-   Teuchos::RCP<VectorType> x, dxdt, f;
+   Teuchos::RCP<VectorType> x, dxdt, d2xdt2, f;
    Teuchos::RCP<CrsMatrixType> A;
 
    std::vector<Teuchos::RCP<const MapType> > blockMaps_;

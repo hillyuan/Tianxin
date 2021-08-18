@@ -87,6 +87,7 @@ public:
    {
       if(get_x()!=Teuchos::null) get_x()->putScalar(0.0);
       if(get_dxdt()!=Teuchos::null) get_dxdt()->putScalar(0.0);
+      if(get_d2xdt2()!=Teuchos::null) get_d2xdt2()->putScalar(0.0);
       if(get_f()!=Teuchos::null) get_f()->putScalar(0.0);
       if(get_A()!=Teuchos::null) {
         Teuchos::RCP<CrsMatrixType> mat = get_A(); 
@@ -101,6 +102,7 @@ public:
    {
       set_x(Teuchos::null);
       set_dxdt(Teuchos::null);
+      set_d2xdt2(Teuchos::null);
       set_f(Teuchos::null);
       set_A(Teuchos::null);
    }
@@ -110,6 +112,9 @@ public:
 
    inline void set_dxdt(const Teuchos::RCP<VectorType> & in) { dxdt = in; } 
    inline const Teuchos::RCP<VectorType> get_dxdt() const { return dxdt; }
+   
+   inline void set_d2xdt2(const Teuchos::RCP<VectorType> & in) { d2xdt2 = in; } 
+   inline const Teuchos::RCP<VectorType> get_d2xdt2() const { return d2xdt2; }
 
    inline void set_f(const Teuchos::RCP<VectorType> & in) { f = in; } 
    inline const Teuchos::RCP<VectorType> get_f() const { return f; }
@@ -145,6 +150,17 @@ public:
    } 
    virtual Teuchos::RCP<Thyra::VectorBase<ScalarT> > get_dxdt_th() const 
    { return (dxdt==Teuchos::null) ? Teuchos::null : Thyra::createVector(dxdt,domainSpace); }
+   
+   virtual void set_d2xdt2_th(const Teuchos::RCP<Thyra::VectorBase<ScalarT> > & in)
+   { 
+     if(in==Teuchos::null) { d2xdt2 = Teuchos::null; return; }
+
+     Teuchos::RCP<const Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> > d2xdt2_const 
+         = TOE::getConstTpetraVector(in);
+     d2xdt2 = Teuchos::rcp_const_cast<Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> >(d2xdt2_const); 
+   } 
+   virtual Teuchos::RCP<Thyra::VectorBase<ScalarT> > get_d2xdt2_th() const 
+   { return (d2xdt2==Teuchos::null) ? Teuchos::null : Thyra::createVector(d2xdt2,domainSpace); }
 
    virtual void set_f_th(const Teuchos::RCP<Thyra::VectorBase<ScalarT> > & in)
    { f = (in==Teuchos::null) ? Teuchos::null : TOE::getTpetraVector(in); } 
@@ -162,7 +178,7 @@ private:
    Teuchos::RCP<const Thyra::VectorSpaceBase<ScalarT> > domainSpace;
    Teuchos::RCP<const Thyra::VectorSpaceBase<ScalarT> > rangeSpace;
 
-   Teuchos::RCP<Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> > x, dxdt, f;
+   Teuchos::RCP<Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> > x, dxdt, d2xdt2, f;
    Teuchos::RCP<Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> > A;
 };
 

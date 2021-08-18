@@ -60,7 +60,7 @@ class LinearObjContainer : public GlobalEvaluationData_Default {
 public:
    virtual ~LinearObjContainer() {}
 
-   typedef enum { X=0x1, DxDt=0x2, F=0x4, Mat=0x8} Members;
+   typedef enum { X=0x1, DxDt=0x2, D2xDt2=0x3, F=0x4, Mat=0x8} Members;
 
    virtual void initialize() = 0;
 };

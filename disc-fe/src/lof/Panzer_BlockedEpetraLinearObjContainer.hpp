@@ -103,6 +103,9 @@ public:
 
    void set_dxdt_th(const Teuchos::RCP<VectorType> & in) { dxdt = in; }
    Teuchos::RCP<VectorType> get_dxdt_th() const { return dxdt; }
+   
+   void set_d2xdt2_th(const Teuchos::RCP<VectorType> & in) { d2xdt2 = in; }
+   Teuchos::RCP<VectorType> get_d2xdt2_th() const { return d2xdt2; }
 
    void set_f_th(const Teuchos::RCP<VectorType> & in) { f = in; }
    Teuchos::RCP<VectorType> get_f_th() const { return f; }
@@ -111,7 +114,7 @@ public:
    Teuchos::RCP<CrsMatrixType> get_A_th() const { return A; }
 
 private:
-   Teuchos::RCP<VectorType> x, dxdt, f;
+   Teuchos::RCP<VectorType> x, dxdt, d2xdt2, f;
    Teuchos::RCP<CrsMatrixType> A;
 
    std::vector<Teuchos::RCP<const Epetra_Map> > blockMaps_;

@@ -102,6 +102,7 @@ ModelEvaluator(const Teuchos::RCP<panzer::FieldManagerBuilder>& fmb,
   , responseLibrary_(rLibrary)
   , global_data_(global_data)
   , build_transient_support_(build_transient_support)
+  , build_dotdot_support_( false )
   , lof_(lof)
   , solverFactory_(solverFactory)
   , oneTimeDirichletBeta_on_(false)
@@ -158,6 +159,117 @@ ModelEvaluator(const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits>
   , require_out_args_refresh_(true)
   , global_data_(global_data)
   , build_transient_support_(build_transient_support)
+  , build_dotdot_support_( false )
+  , lof_(lof)
+  , solverFactory_(solverFactory)
+  , oneTimeDirichletBeta_on_(false)
+  , oneTimeDirichletBeta_(0.0)
+  , build_volume_field_managers_(true)
+  , build_bc_field_managers_(true)
+  , active_evaluation_types_(Sacado::mpl::size<panzer::Traits::EvalTypes>::value, true)
+  , write_matrix_count_(0)
+{
+  using Teuchos::RCP;
+  using Teuchos::rcp_dynamic_cast;
+
+  TEUCHOS_ASSERT(lof_!=Teuchos::null);
+
+  //
+  // Build x, f spaces
+  //
+
+  // dynamic cast to blocked LOF for now
+  RCP<const ThyraObjFactory<Scalar> > tof = rcp_dynamic_cast<const ThyraObjFactory<Scalar> >(lof_,true);
+
+  x_space_ = tof->getThyraDomainSpace();
+  f_space_ = tof->getThyraRangeSpace();
+
+  // now that the vector spaces are setup we can allocate the nominal values
+  // (i.e. initial conditions)
+  initializeNominalValues();
+
+  // allocate a response library so that responses can be added, it will be initialized in "setupModel"
+  responseLibrary_ = Teuchos::rcp(new panzer::ResponseLibrary<panzer::Traits>());
+}
+
+template<typename Scalar>
+panzer::ModelEvaluator<Scalar>::
+ModelEvaluator(const Teuchos::RCP<panzer::FieldManagerBuilder>& fmb,
+               const Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> >& rLibrary,
+               const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> >& lof,
+               const std::vector<Teuchos::RCP<Teuchos::Array<std::string> > >& p_names,
+               const std::vector<Teuchos::RCP<Teuchos::Array<double> > >& p_values,
+               const Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<Scalar> > & solverFactory,
+               const Teuchos::RCP<panzer::GlobalData>& global_data,
+               bool build_transient_support, bool build_xdotdot_support,
+               double t_init)
+  : t_init_(t_init)
+  , num_me_parameters_(0)
+  , do_fd_dfdp_(false)
+  , fd_perturb_size_(1e-7)
+  , require_in_args_refresh_(true)
+  , require_out_args_refresh_(true)
+  , responseLibrary_(rLibrary)
+  , global_data_(global_data)
+  , build_transient_support_(build_transient_support)
+  , build_dotdot_support_( build_xdotdot_support )
+  , lof_(lof)
+  , solverFactory_(solverFactory)
+  , oneTimeDirichletBeta_on_(false)
+  , oneTimeDirichletBeta_(0.0)
+  , build_volume_field_managers_(true)
+  , build_bc_field_managers_(true)
+  , active_evaluation_types_(Sacado::mpl::size<panzer::Traits::EvalTypes>::value, true)
+  , write_matrix_count_(0)
+{
+  using Teuchos::RCP;
+  using Teuchos::rcp;
+  using Teuchos::rcp_dynamic_cast;
+  using Teuchos::tuple;
+  using Thyra::VectorBase;
+  using Thyra::createMember;
+
+  TEUCHOS_ASSERT(lof_!=Teuchos::null);
+
+  panzer::AssemblyEngine_TemplateBuilder builder(fmb,lof);
+  ae_tm_.buildObjects(builder);
+
+  //
+  // Build x, f spaces
+  //
+
+  // dynamic cast to blocked LOF for now
+  RCP<const ThyraObjFactory<Scalar> > tof = rcp_dynamic_cast<const ThyraObjFactory<Scalar> >(lof,true);
+
+  x_space_ = tof->getThyraDomainSpace();
+  f_space_ = tof->getThyraRangeSpace();
+
+  //
+  // Setup parameters
+  //
+  for(std::size_t i=0;i<p_names.size();i++)
+     addParameter(*(p_names[i]),*(p_values[i]));
+
+  // now that the vector spaces are setup we can allocate the nominal values
+  // (i.e. initial conditions)
+  initializeNominalValues();
+}
+
+template<typename Scalar>
+panzer::ModelEvaluator<Scalar>::
+ModelEvaluator(const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> >& lof,
+               const Teuchos::RCP<const Thyra::LinearOpWithSolveFactoryBase<Scalar> > & solverFactory,
+               const Teuchos::RCP<panzer::GlobalData>& global_data,
+               bool build_transient_support,bool build_xdotdot_support,double t_init)
+  : t_init_(t_init)
+  , num_me_parameters_(0)
+  , do_fd_dfdp_(false)
+  , fd_perturb_size_(1e-7)
+  , require_in_args_refresh_(true)
+  , require_out_args_refresh_(true)
+  , global_data_(global_data)
+  , build_transient_support_(build_transient_support)
+  , build_dotdot_support_( build_xdotdot_support )
   , lof_(lof)
   , solverFactory_(solverFactory)
   , oneTimeDirichletBeta_on_(false)
@@ -239,6 +351,14 @@ panzer::ModelEvaluator<Scalar>::get_p_names(int i) const
     names->push_back(ss.str());
     return names;
   }
+  else if (build_dotdot_support_ && i < Teuchos::as<int>(parameters_.size()+3*tangent_space_.size())) {
+    Teuchos::RCP<Teuchos::Array<std::string> > names = rcp(new Teuchos::Array<std::string>);
+    int param_index = i-parameters_.size()-tangent_space_.size();
+    std::ostringstream ss;
+    ss << "SECOND TIME DERIVATIVE TANGENT VECTOR: " << param_index;
+    names->push_back(ss.str());
+    return names;
+  }
 
   return Teuchos::null;
 }
@@ -256,6 +376,8 @@ panzer::ModelEvaluator<Scalar>::get_p_space(int i) const
     return tangent_space_[i-parameters_.size()];
   else if (build_transient_support_ && i < Teuchos::as<int>(parameters_.size()+2*tangent_space_.size()))
     return tangent_space_[i-parameters_.size()-tangent_space_.size()];
+  else if (build_dotdot_support_ && i < Teuchos::as<int>(parameters_.size()+3*tangent_space_.size()))
+    return tangent_space_[i-parameters_.size()-2*tangent_space_.size()];
 
   return Teuchos::null;
 }
@@ -353,6 +475,10 @@ panzer::ModelEvaluator<Scalar>::initializeNominalValues() const
   nomInArgs.set_x(x_nom);
   if(build_transient_support_) {
     nomInArgs.setSupports(MEB::IN_ARG_x_dot,true);
+	if( build_dotdot_support_ ) {
+		nomInArgs.setSupports(MEB::IN_ARG_x_dot_dot,true);
+		nomInArgs.setSupports(MEB::IN_ARG_W_x_dot_dot_coeff,true);
+	}
     nomInArgs.setSupports(MEB::IN_ARG_t,true);
     nomInArgs.setSupports(MEB::IN_ARG_alpha,true);
     nomInArgs.setSupports(MEB::IN_ARG_beta,true);
@@ -362,6 +488,11 @@ panzer::ModelEvaluator<Scalar>::initializeNominalValues() const
     Teuchos::RCP<Thyra::VectorBase<Scalar> > x_dot_nom = Thyra::createMember(x_space_);
     Thyra::assign(x_dot_nom.ptr(),0.0);
     nomInArgs.set_x_dot(x_dot_nom);
+	if( build_dotdot_support_ ) {
+		Teuchos::RCP<Thyra::VectorBase<Scalar> > x_dot_dot_nom = Thyra::createMember(x_space_);
+    	Thyra::assign(x_dot_dot_nom.ptr(),0.0);
+    	nomInArgs.set_x_dot_dot(x_dot_dot_nom);
+	}
     nomInArgs.set_t(t_init_);
     nomInArgs.set_alpha(0.0); // these have no meaning initially!
     nomInArgs.set_beta(0.0);
@@ -383,6 +514,11 @@ panzer::ModelEvaluator<Scalar>::initializeNominalValues() const
         Teuchos::RCP<Thyra::VectorBase<Scalar> > v_nom_xdot = Thyra::createMember(*tangent_space_[v_index]);
         Thyra::assign(v_nom_xdot.ptr(),0.0);
         nomInArgs.set_p(v_index+parameters_.size()+tangent_space_.size(),v_nom_xdot);
+		if( build_dotdot_support_ ) {
+			Teuchos::RCP<Thyra::VectorBase<Scalar> > v_nom_xdotdot = Thyra::createMember(*tangent_space_[v_index]);
+        	Thyra::assign(v_nom_xdotdot.ptr(),0.0);
+        	nomInArgs.set_p(v_index+parameters_.size()+2*tangent_space_.size(),v_nom_xdotdot);
+		}
       }
       ++v_index;
     }
@@ -503,16 +639,22 @@ setupAssemblyInArgs(const Thyra::ModelEvaluatorBase::InArgs<Scalar> & inArgs,
   }
 
   bool is_transient = false;
+  bool is_xdotdot = false;
   if (inArgs.supports(MEB::IN_ARG_x_dot ))
     is_transient = !Teuchos::is_null(inArgs.get_x_dot());
+  if (inArgs.supports(MEB::IN_ARG_x_dot_dot ))
+    is_xdotdot = !Teuchos::is_null(inArgs.get_x_dot_dot());
 
   if(Teuchos::is_null(xContainer_))
     xContainer_    = lof_->buildReadOnlyDomainContainer();
   if(Teuchos::is_null(xdotContainer_) && is_transient)
     xdotContainer_ = lof_->buildReadOnlyDomainContainer();
+  if(Teuchos::is_null(xdotdotContainer_) && is_xdotdot)
+    xdotdotContainer_ = lof_->buildReadOnlyDomainContainer();
 
   const RCP<const Thyra::VectorBase<Scalar> > x = inArgs.get_x();
   RCP<const Thyra::VectorBase<Scalar> > x_dot; // possibly empty, but otherwise uses x_dot
+  RCP<const Thyra::VectorBase<Scalar> > x_dot_dot; // possibly empty, but otherwise uses x_dot
 
   // Make sure construction built in transient support
   TEUCHOS_TEST_FOR_EXCEPTION(is_transient && !build_transient_support_, std::runtime_error,
@@ -525,6 +667,7 @@ setupAssemblyInArgs(const Thyra::ModelEvaluatorBase::InArgs<Scalar> & inArgs,
   ae_inargs.evaluate_transient_terms = false;
   if (build_transient_support_) {
     x_dot = inArgs.get_x_dot();
+	if( build_dotdot_support_ ) x_dot_dot = inArgs.get_x_dot_dot();
     ae_inargs.alpha = inArgs.get_alpha();
     ae_inargs.beta = inArgs.get_beta();
     ae_inargs.time = inArgs.get_t();
@@ -606,6 +749,11 @@ setupAssemblyInArgs(const Thyra::ModelEvaluatorBase::InArgs<Scalar> & inArgs,
     xdotContainer_->setOwnedVector(x_dot);
     ae_inargs.addGlobalEvaluationData("Solution Gather Container - Xdot",xdotContainer_);
   }
+  if (is_xdotdot) {
+    thGlobalContainer->set_d2xdt2_th(Teuchos::rcp_const_cast<Thyra::VectorBase<Scalar> >(x_dot_dot));
+    xdotdotContainer_->setOwnedVector(x_dot_dot);
+    ae_inargs.addGlobalEvaluationData("Solution Gather Container - Xdotdot",xdotdotContainer_);
+  }
 
   // Add tangent vectors for x and xdot to GlobalEvaluationData, one for each
   // scalar parameter vector and parameter within that vector.
@@ -660,6 +808,28 @@ setupAssemblyInArgs(const Thyra::ModelEvaluatorBase::InArgs<Scalar> & inArgs,
           } // end loop over the parameters
         } // end if (not dxdotdp.is_null())
       } // end if (build_transient_support_)
+	  if (build_dotdot_support_)
+      {
+        // We need to cast away const because the object container requires
+        // non-const vectors.
+    /*    auto dxdotdp = rcp_const_cast<VectorBase<Scalar>>
+          (inArgs.get_p(vIndex + num_param_vecs + tangent_space_.size()));
+        if (not dxdotdp.is_null())
+        {
+          auto dxdotdpBlock =
+            rcp_dynamic_cast<ProductVectorBase<Scalar>>(dxdotdp);
+          int numParams(parameters_[i]->scalar_value.size());
+          for (int j(0); j < numParams; ++j)
+          {
+            RCP<ROVGED> dxdotdpContainer = lof_->buildReadOnlyDomainContainer();
+            dxdotdpContainer->setOwnedVector(
+              dxdotdpBlock->getNonconstVectorBlock(j));
+            string name("DXDT TANGENT GATHER CONTAINER: " +
+              (*parameters_[i]->names)[j]);
+            ae_inargs.addGlobalEvaluationData(name, dxdotdpContainer);
+          } // end loop over the parameters
+        } // end if (not dxdotdp.is_null())*/
+      } // end if (build_dotdot_support_)
       ++vIndex;
     } // end if (not parameters_[i]->is_distributed)
   } // end loop over the parameter vectors
@@ -837,6 +1007,8 @@ addParameter(const Teuchos::Array<std::string> & names,
   // vector for each scalar parameter (tangent_space_.size()) plus a tangent vector for xdot for each scalar parameter.
   num_me_parameters_ += 2;
   if (build_transient_support_)
+    ++num_me_parameters_;
+  if (build_dotdot_support_)
     ++num_me_parameters_;
 
   require_in_args_refresh_ = true;
@@ -1191,8 +1363,10 @@ evalModel_D2fDx2(const Thyra::ModelEvaluatorBase::InArgs<Scalar> & inArgs,
   // vector.  If this RCP is null, then we are doing a steady-state
   // fill.
   bool is_transient = false;
-  if (inArgs.supports(MEB::IN_ARG_x_dot ))
-    is_transient = !Teuchos::is_null(inArgs.get_x_dot());
+  if (inArgs.supports(MEB::IN_ARG_x_dot ) )
+    is_transient = !Teuchos::is_null(inArgs.get_x_dot())  ;
+ // if ( inArgs.supports(MEB::IN_ARG_x_dot_dot ))
+ //   is_transient = !Teuchos::is_null(inArgs.get_x_dot_dot()) ;
 
   // Make sure construction built in transient support
   TEUCHOS_TEST_FOR_EXCEPTION(is_transient && !build_transient_support_, std::runtime_error,
@@ -1292,8 +1466,11 @@ evalModel_D2fDxDp(int pIndex,
   // vector.  If this RCP is null, then we are doing a steady-state
   // fill.
   bool is_transient = false;
-  if (inArgs.supports(MEB::IN_ARG_x_dot ))
-    is_transient = !Teuchos::is_null(inArgs.get_x_dot());
+  if (inArgs.supports(MEB::IN_ARG_x_dot ) )
+    is_transient = !Teuchos::is_null(inArgs.get_x_dot()) 
+//  if ( inArgs.supports(MEB::IN_ARG_x_dot_dot ))
+//    is_transient = !Teuchos::is_null(inArgs.get_x_dot_dot()) ;
+
 
   // Make sure construction built in transient support
   TEUCHOS_TEST_FOR_EXCEPTION(is_transient && !build_transient_support_, std::runtime_error,
@@ -1528,8 +1705,11 @@ evalModelImpl_basic(const Thyra::ModelEvaluatorBase::InArgs<Scalar> &inArgs,
   // vector.  If this RCP is null, then we are doing a steady-state
   // fill.
   bool is_transient = false;
-  if (inArgs.supports(MEB::IN_ARG_x_dot ))
+  if (inArgs.supports(MEB::IN_ARG_x_dot ) )
     is_transient = !Teuchos::is_null(inArgs.get_x_dot());
+//  if (inArgs.supports(MEB::IN_ARG_x_dot_dot ))
+//    is_transient = !Teuchos::is_null(inArgs.get_x_dot_dot());
+
 
   // Make sure construction built in transient support
   TEUCHOS_TEST_FOR_EXCEPTION(is_transient && !build_transient_support_, std::runtime_error,
@@ -1631,6 +1811,7 @@ evalModelImpl_basic(const Thyra::ModelEvaluatorBase::InArgs<Scalar> &inArgs,
 
   thGlobalContainer->set_x_th(Teuchos::null);
   thGlobalContainer->set_dxdt_th(Teuchos::null);
+  if( build_dotdot_support_ ) thGlobalContainer->set_d2xdt2_th(Teuchos::null);
   thGlobalContainer->set_f_th(Teuchos::null);
   thGlobalContainer->set_A_th(Teuchos::null);
 
@@ -2052,6 +2233,9 @@ evalModelImpl_basic_dfdp_scalar_fd(const Thyra::ModelEvaluatorBase::InArgs<Scala
    RCP<const Thyra::VectorBase<Scalar> > x_dot;
    if (inArgs.supports(MEB::IN_ARG_x_dot))
      x_dot = inArgs.get_x_dot();
+   RCP<const Thyra::VectorBase<Scalar> > x_dot_dot;
+   if (inArgs.supports(MEB::IN_ARG_x_dot_dot))
+     x_dot_dot = inArgs.get_x_dot_dot();
 
    // Create in/out args for FD calculation
    RCP<Thyra::VectorBase<Scalar> > fd = Thyra::createMember(this->get_f_space());
@@ -2062,11 +2246,16 @@ evalModelImpl_basic_dfdp_scalar_fd(const Thyra::ModelEvaluatorBase::InArgs<Scala
    RCP<Thyra::VectorBase<Scalar> > xd_dot;
    if (x_dot != Teuchos::null)
      xd_dot = Thyra::createMember(this->get_x_space());
+   RCP<Thyra::VectorBase<Scalar> > xd_dot_dot;
+   if (x_dot_dot != Teuchos::null)
+     xd_dot_dot = Thyra::createMember(this->get_x_space());
    MEB::InArgs<Scalar> inArgs_fd = this->createInArgs();
    inArgs_fd.setArgs(inArgs);  // This sets all inArgs that we don't override below
    inArgs_fd.set_x(xd);
    if (x_dot != Teuchos::null)
      inArgs_fd.set_x_dot(xd_dot);
+   if (x_dot_dot != Teuchos::null)
+     inArgs_fd.set_x_dot_dot(xd_dot_dot);
 
    const double h = fd_perturb_size_;
    for(std::size_t i=0; i < parameters_.size(); i++) {
@@ -2096,6 +2285,13 @@ evalModelImpl_basic_dfdp_scalar_fd(const Thyra::ModelEvaluatorBase::InArgs<Scala
        dx_dot =
          rcp_dynamic_cast<const Thyra::DefaultMultiVectorProductVector<Scalar> >(dx_dot_v,true)->getMultiVector();
      }
+	 RCP<const Thyra::VectorBase<Scalar> > dx_dot_dot_v;
+     RCP<const Thyra::MultiVectorBase<Scalar> > dx_dot_dot;
+     if (x_dot_dot != Teuchos::null) {
+       dx_dot_dot_v =inArgs.get_p(i+parameters_.size()+tangent_space_.size());
+       dx_dot_dot =
+         rcp_dynamic_cast<const Thyra::DefaultMultiVectorProductVector<Scalar> >(dx_dot_v,true)->getMultiVector();
+     }
 
      // Create perturbed parameter vector
      RCP<Thyra::VectorBase<Scalar> > pd = Thyra::createMember(this->get_p_space(i));
@@ -2111,6 +2307,8 @@ evalModelImpl_basic_dfdp_scalar_fd(const Thyra::ModelEvaluatorBase::InArgs<Scala
        Thyra::V_VpStV(xd.ptr(), *x, h, *(dx)->col(j));
        if (x_dot != Teuchos::null)
          Thyra::V_VpStV(xd_dot.ptr(), *x_dot, h, *(dx_dot)->col(j));
+       if (x_dot_dot != Teuchos::null)
+         Thyra::V_VpStV(xd_dot_dot.ptr(), *x_dot_dot, h, *(dx_dot_dot)->col(j));
 
        // Evaluate perturbed residual
        Thyra::assign(fd.ptr(), 0.0);
