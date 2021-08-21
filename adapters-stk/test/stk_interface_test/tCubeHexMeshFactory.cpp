@@ -352,7 +352,7 @@ TEUCHOS_UNIT_TEST(tCubeHexMeshFactory, allblock)
    TEST_EQUALITY(nodesets.size(),1);
 
    std::vector<stk::mesh::Entity> nodes;
-   mesh->getMyNodes("origin","eblock-0_0_0",nodes); 
+   mesh->getMyNodeSet("origin","eblock-0_0_0",nodes); 
    if(rank==0) {
       std::vector<std::size_t> localNodeIds;
       std::vector<stk::mesh::Entity> elements;
