@@ -449,4 +449,60 @@ STKConnManager::getAssociatedNeighbors(const LocalOrdinal& el) const
   return elmtToAssociatedElmts_[el];
 }
 
+void STKConnManager::
+getElementalNodeConnectivity(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const
+{
+	 stk::mesh::Entity element = (*elements_)[elmtLid];
+     nodesgid.clear();
+
+	 stk::mesh::BulkData& bulkData = *stkMeshDB_->getBulkData();
+   	 const stk::mesh::EntityRank rank = stkMeshDB_->getNodeRank();
+
+     const size_t num_rels = bulkData.num_connectivity(element, rank);
+     stk::mesh::Entity const* relations = bulkData.begin(element, rank);
+     for(std::size_t sc=0; sc<num_rels; ++sc) {
+       stk::mesh::Entity nd = relations[sc];
+	   auto id = bulkData.identifier(nd);
+       nodesgid.emplace_back(id);
+	 }
+}
+
+void STKConnManager::
+getElementalEdges(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& edgesgid) const
+{
+	 stk::mesh::Entity element = (*elements_)[elmtLid];
+     edgesgid.clear();
+
+	 stk::mesh::BulkData& bulkData = *stkMeshDB_->getBulkData();
+   	 const stk::mesh::EntityRank rank = stkMeshDB_->getEdgeRank();
+	// stkMeshDB_->getSubcellIndices(rank,elmtLid,edgesgid);
+
+     const size_t num_rels = bulkData.num_connectivity(element, rank);
+     stk::mesh::Entity const* relations = bulkData.begin(element, rank);
+     for(std::size_t sc=0; sc<num_rels; ++sc) {
+       stk::mesh::Entity nd = relations[sc];
+	   auto id = bulkData.identifier(nd);
+       edgesgid.emplace_back(id);
+	 }
+}
+
+void STKConnManager::
+getElementalFaces(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& facesgid) const
+{
+	 stk::mesh::Entity element = (*elements_)[elmtLid];
+     facesgid.clear();
+
+	 stk::mesh::BulkData& bulkData = *stkMeshDB_->getBulkData();
+   	 const stk::mesh::EntityRank rank = stkMeshDB_->getFaceRank();
+	// stkMeshDB_->getSubcellIndices(rank,elmtLid,facesgid);
+
+     const size_t num_rels = bulkData.num_connectivity(element, rank);
+     stk::mesh::Entity const* relations = bulkData.begin(element, rank);
+     for(std::size_t sc=0; sc<num_rels; ++sc) {
+       stk::mesh::Entity nd = relations[sc];
+	   auto id = bulkData.identifier(nd);
+       facesgid.emplace_back(id);
+	 }
+}
+
 }

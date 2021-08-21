@@ -1338,6 +1338,234 @@ void DOFManager::buildLocalIdsFromOwnedAndGhostedElements()
   this->setLocalIds(elementLIDs);
 }
 
+void DOFManager::buildDofsInfo()
+{
+  std::vector<std::string> elementBlockIds;
+  connMngr_->getElementBlockIds(elementBlockIds);
+//std::cout << "My rank= " << communicator_->getRank() << std::endl;
+  nodeLIDMap_.clear();
+  nodeGIDMap_.clear();
+  edgeLIDMap_.clear();
+  edgeGIDMap_.clear();
+  faceLIDMap_.clear();
+  faceGIDMap_.clear();
+  std::size_t dimension = ga_fp_->getDimension();
+  std::vector<panzer::GlobalOrdinal> edgeGIDs;
+  std::vector<panzer::GlobalOrdinal> elementalNodes;
+  std::vector<panzer::GlobalOrdinal> faceGIDs;
+  auto nrank = connMngr_->getNodeRank();
+  auto erank = connMngr_->getEdgeRank();
+  auto frank = connMngr_->getFaceRank();
+
+//	std::vector< std::map< panzer::GlobalOrdinal, panzer::LocalOrdinal > > LidMaps;
+//  std::vector< std::map< panzer::GlobalOrdinal, panzer::GlobalOrdinal > > GidMaps;
+  std::vector< std::tuple<int, panzer::GlobalOrdinal, panzer::LocalOrdinal > > LidTuple_ed;   // field id, edge id, dof offset
+  std::vector< std::tuple<int, panzer::GlobalOrdinal, panzer::GlobalOrdinal > > GidTuple_ed;  // field id, edge id, dof offset
+  std::vector< std::tuple<int, panzer::GlobalOrdinal, panzer::LocalOrdinal > > LidTuple_nd;   // field id, node id, dof offset
+  std::vector< std::tuple<int, panzer::GlobalOrdinal, panzer::GlobalOrdinal > > GidTuple_nd;  // field id, node id, dof offset
+  std::vector< std::tuple<int, panzer::GlobalOrdinal, panzer::LocalOrdinal > > LidTuple_fc;   // field id, face id, dof offset
+  std::vector< std::tuple<int, panzer::GlobalOrdinal, panzer::GlobalOrdinal > > GidTuple_fc;  // field id, face id, dof offset
+
+  std::set<int> fieldids, total_fieldids;
+  std::set<int> lid_defined;
+  for( auto blockId : elementBlockIds )
+  {
+	  const std::vector<int>& fields = this->getBlockFieldNumbers(blockId);
+	  fieldids.clear();
+	  lid_defined.clear();
+	  for(std::size_t f=0;f<fields.size();f++) {
+            int fieldNum = fields[f];
+            fieldids.emplace(fieldNum); 
+		  total_fieldids.emplace(fieldNum); 
+      }
+	  const std::vector<panzer::LocalOrdinal>& elements = connMngr_->getElementBlock(blockId);
+	  
+	  std::map<std::string,int>::const_iterator bitr = blockNameToID_.find(blockId);
+  	  if(bitr==blockNameToID_.end()) return;    // block not in FieldAggPattern manager
+	  
+	  //int bid=bitr->second;
+	  // const auto fv = fa_fps_[bid]->fieldIds();  = above fields
+	    
+	  for( auto ele: elements )
+	  {
+        std::vector<panzer::GlobalOrdinal> GIDs;
+	  	getElementGIDs( ele, GIDs );
+		auto LIDs = getElementLIDs( ele );
+		
+		std::size_t dofcount = 0;
+		connMngr_->getElementalNodeConnectivity(ele, elementalNodes);
+		for( std::size_t i =0; i<elementalNodes.size(); i++ )
+		{
+			for( auto fd1 : fieldids ) {
+				const auto& offsetPair = getGIDFieldOffsets_closure(blockId, fd1, nrank, i);
+				const auto& offsets =  offsetPair.first;
+				if( offsets.empty() ) break;
+				++dofcount;
+			
+				auto gid = GIDs[offsets[0]];
+				auto lid = LIDs[offsets[0]];
+				auto itr_find = lid_defined.find(lid);
+				if( itr_find != lid_defined.end() ) continue;  // emblaced already!
+				lid_defined.emplace(lid);
+				auto& ndgid = elementalNodes[i];
+			//	std::cout << "ele:" << ele << "," << fd1 << ", " << i << ", " << ndgid << ", " << gid << ", " << lid << std::endl;
+				LidTuple_nd.emplace_back( std::make_tuple(fd1, ndgid, lid) );
+				GidTuple_nd.emplace_back( std::make_tuple(fd1, ndgid, gid) );
+			}
+		}
+		if( dofcount>=fields.size() ) continue;  // no edge/face dofs
+			
+		connMngr_->getElementalEdges(ele, edgeGIDs);
+		for( std::size_t i =0; i<edgeGIDs.size(); i++ )
+		{
+			for( auto fd1 : fieldids ) {
+				const auto& offsetPair = getGIDFieldOffsets_closure(blockId, fd1, erank, i);
+				const auto& offsets =  offsetPair.first;
+				if( offsets.empty() ) break;
+				++dofcount;
+			
+				auto gid = GIDs[offsets[0]];
+				auto lid = LIDs[offsets[0]];
+				auto itr_find = lid_defined.find(lid);
+				if( itr_find != lid_defined.end() ) continue;  // emblaced already!
+				lid_defined.emplace(lid);
+				auto& ndgid = edgeGIDs[i];
+				LidTuple_ed.emplace_back( std::make_tuple(fd1, ndgid, lid) );
+				GidTuple_ed.emplace_back( std::make_tuple(fd1, ndgid, gid) );
+			}
+		}
+        if( dofcount>=fields.size() ) continue;  // no face dofs
+		  
+        if( dimension>1 ) {
+		   connMngr_->getElementalFaces(ele, faceGIDs);
+		   for( std::size_t i =0; i<faceGIDs.size(); i++ )
+		   {
+			 for( auto fd1 : fieldids ) {
+				const auto& offsetPair = getGIDFieldOffsets_closure(blockId, fd1, frank, i);
+				const auto& offsets =  offsetPair.first;
+				if( offsets.empty() ) break;
+				++dofcount;
+			
+				auto gid = GIDs[offsets[0]];
+				auto lid = LIDs[offsets[0]];
+				auto itr_find = lid_defined.find(lid);
+				if( itr_find != lid_defined.end() ) continue;  // emblaced already!
+				lid_defined.emplace(lid);
+				auto& ndgid = faceGIDs[i];
+				LidTuple_fc.emplace_back( std::make_tuple(fd1, ndgid, lid) );
+				GidTuple_fc.emplace_back( std::make_tuple(fd1, ndgid, gid) );
+			}
+		  }
+	    }
+	}
+  }
+	
+  if( !LidTuple_nd.empty() ) {
+  	for(auto fd : total_fieldids) {
+	  std::map< panzer::GlobalOrdinal, panzer::LocalOrdinal > LidMap;
+	  for( auto lids: LidTuple_nd ) {
+		  if( std::get<0>(lids) != fd ) continue;
+		  LidMap.insert( std::make_pair(std::get<1>(lids), std::get<2>(lids)) );
+	  }
+	  std::map< panzer::GlobalOrdinal, panzer::GlobalOrdinal > GidMap;
+	  for( auto gids: GidTuple_nd ) {
+		  if( std::get<0>(gids) != fd ) continue;
+		  GidMap.insert( std::make_pair(std::get<1>(gids), std::get<2>(gids)) );
+	  }
+	  nodeLIDMap_.insert( std::make_pair(fd, LidMap) );
+	  nodeGIDMap_.insert( std::make_pair(fd, GidMap) );
+	}
+  }
+
+  if( !LidTuple_ed.empty() ) {
+  	for(auto fd : total_fieldids) {
+	  std::map< panzer::GlobalOrdinal, panzer::LocalOrdinal > LidMap;
+	  for( auto lids: LidTuple_ed ) {
+		  if( std::get<0>(lids) != fd ) continue;
+		  LidMap.insert( std::make_pair(std::get<1>(lids), std::get<2>(lids)) );
+	  }
+	  std::map< panzer::GlobalOrdinal, panzer::GlobalOrdinal > GidMap;
+	  for( auto gids: GidTuple_ed ) {
+		  if( std::get<0>(gids) != fd ) continue;
+		  GidMap.insert( std::make_pair(std::get<1>(gids), std::get<2>(gids)) );
+	  }
+	  edgeLIDMap_.insert( std::make_pair(fd, LidMap) );
+	  edgeGIDMap_.insert( std::make_pair(fd, GidMap) );
+	}
+	  
+	//print_edgeInfo( std::cout );
+  }
+	
+}
+
+void DOFManager::print_DOFInfo(std::ostream &os) const
+{
+	os << "My rank= " << communicator_->getRank() << std::endl;
+	//connMngr_ -> print_nodeInfo(os);
+	for( auto ndmap: nodeLIDMap_ )
+	{
+		os << "Field: " << getFieldString(ndmap.first) << "  with field number " << ndmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: ndmap.second )
+		{
+			std::cout << "  node gid:" << b.first << "  with local index=" << b.second << std::endl;
+			c++;
+		}
+	}
+	for( auto ndmap: nodeGIDMap_ )
+	{
+		os << "Field: " << getFieldString(ndmap.first) << "  with field number " << ndmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: ndmap.second )
+		{
+			std::cout << "  node gid:" << b.first << "  with global index=" << b.second << std::endl;
+			c++;
+		}
+	}
+	
+	for( auto edmap: edgeLIDMap_ )
+	{
+		os << "Field: " << getFieldString(edmap.first) << "  with field number " << edmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: edmap.second )
+		{
+			std::cout << "  Edge gid:" << b.first << "  with local index=" << b.second << std::endl;
+			c++;
+		}
+	}
+	for( auto edmap: edgeGIDMap_ )
+	{
+		os << "Field: " << getFieldString(edmap.first) << "  with field number " << edmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: edmap.second )
+		{
+			std::cout << "  Edge gid:" << b.first << "  with global index=" << b.second << std::endl;
+			c++;
+		}
+	}
+	
+	for( auto fdmap: faceLIDMap_ )
+	{
+		os << "Field: " << getFieldString(fdmap.first) << "  with field number " << fdmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: fdmap.second )
+		{
+			std::cout << "  face gid:" << b.first << "  with local index=" << b.second << std::endl;
+			c++;
+		}
+	}
+	for( auto fdmap: faceGIDMap_ )
+	{
+		os << "Field: " << getFieldString(fdmap.first) << "  with field number " << fdmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: fdmap.second )
+		{
+			std::cout << "  face gid:" << b.first << "  with global index=" << b.second << std::endl;
+			c++;
+		}
+	}
+}
+
 /*
 template <typename panzer::LocalOrdinal,typename panzer::GlobalOrdinal>
 Teuchos::RCP<const Tpetra::Map<panzer::LocalOrdinal,panzer::GlobalOrdinal,panzer::TpetraNodeType> >

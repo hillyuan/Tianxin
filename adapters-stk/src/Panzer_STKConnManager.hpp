@@ -205,6 +205,33 @@ public:
       * input. Default implementation returns false.
       */
     virtual bool hasAssociatedNeighbors() const;
+	
+	/** Get the node connectivity of a given element
+     *
+     * \param[in] elmtLid elemental local index
+     *
+     * \param[out] nodesgid Vector of global nodes IDs.
+     */
+    void getElementalNodeConnectivity(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const;
+    int getNodeRank() const final {return stkMeshDB_->getNodeRank();}
+	
+    /** Get the node connectivity of a given element
+     *
+     * \param[in] elmtLid elemental local index
+     *
+     * \param[out] nodesgid Vector of global nodes IDs.
+     */
+    void getElementalEdges(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const;
+    int getEdgeRank() const final {return stkMeshDB_->getEdgeRank();}
+	
+	/** Get the node connectivity of a given element
+     *
+     * \param[in] elmtLid elemental local index
+     *
+     * \param[out] nodesgid Vector of global nodes IDs.
+     */
+    void getElementalFaces(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const;
+    int getFaceRank() const final {return stkMeshDB_->getFaceRank();}
 
 protected:
    /** Apply periodic boundary conditions associated with the mesh object.

@@ -299,8 +299,96 @@ public:
      }
      
    };
+   
+   // Return node dof map of fieldnum provided
+   panzer::GlobalOrdinal getNodalGDofOfField(int f, panzer::GlobalOrdinal nd) const
+   { return nodeGIDMap_.at(f).at(nd); }
+	
+   panzer::LocalOrdinal getNodalLDofOfField(int f, panzer::GlobalOrdinal nd) const
+   {
+	   if( nodeLIDMap_.empty() ) return -1;
+	   auto it = nodeLIDMap_.find(f);
+	   if( it==nodeLIDMap_.end() ) return -1;
+	   auto itt = nodeGIDMap_.at(f).find(nd);
+	   if( itt==nodeGIDMap_.at(f).end() ) return -1;
+	   return nodeGIDMap_.at(f).at(nd); 
+   }
+	
+   /**
+   * \param[in] fieldnum field number
+   * \param[in] global ids of a group of nodes
+   * \param[out] gdofs  local index of nodal dof
+   */
+   virtual void getNodesetsLocalIndex(const int& fieldnum, const std::vector<panzer::GlobalOrdinal>& nodeset, std::vector<panzer::LocalOrdinal>& ldofs) const
+   {
+	if( nodeLIDMap_.empty() ) return;
+	
+	auto localmap = nodeLIDMap_.at( fieldnum );
+	ldofs.clear();
+	for( auto nd: nodeset )
+	{
+		auto a = localmap.at( nd );
+		ldofs.emplace_back( a );
+	}
+   }
+
+   /* for stk::mesh::EntityId = uint64_t */
+   virtual void getNodesetsLocalIndex(const int& fieldnum, const std::vector<uint64_t>& nodeset, std::vector<panzer::LocalOrdinal>& ldofs) const
+   {
+	if( nodeLIDMap_.empty() ) return;
+	
+	auto localmap = nodeLIDMap_.at( fieldnum );
+	ldofs.clear();
+	for( auto nd: nodeset )
+	{
+		auto a = localmap.at( nd );
+		ldofs.emplace_back( a );
+	}
+   }
+   
+   /**
+   * \param[in] fieldnum field number
+   * \param[in] global ids of a group of edges
+   * \param[out] gdofs  local index of edges' dof
+   */
+   virtual void getEdgesetsLocalIndex(int fieldnum, std::vector<panzer::GlobalOrdinal>& edgeset, std::vector<panzer::LocalOrdinal>& ldofs) const
+   {
+	if( edgeLIDMap_.empty() ) return;
+	
+	auto localmap = edgeLIDMap_.at( fieldnum );
+	ldofs.clear();
+	for( auto nd: edgeset )
+	{
+		auto a = localmap.at( nd );
+		ldofs.emplace_back( a );
+	}
+   }
+	
+   panzer::LocalOrdinal getEdgeLDofOfField(int f, panzer::GlobalOrdinal nd) const
+   {
+	   if( edgeLIDMap_.empty() ) return -1;
+	   auto localmap = edgeLIDMap_.at( f );
+	   return localmap.at(nd); 
+   }
+	
+   panzer::GlobalOrdinal getEdgeGDofOfField(int f, panzer::GlobalOrdinal nd) const
+   { return edgeLIDMap_.at(f).at(nd); }
 
 protected:
+
+   // field ID -> nodal global index -> local & global index of dof
+   std::map< int, std::map<panzer::GlobalOrdinal, panzer::LocalOrdinal> > nodeLIDMap_;
+   std::map< int, std::map<panzer::GlobalOrdinal, panzer::GlobalOrdinal> > nodeGIDMap_;
+
+   // field ID -> edge global index -> local & global index of dof
+   std::map< int, std::map<panzer::GlobalOrdinal, panzer::LocalOrdinal> > edgeLIDMap_;
+   std::map< int, std::map<panzer::GlobalOrdinal, panzer::GlobalOrdinal> > edgeGIDMap_;
+
+   // field ID -> face global index -> local & global index of dof
+   std::map< int, std::map<panzer::GlobalOrdinal, panzer::LocalOrdinal> > faceLIDMap_;
+   std::map< int, std::map<panzer::GlobalOrdinal, panzer::GlobalOrdinal> > faceGIDMap_;
+   
+   // field ID -> volume global index -> local & global index of dof
 
    /** This method is used by derived classes to the construct the local IDs from 
      * the <code>getOwnedAndGhostedIndices</code> method.

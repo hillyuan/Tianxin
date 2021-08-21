@@ -196,6 +196,8 @@ public:
    { static std::vector<int> empty; return empty; }
    //! Not used.
    virtual bool hasAssociatedNeighbors() const { return false; }
+   
+   void getElementalNodeConnectivity(const LocalOrdinal&, std::vector<GlobalOrdinal>&) const {;}
 
 private:
    int procRank_;
