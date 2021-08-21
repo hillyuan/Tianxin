@@ -374,6 +374,75 @@ public:
    panzer::GlobalOrdinal getEdgeGDofOfField(int f, panzer::GlobalOrdinal nd) const
    { return edgeLIDMap_.at(f).at(nd); }
 
+   
+   void print_DOFInfo(std::ostream &os) const
+   {
+	 os << "My rank= " << this->getComm()->getRank() << std::endl;
+	 for( auto ndmap: nodeLIDMap_ )
+	 {
+		os << "Field: " << getFieldString(ndmap.first) << "  with field number " << ndmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: ndmap.second )
+		{
+			std::cout << "  node gid:" << b.first << "  with local index=" << b.second << std::endl;
+			c++;
+		}
+     }
+	 for( auto ndmap: nodeGIDMap_ )
+	 {
+		os << "Field: " << getFieldString(ndmap.first) << "  with field number " << ndmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: ndmap.second )
+		{
+			std::cout << "  node gid:" << b.first << "  with global index=" << b.second << std::endl;
+			c++;
+		}
+	 }
+	
+	 for( auto edmap: edgeLIDMap_ )
+	 {
+		os << "Field: " << getFieldString(edmap.first) << "  with field number " << edmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: edmap.second )
+		{
+			std::cout << "  Edge gid:" << b.first << "  with local index=" << b.second << std::endl;
+			c++;
+		}
+	 }
+	 for( auto edmap: edgeGIDMap_ )
+	 {
+		os << "Field: " << getFieldString(edmap.first) << "  with field number " << edmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: edmap.second )
+		{
+			std::cout << "  Edge gid:" << b.first << "  with global index=" << b.second << std::endl;
+			c++;
+		}
+	 }
+	
+	 for( auto fdmap: faceLIDMap_ )
+	 {
+		os << "Field: " << getFieldString(fdmap.first) << "  with field number " << fdmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: fdmap.second )
+		{
+			std::cout << "  face gid:" << b.first << "  with local index=" << b.second << std::endl;
+			c++;
+		}
+	 }
+	 for( auto fdmap: faceGIDMap_ )
+	 {
+		os << "Field: " << getFieldString(fdmap.first) << "  with field number " << fdmap.first << std::endl;
+		std::size_t c =0;
+		for( auto b: fdmap.second )
+		{
+			std::cout << "  face gid:" << b.first << "  with global index=" << b.second << std::endl;
+			c++;
+		}
+	 }
+   }
+	
+
 protected:
 
    // field ID -> nodal global index -> local & global index of dof

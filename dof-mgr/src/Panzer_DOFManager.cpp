@@ -435,6 +435,7 @@ void DOFManager::buildGlobalUnknowns()
 
   // using new geometric pattern, build global unknowns
   buildGlobalUnknowns(aggFieldPattern);
+  buildDofsInfo();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1492,79 +1493,10 @@ void DOFManager::buildDofsInfo()
 	  edgeLIDMap_.insert( std::make_pair(fd, LidMap) );
 	  edgeGIDMap_.insert( std::make_pair(fd, GidMap) );
 	}
-	  
-	//print_edgeInfo( std::cout );
   }
 	
 }
 
-void DOFManager::print_DOFInfo(std::ostream &os) const
-{
-	os << "My rank= " << communicator_->getRank() << std::endl;
-	//connMngr_ -> print_nodeInfo(os);
-	for( auto ndmap: nodeLIDMap_ )
-	{
-		os << "Field: " << getFieldString(ndmap.first) << "  with field number " << ndmap.first << std::endl;
-		std::size_t c =0;
-		for( auto b: ndmap.second )
-		{
-			std::cout << "  node gid:" << b.first << "  with local index=" << b.second << std::endl;
-			c++;
-		}
-	}
-	for( auto ndmap: nodeGIDMap_ )
-	{
-		os << "Field: " << getFieldString(ndmap.first) << "  with field number " << ndmap.first << std::endl;
-		std::size_t c =0;
-		for( auto b: ndmap.second )
-		{
-			std::cout << "  node gid:" << b.first << "  with global index=" << b.second << std::endl;
-			c++;
-		}
-	}
-	
-	for( auto edmap: edgeLIDMap_ )
-	{
-		os << "Field: " << getFieldString(edmap.first) << "  with field number " << edmap.first << std::endl;
-		std::size_t c =0;
-		for( auto b: edmap.second )
-		{
-			std::cout << "  Edge gid:" << b.first << "  with local index=" << b.second << std::endl;
-			c++;
-		}
-	}
-	for( auto edmap: edgeGIDMap_ )
-	{
-		os << "Field: " << getFieldString(edmap.first) << "  with field number " << edmap.first << std::endl;
-		std::size_t c =0;
-		for( auto b: edmap.second )
-		{
-			std::cout << "  Edge gid:" << b.first << "  with global index=" << b.second << std::endl;
-			c++;
-		}
-	}
-	
-	for( auto fdmap: faceLIDMap_ )
-	{
-		os << "Field: " << getFieldString(fdmap.first) << "  with field number " << fdmap.first << std::endl;
-		std::size_t c =0;
-		for( auto b: fdmap.second )
-		{
-			std::cout << "  face gid:" << b.first << "  with local index=" << b.second << std::endl;
-			c++;
-		}
-	}
-	for( auto fdmap: faceGIDMap_ )
-	{
-		os << "Field: " << getFieldString(fdmap.first) << "  with field number " << fdmap.first << std::endl;
-		std::size_t c =0;
-		for( auto b: fdmap.second )
-		{
-			std::cout << "  face gid:" << b.first << "  with global index=" << b.second << std::endl;
-			c++;
-		}
-	}
-}
 
 /*
 template <typename panzer::LocalOrdinal,typename panzer::GlobalOrdinal>

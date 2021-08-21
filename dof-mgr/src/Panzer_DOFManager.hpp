@@ -225,7 +225,6 @@ public:
   /** build map of <field ID -> dof position of each nodes(Hgrad)/edges(Hcurl)/faces(Hdiv)>
 	*/
   void buildDofsInfo();
-  void print_DOFInfo(std::ostream &os) const;
 
   int getFieldNum(const std::string & string) const;
 
