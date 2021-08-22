@@ -1386,6 +1386,28 @@ void STK_Interface::getAllSides(const std::string & sideName,const std::string &
    stk::mesh::get_selected_entities(sideBlock,bulkData_->buckets(getSideRank()),sides);
 }
 
+void STK_Interface::getAllSideEdgesId(const std::string & sideName,std::vector<stk::mesh::EntityId> & edgesIds) const
+{
+   stk::mesh::Part * sidePart = getSideset(sideName);
+   if (sidePart==0 ) {
+      std::cout << "Unknown side set \"" << sideName << "\"" << std::endl;
+      return;
+   }
+
+   stk::mesh::Selector side = *sidePart;
+   // check side set dimension here?
+
+   // grab elements
+   std::vector<stk::mesh::Entity> edges;
+   stk::mesh::get_selected_entities(side,bulkData_->buckets(getEdgeRank()),edges);
+
+   edgesIds.clear();
+   for( const auto n: edges )
+   {
+	   edgesIds.emplace_back( bulkData_->identifier(n) );
+   }
+}
+
 void STK_Interface::getMyNodeSet(const std::string & nodesetName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const
 {
    stk::mesh::Part * nodePart = getNodeset(nodesetName);

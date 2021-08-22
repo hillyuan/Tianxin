@@ -59,6 +59,10 @@ namespace Teuchos {
   class ParameterList;
 }
 
+namespace TianYuan {
+	class Material;
+}
+
 namespace panzer {
 
   class PureBasis;
@@ -104,6 +108,9 @@ namespace panzer {
     virtual void buildAndRegisterEquationSetEvaluators(PHX::FieldManager<panzer::Traits>& fm,
 						       const panzer::FieldLibrary& field_library,
 						       const Teuchos::ParameterList& user_data) const = 0;
+
+	virtual void setMaterial(PHX::FieldManager<panzer::Traits>& fm, 
+							std::shared_ptr<TianYuan::Material>& matl) = 0;
     
     //! Register closure model evaluators with the model name internally specified by the equation set
     virtual void buildAndRegisterClosureModelEvaluators(PHX::FieldManager<panzer::Traits>& fm,

@@ -422,6 +422,15 @@ public:
      * \param[in,out] sides Vector of entities containing the requested sides.
      */
    void getAllSides(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & sides) const;
+   
+   /** Get Edegs global Id inside the side set requested.
+     * The Entites in the sideset should be a dimension greater/equal to 2.
+     *
+     * \param[in] sideName Name of side set
+     * \param[in,out] edges Vector of entities containing the requested sides.
+     */
+   void getAllSideEdgesId(const std::string & sideName,std::vector<stk::mesh::EntityId> & edges) const;
+
 
    /** Get Entities corresponding to the node set requested. This also limits the entities
      * to be in a particular element block. The Entites in the vector should be of dimension
