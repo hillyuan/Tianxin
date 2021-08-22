@@ -58,7 +58,6 @@
 #include "Epetra_MpiComm.h"
 
 #include "Panzer_ResponseMESupport_Default.hpp"
-#include "Panzer_GlobalEvaluationData.hpp"
 #include "Panzer_ThyraObjFactory.hpp"
 #include "Panzer_ThyraObjContainer.hpp"
 #include "Panzer_LinearObjFactory.hpp"
@@ -72,7 +71,7 @@ namespace panzer {
   */
 template <typename EvalT>
 class Response_ExtremeValue : public ResponseMESupport_Default<EvalT>
-                          , public GlobalEvaluationData_BCAdjustment {
+{
 public:
    typedef typename EvalT::ScalarT ScalarT;
 
