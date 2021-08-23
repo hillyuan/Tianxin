@@ -197,7 +197,6 @@ namespace panzer {
         out_args.set_f(Teuchos::null);
         out_args.set_W_op(mass);
 
-        me->setOneTimeDirichletBeta(1.0);
         me->evalModel(in_args, out_args);
       }
 
