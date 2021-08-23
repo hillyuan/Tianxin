@@ -68,7 +68,6 @@ public:
                                        bool applyDirichletToDerivative=false)
      : comm_(comm), cubatureDegree_(cubatureDegree), requiresCellIntegral_(requiresCellIntegral)
      , quadPointField_(quadPointField), linearObjFactory_(linearObjFactory)
-     , applyDirichletToDerivative_(applyDirichletToDerivative)
    { }
 
    virtual ~ResponseEvaluatorFactory_Functional() {}
@@ -123,7 +122,6 @@ private:
    bool requiresCellIntegral_;
    std::string quadPointField_;
    Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> > linearObjFactory_;
-   bool applyDirichletToDerivative_;
 };
 
 template <typename LO,typename GO> 

@@ -70,11 +70,9 @@ public:
                                const std::string & quadPointField="",
                                const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> > & linearObjFactory=Teuchos::null,
                                const Teuchos::RCP<const panzer::GlobalIndexer> & globalIndexer=Teuchos::null,
-                               bool applyDirichletToDerivative=false,
                                std::string in_prefix="")
      : comm_(comm), cubatureDegree_(cubatureDegree), requiresCellExtreme_(requiresCellReduction), useMax_(useMax)
      , quadPointField_(quadPointField), linearObjFactory_(linearObjFactory), globalIndexer_(globalIndexer)
-     , applyDirichletToDerivative_(applyDirichletToDerivative)
      , prefix_(in_prefix)
    {
      TEUCHOS_ASSERT((linearObjFactory==Teuchos::null && globalIndexer==Teuchos::null) ||
@@ -135,7 +133,6 @@ private:
    std::string quadPointField_;
    Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> > linearObjFactory_;
    Teuchos::RCP<const panzer::GlobalIndexer> globalIndexer_;
-   bool applyDirichletToDerivative_;
    std::string prefix_;
 };
 

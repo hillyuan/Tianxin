@@ -75,6 +75,11 @@ checkCompatibility() const
          dxdt_matches = range->isCompatible(*get_dxdt()->space());
       else
          dxdt_matches = true; // nothing to compare
+	 
+      if(get_d2xdt2()!=null)
+         dxdt_matches = range->isCompatible(*get_d2xdt2()->space());
+      else
+         dxdt_matches = true; // nothing to compare
 
       if(get_f()!=null)
          f_matches = range->isCompatible(*get_f()->space());
@@ -105,6 +110,7 @@ initialize()
 
    if(get_x()!=Teuchos::null)    Thyra::assign<ScalarT>(x.ptr(),0.0);
    if(get_dxdt()!=Teuchos::null) Thyra::assign<ScalarT>(get_dxdt().ptr(),0.0);
+   if(get_d2xdt2()!=Teuchos::null) Thyra::assign<ScalarT>(get_d2xdt2().ptr(),0.0);
    if(get_f()!=Teuchos::null)    Thyra::assign<ScalarT>(get_f().ptr(),0.0);
    if(get_A()!=Teuchos::null) {
       RCP<PhysicallyBlockedLinearOpBase<ScalarT> > Amat 
@@ -181,6 +187,7 @@ clear()
 {
    set_x(Teuchos::null);
    set_dxdt(Teuchos::null);
+   set_d2xdt2(Teuchos::null);
    set_f(Teuchos::null);
    set_A(Teuchos::null);
 }

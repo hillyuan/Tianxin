@@ -62,8 +62,6 @@ Teuchos::RCP<ResponseBase> ResponseEvaluatorFactory_Functional<EvalT,LO,GO>::
 buildResponseObject(const std::string & responseName) const
 { 
   Teuchos::RCP<ResponseBase> response = Teuchos::rcp(new Response_Functional<EvalT>(responseName,comm_,linearObjFactory_)); 
-  response->setRequiresDirichletAdjustment(applyDirichletToDerivative_);
- 
   return response;
 }
 

@@ -70,11 +70,9 @@ public:
     int cubatureDegree=1,
     const std::string & fieldName="",
     const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> > & linearObjFactory=Teuchos::null,
-    const Teuchos::RCP<const panzer::GlobalIndexer> & globalIndexer=Teuchos::null,
-    bool applyDirichletToDerivative=false)
+    const Teuchos::RCP<const panzer::GlobalIndexer> & globalIndexer=Teuchos::null)
     : comm_(comm), point_(point), fieldComponent_(fieldComponent), cubatureDegree_(cubatureDegree)
     , fieldName_(fieldName), linearObjFactory_(linearObjFactory), globalIndexer_(globalIndexer)
-    , applyDirichletToDerivative_(applyDirichletToDerivative)
     {
       TEUCHOS_ASSERT((linearObjFactory==Teuchos::null && globalIndexer==Teuchos::null) ||
                      (linearObjFactory!=Teuchos::null && globalIndexer!=Teuchos::null));
@@ -134,7 +132,6 @@ private:
   std::string fieldName_;
   Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> > linearObjFactory_;
   Teuchos::RCP<const panzer::GlobalIndexer> globalIndexer_;
-  bool applyDirichletToDerivative_; // do we need this???
 };
 
 template <typename LO,typename GO>
