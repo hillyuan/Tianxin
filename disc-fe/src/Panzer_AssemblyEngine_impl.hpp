@@ -289,9 +289,7 @@ evaluateDirichletBCs(const panzer::AssemblyEngineInArgs& in)
         m_lin_obj_factory->adjustForDirichletConditions(*localCounter_,*summedGhostedCounter_,*loc);
       }
       else {
-        // it was not a linear object container, so if you want an adjustment it better be a GED_BCAdjustment object
-        Teuchos::RCP<GlobalEvaluationData_BCAdjustment> bc_adjust = Teuchos::rcp_dynamic_cast<GlobalEvaluationData_BCAdjustment>(itr->second,true);
-        bc_adjust->adjustForDirichletConditions(*localCounter_,*summedGhostedCounter_);
+        // GlobalEvaluationData_BCAdjustment here
       }
     }
   }

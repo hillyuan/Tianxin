@@ -119,8 +119,6 @@ public:
    //! Get ghosted responses (this will be filled by the evaluator)
    Teuchos::RCP<Thyra::VectorBase<double> > getGhostedVector() const
    { return Teuchos::rcp_dynamic_cast<const ThyraObjContainer<double> >(ghostedContainer_)->get_x_th(); }
-
-   void adjustForDirichletConditions(const GlobalEvaluationData & localBCRows,const GlobalEvaluationData & globalBCRows);
     
 private:
    //! Set solution vector space
