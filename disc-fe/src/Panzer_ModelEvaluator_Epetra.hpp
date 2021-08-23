@@ -208,12 +208,6 @@ namespace panzer {
       */
     void setOneTimeDirichletBeta(const double & beta) const;
 
-    /** Apply the dirichlet boundary conditions to the vector "f" using the 
-      * "x" values as the current solution.
-      */
-    void applyDirichletBCs(const Teuchos::RCP<Thyra::VectorBase<double> > & x,
-                           const Teuchos::RCP<Thyra::VectorBase<double> > & f) const;
-
   private:
 
     // /////////////////////////////////////

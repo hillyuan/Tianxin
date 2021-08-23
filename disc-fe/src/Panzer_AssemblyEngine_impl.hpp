@@ -146,10 +146,10 @@ evaluateOnlyDirichletBCs(const panzer::AssemblyEngineInArgs& in)
   GlobalEvaluationDataContainer gedc;
   in.fillGlobalEvaluationDataContainer(gedc);
   gedc.initialize(); // make sure all ghosted data is ready to go
-  gedc.globalToGhost(LOC::X | LOC::DxDt);
+  gedc.globalToGhost(LOC::X | LOC::DxDt | LOC::D2xDt2);
 
   // Push solution, x and dxdt into ghosted domain
-  m_lin_obj_factory->globalToGhostContainer(*in.container_,*in.ghostedContainer_,LOC::X | LOC::DxDt);
+  m_lin_obj_factory->globalToGhostContainer(*in.container_,*in.ghostedContainer_,LOC::X | LOC::DxDt | LOC::D2xDt2);
   m_lin_obj_factory->beginFill(*in.ghostedContainer_);
 
   // Dirchlet conditions require a global matrix

@@ -140,12 +140,6 @@ public:
                                              LinearObjContainer & ghostedObjs,
                                              bool zeroVectorRows=false, bool adjustX = false) const;
 
-   /** Adjust a vector by replacing selected rows with the value of the evaluated
-     * dirichlet conditions. This is handled through the standard container mechanism.
-     */
-   virtual void applyDirichletBCs(const LinearObjContainer & counter,
-                                  LinearObjContainer & result) const;
-
    /** Build a GlobalEvaluationDataContainer that handles all domain communication.
      * This is used primarily for gather operations and hides the allocation and usage
      * of the ghosted vector from the user.

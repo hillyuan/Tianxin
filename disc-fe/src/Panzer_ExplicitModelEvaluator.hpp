@@ -57,7 +57,7 @@ namespace panzer {
 /** This is a model evaluator decorator that will take an implicit model evaluator
   * and make it explicit. If the model evaluator is not a panzer model evaluator 
   * then there may be problems with constructing the dirichlet conditions in the
-  * mass matrix. However, for a pzner model evaluator this has been taken care of.
+  * mass matrix. However, for a panzer model evaluator this has been taken care of.
   */
 template<typename Scalar>
 class ExplicitModelEvaluator
@@ -101,18 +101,6 @@ public:
   }
 
 private: // data members
-
-  /** Apply the dirichlet boundary conditions to the vector "f" using the 
-    * "x" values as the current solution.
-    */
-  void applyDirichletBCs(const Teuchos::RCP<Thyra::VectorBase<Scalar> > & x,
-                         const Teuchos::RCP<Thyra::VectorBase<Scalar> > & f) const
-  {
-    if(panzerModel_!=Teuchos::null)       { panzerModel_->applyDirichletBCs(x,f); return; }
-    if(panzerEpetraModel_!=Teuchos::null) { panzerEpetraModel_->applyDirichletBCs(x,f); return; }
-
-    TEUCHOS_ASSERT(false);
-  }
 
   /** This method builds the inverse mass matrix from the underlying model evaluator.
     * Not that this is constant method that modifies a mutable member.

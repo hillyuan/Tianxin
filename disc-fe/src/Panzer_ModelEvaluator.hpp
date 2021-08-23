@@ -379,11 +379,6 @@ public:
     */
   void setOneTimeDirichletBeta(const Scalar & beta) const;
 
-  /** Apply the dirichlet boundary conditions to the vector "f" using the
-    * "x" values as the current solution.
-    */
-  void applyDirichletBCs(const Teuchos::RCP<Thyra::VectorBase<Scalar> > & x,
-                         const Teuchos::RCP<Thyra::VectorBase<Scalar> > & f) const;
 
   /** Setup all the assembly input arguments required by "inArgs".
     *

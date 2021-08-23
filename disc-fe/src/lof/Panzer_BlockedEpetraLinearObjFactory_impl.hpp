@@ -496,44 +496,6 @@ adjustForDirichletConditions(const Epetra_Vector & local_bcs,
    }
 }
 
-template <typename Traits,typename LocalOrdinalT>
-void BlockedEpetraLinearObjFactory<Traits,LocalOrdinalT>::
-applyDirichletBCs(const LinearObjContainer & counter,
-                  LinearObjContainer & result) const
-{
-  using Teuchos::RCP;
-  using Teuchos::rcp_dynamic_cast;
-  using Teuchos::dyn_cast;
-
-  typedef Thyra::ProductVectorBase<double> PVector;
-
-  const ThyraObjContainer<double> & th_counter = dyn_cast<const ThyraObjContainer<double> >(counter);
-  ThyraObjContainer<double> & th_result  = dyn_cast<ThyraObjContainer<double> >(result);
-  
-  RCP<const PVector> count = Thyra::castOrCreateProductVectorBase(th_counter.get_f_th().getConst());
-  RCP<const PVector> f_in  = Thyra::castOrCreateProductVectorBase(th_counter.get_f_th().getConst());
-  RCP<PVector> f_out       = Thyra::castOrCreateNonconstProductVectorBase(th_result.get_f_th());
-
-  int rBlockDim = getBlockRowCount();
-  for(int i=0;i<rBlockDim;i++) {
-
-    Teuchos::ArrayRCP<const double> count_array,f_in_array;
-    Teuchos::ArrayRCP<double> f_out_array;
-
-    rcp_dynamic_cast<const Thyra::SpmdVectorBase<double> >(count->getVectorBlock(i),true)->getLocalData(Teuchos::ptrFromRef(count_array));
-    rcp_dynamic_cast<const Thyra::SpmdVectorBase<double> >(f_in->getVectorBlock(i),true)->getLocalData(Teuchos::ptrFromRef(f_in_array));
-    rcp_dynamic_cast<Thyra::SpmdVectorBase<double> >(f_out->getNonconstVectorBlock(i),true)->getNonconstLocalData(Teuchos::ptrFromRef(f_out_array));
-
-    TEUCHOS_ASSERT(count_array.size()==f_in_array.size());
-    TEUCHOS_ASSERT(count_array.size()==f_out_array.size());
-
-    for(Teuchos::ArrayRCP<double>::size_type j=0;j<count_array.size();++j) {
-      if(count_array[j]!=0.0)
-        f_out_array[j] = f_in_array[j];
-    }
-  }
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 //  buildReadOnlyDomainContainer()
