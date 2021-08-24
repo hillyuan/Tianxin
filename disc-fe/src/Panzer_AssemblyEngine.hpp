@@ -84,13 +84,6 @@ namespace panzer {
 
     void evaluateVolume(const panzer::AssemblyEngineInArgs& input_arguments);
 
-    /** This method returns the global counter used to indicate which rows are boundary conditions.
-      * Note that this method does all the communication neccessary to evaluate the dirichlet boundary
-      * conditions. The dirichlet values are set in the global "F" vector, and the count values are
-      * in the return linear obj containers "X" vector.
-      */
-    Teuchos::RCP<LinearObjContainer> evaluateOnlyDirichletBCs(const panzer::AssemblyEngineInArgs& input_arguments);
-
     void evaluateNeumannBCs(const panzer::AssemblyEngineInArgs& input_arguments);
 
     void evaluateInterfaceBCs(const panzer::AssemblyEngineInArgs& input_arguments);

@@ -132,39 +132,6 @@ evaluate(const panzer::AssemblyEngineInArgs& in, const EvaluationFlags flags)
   return;
 }
 
-//===========================================================================
-//===========================================================================
-template <typename EvalT>
-Teuchos::RCP<panzer::LinearObjContainer> panzer::AssemblyEngine<EvalT>::
-evaluateOnlyDirichletBCs(const panzer::AssemblyEngineInArgs& in)
-{
-  typedef LinearObjContainer LOC;
-
-  // make sure this container gets a dirichlet adjustment
-  in.ghostedContainer_->setRequiresDirichletAdjustment(true);
-
-  GlobalEvaluationDataContainer gedc;
-  in.fillGlobalEvaluationDataContainer(gedc);
-  gedc.initialize(); // make sure all ghosted data is ready to go
-  gedc.globalToGhost(LOC::X | LOC::DxDt | LOC::D2xDt2);
-
-  // Push solution, x and dxdt into ghosted domain
-  m_lin_obj_factory->globalToGhostContainer(*in.container_,*in.ghostedContainer_,LOC::X | LOC::DxDt | LOC::D2xDt2);
-  m_lin_obj_factory->beginFill(*in.ghostedContainer_);
-
-  // Dirchlet conditions require a global matrix
-  Teuchos::RCP<LOC> counter = this->evaluateDirichletBCs(in);
-
-  m_lin_obj_factory->ghostToGlobalContainer(*in.ghostedContainer_,*in.container_,LOC::F | LOC::Mat);
-
-  m_lin_obj_factory->beginFill(*in.container_);
-  gedc.ghostToGlobal(LOC::F | LOC::Mat);
-  m_lin_obj_factory->endFill(*in.container_);
-
-  m_lin_obj_factory->endFill(*in.ghostedContainer_);
-
-  return counter;
-}
 
 //===========================================================================
 //===========================================================================
