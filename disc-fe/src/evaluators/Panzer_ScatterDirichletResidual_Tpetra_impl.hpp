@@ -165,6 +165,9 @@ preEvaluate(typename TRAITS::PreEvalData d)
 }
 
 // **********************************************************************
+// set x, in case of IC, or f, otherwise to given value. And
+// set conrespondent dirichletCounter_ value to 1 to indicate it is a dirichelted
+// ***********************************************************************
 template<typename TRAITS,typename LO,typename GO,typename NodeT>
 void panzer::ScatterDirichletResidual_Tpetra<panzer::Traits::Residual, TRAITS,LO,GO,NodeT>::
 evaluateFields(typename TRAITS::EvalData workset)
@@ -577,6 +580,9 @@ preEvaluate(typename TRAITS::PreEvalData d)
   }
 }
 
+// **********************************************************************
+// set f to dirichlet value and its mark (dirichletCounter_) to 1
+// modify Jacobian by 1-0 strategy
 // **********************************************************************
 template<typename TRAITS,typename LO,typename GO,typename NodeT>
 void panzer::ScatterDirichletResidual_Tpetra<panzer::Traits::Jacobian, TRAITS,LO,GO,NodeT>::

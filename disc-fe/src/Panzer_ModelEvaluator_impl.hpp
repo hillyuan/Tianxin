@@ -679,6 +679,8 @@ setupAssemblyInArgs(const Thyra::ModelEvaluatorBase::InArgs<Scalar> & inArgs,
 
   // this member is handled in the individual functions
   ae_inargs.apply_dirichlet_beta = false;
+  //ae_inargs.pivot_dirichlet =  inArgs.get_pivot_dirichlet();
+  ae_inargs.pivot_dirichlet = 1.0;
 
   // Set input parameters
   int num_param_vecs = parameters_.size();

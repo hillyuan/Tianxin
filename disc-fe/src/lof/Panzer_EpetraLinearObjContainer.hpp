@@ -107,6 +107,7 @@ public:
    {
       set_x(Teuchos::null);
       set_dxdt(Teuchos::null);
+	  set_d2xdt2(Teuchos::null);
       set_f(Teuchos::null);
       set_A(Teuchos::null);
    }

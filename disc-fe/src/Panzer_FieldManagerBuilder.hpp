@@ -102,6 +102,12 @@ namespace panzer {
 
     const std::vector< Teuchos::RCP< PHX::FieldManager<panzer::Traits> > >&
     getVolumeFieldManagers() const {return phx_volume_field_managers_;}
+	
+	const std::shared_ptr< PHX::FieldManager<panzer::Traits> >
+    getDirichletFieldManager() const { return phx_dirichlet_field_manager_; }
+	  
+	const std::shared_ptr< PHX::FieldManager<panzer::Traits> >
+    getNeumannFieldManager() const { return phx_neumann_field_manager_; }
 
     //! Look up field manager by an element block ID
     Teuchos::RCP< PHX::FieldManager<panzer::Traits> >
@@ -220,6 +226,9 @@ namespace panzer {
     std::map<panzer::BC,
       std::map<unsigned,PHX::FieldManager<panzer::Traits> >,
       panzer::LessBC> bc_field_managers_;
+	  
+	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_dirichlet_field_manager_;
+	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_neumann_field_manager_;
 
     Teuchos::RCP<WorksetContainer> worksetContainer_;
 

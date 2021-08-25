@@ -103,6 +103,7 @@ namespace panzer {
 
     bool apply_dirichlet_beta;
     double dirichlet_beta;
+    double pivot_dirichlet;
 
     /** Add a global evaluation data object to be used in all FieldManager
       * evaluate calls.

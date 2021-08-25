@@ -90,6 +90,9 @@ namespace panzer {
 
     //! This method returns the global counter used to indicate which rows are boundary conditions
     Teuchos::RCP<LinearObjContainer> evaluateDirichletBCs(const panzer::AssemblyEngineInArgs& input_arguments);
+	
+	void evaluateDirichletCondition(const panzer::AssemblyEngineInArgs& input_arguments);
+	void evaluateNeumannCondition(const panzer::AssemblyEngineInArgs& input_arguments);
 
     Teuchos::RCP<panzer::FieldManagerBuilder> getManagerBuilder()
     { return m_field_manager_builder; }
