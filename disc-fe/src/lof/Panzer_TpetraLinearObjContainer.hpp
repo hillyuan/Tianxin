@@ -50,6 +50,8 @@
 // Tpetra includes
 #include "Tpetra_Vector.hpp"
 #include "Tpetra_CrsMatrix.hpp"
+#include "MatrixMarket_Tpetra.hpp"
+#include "Tpetra_applyDirichletBoundaryCondition.hpp"
 
 #include "Thyra_TpetraThyraWrappers.hpp"
 
@@ -171,6 +173,139 @@ public:
    { A = (in==Teuchos::null) ? Teuchos::null : Teuchos::rcp_dynamic_cast<CrsMatrixType>(TOE::getTpetraOperator(in),true); }
    virtual Teuchos::RCP<Thyra::LinearOpBase<ScalarT> > get_A_th() const
    { return (A==Teuchos::null) ? Teuchos::null : Thyra::createLinearOp<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>(A,rangeSpace,domainSpace); }
+   
+   // -- 1-0 clear out
+   void applyDirichletBoundaryCondition( const std::map< panzer::LocalOrdinal, double >& indx ) override
+   {
+	   /*using device_type = typename CrsMatrixType::device_type;
+      using execution_space = typename CrsMatrixType::execution_space;
+      using range_type = Kokkos::RangePolicy<execution_space, LocalOrdinalT>;
+
+      std::vector<panzer::LocalOrdinal> lids;
+      for( auto itr: indx ) lids.emplace_back(itr.first);
+	  
+	   const LocalOrdinalT lclNumRows = indx.size();
+	   Kokkos::View<typename CrsMatrixType::local_ordinal_type*, device_type> lclRowInds ("lclRowInds", lclNumRows);
+	   Kokkos::parallel_for
+      ("Fill lclRowInds",
+         range_type (0, lclNumRows),
+         KOKKOS_LAMBDA (const LocalOrdinalT lclRow) {
+	        lclRowInds(lclRow) = lids[lclRow];
+         }
+      );
+	   
+	   Tpetra::applyDirichletBoundaryConditionToLocalMatrixRows(*A, lclRowInds);*/
+
+    //  ContainerType & t_ghosted = Teuchos::dyn_cast<ContainerType>(GhostedContainer);
+    //  Teuchos::RCP<CrsMatrixType> A = t_ghosted.get_A();
+    //  VectorType f = *( t_ghosted.get_f() );
+    //  Teuchos::ArrayRCP<ScalarT> f_1dview = f.get1dViewNonConst();
+
+      ScalarT inputVals[1];  inputVals[0]=0.0;
+      LocalOrdinalT inputCols[1];
+      for( auto itr: indx )
+      {
+      //   std::cout << itr.first << "," << itr.second << std::endl;
+	      std::size_t numEntries = 0;
+         std::size_t sz = A->getNumEntriesInLocalRow(itr.first);
+         Teuchos::Array<LocalOrdinalT> indices(sz);
+         Teuchos::Array<ScalarT> Entries(sz);
+         A->getLocalRowCopy(itr.first,indices,Entries,numEntries);
+         inputCols[0] = itr.first;
+	      for (std::size_t i=0; i<sz; i++) {
+		      if( indices[i]==itr.first )
+			      Entries[i] = 1.0;
+		      else {
+		  	      Entries[i] = 0.0;
+               A->replaceLocalValues(indices[i],1,inputVals,inputCols);   // For symmetric mastrix only
+            }
+	      }  
+         A->replaceLocalValues(itr.first,indices,Entries);
+      //   f_1dview[itr.first] = 0.0;
+      }
+   }
+   
+   // -- Penaly
+   void applyDirichletBoundaryCondition( const double& p, const std::map< panzer::LocalOrdinal, double >& indx ) override
+   {
+   	/*VectorType diagCopy (A->getRowMap ());
+	   Teuchos::ArrayRCP<std::size_t> offsets;
+	   A->getLocalDiagOffsets (offsets);
+      A->getLocalDiagCopy (diagCopy, offsets());
+      Teuchos::ArrayRCP<const ScalarT> diags = diagCopy.get1dView ();
+	  
+   	ScalarT inputVals[1];
+      LocalOrdinalT inputCols[1];
+   	for( auto itr: indx )
+      {
+        inputCols[0] = itr.first;
+		  inputVals[0] = diags[itr.first]*p;
+		  A->replaceLocalValues(itr.first,1,inputVals,inputCols);
+      }*/
+	  
+	  ScalarT inputVals[1];  inputVals[0]=0.0;
+      LocalOrdinalT inputCols[1];
+      for( auto itr: indx )
+      {
+         std::size_t numEntries = 0;
+         std::size_t sz = A->getNumEntriesInLocalRow(itr.first);
+         Teuchos::Array<LocalOrdinalT> indices(sz);
+         Teuchos::Array<ScalarT> Entries(sz);
+         A->getLocalRowCopy(itr.first,indices,Entries,numEntries);
+         inputCols[0] = itr.first;
+	      for (std::size_t i=0; i<sz; i++) {
+		      if( indices[i]==itr.first )
+			      Entries[i] = p;
+		      else {
+		  	      Entries[i] = 0.0;
+               A->replaceLocalValues(indices[i],1,inputVals,inputCols);   // For symmetric mastrix only
+            }
+	      }  
+         A->replaceLocalValues(itr.first,indices,Entries);
+      }
+   }
+
+   void evalDirichletResidual( const std::map< panzer::LocalOrdinal, double >& indx ) override
+   {
+   /*   using device_type = typename CrsMatrixType::device_type;
+      using execution_space = typename CrsMatrixType::execution_space;
+      using range_type = Kokkos::RangePolicy<execution_space, LocalOrdinalT>;
+      
+      const LocalOrdinalT lclNumRows = indx.size();
+	   Kokkos::View<typename CrsMatrixType::local_ordinal_type*, device_type> lclRowInds ("lclRowInds", lclNumRows);
+	   Kokkos::parallel_for
+      ("Fill lclRowInds",
+         range_type (0, lclNumRows),
+         KOKKOS_LAMBDA (const LocalOrdinalT lclRow) {
+	        f->replaceLocalValue(lclRow, 0.0);
+         }
+      );*/
+
+	  Teuchos::ArrayRCP<const ScalarT> x_1dview = x->get1dView();
+      for( auto itr: indx )
+      {
+	  	double a = x_1dview[itr.first] - itr.second;
+         f->replaceLocalValue(itr.first, a);
+      }
+   }
+   
+   void applyConcentratedLoad( const std::map< panzer::LocalOrdinal, double >& indx ) override
+   {
+      for( auto itr: indx )
+      {
+         f->sumIntoLocalValue(itr.first, itr.second, false);
+      }
+   }
+   
+   void writeMatrixMarket(const std::string& filename) const override
+   {
+	  Tpetra::MatrixMarket::Writer<Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>>
+	   		::writeSparseFile(filename, *A);
+      Tpetra::MatrixMarket::Writer<Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>>
+	   		::writeDenseFile("b_vec.mm", *f);
+	  Tpetra::MatrixMarket::Writer<Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>>
+	   		::writeDenseFile("x_vec.mm", *x);
+   }
     
 private:
    typedef Thyra::TpetraOperatorVectorExtraction<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> TOE;

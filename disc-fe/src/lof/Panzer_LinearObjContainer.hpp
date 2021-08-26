@@ -63,6 +63,13 @@ public:
    typedef enum { X=0x1, DxDt=0x2, D2xDt2=0x3, F=0x4, Mat=0x8} Members;
 
    virtual void initialize() = 0;
+   
+   virtual void evalDirichletResidual( const std::map< panzer::LocalOrdinal, double >& indx ) = 0;
+   virtual void applyDirichletBoundaryCondition( const std::map< panzer::LocalOrdinal, double >& indx ) = 0;
+   virtual void applyDirichletBoundaryCondition( const double&, const std::map< panzer::LocalOrdinal, double >& indx ) = 0;
+   virtual void applyConcentratedLoad( const std::map< panzer::LocalOrdinal, double >& indx ) = 0;
+   
+   virtual void writeMatrixMarket(const std::string& filename) const = 0;
 };
 
 }

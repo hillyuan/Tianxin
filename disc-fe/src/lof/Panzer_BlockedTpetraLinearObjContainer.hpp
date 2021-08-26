@@ -126,6 +126,18 @@ public:
 
    void beginFill();
    void endFill();
+   
+   void applyDirichletBoundaryCondition( const std::map< panzer::LocalOrdinal, double >& indx ) override;
+   void applyDirichletBoundaryCondition( const double&, const std::map< panzer::LocalOrdinal, double >& indx ) override;
+   void evalDirichletResidual( const std::map< panzer::LocalOrdinal, double >& indx ) override {;}
+   void applyConcentratedLoad( const std::map< panzer::LocalOrdinal, double >& indx ) override
+   {
+      TEUCHOS_ASSERT(false); // not yet implemented
+   }
+   void writeMatrixMarket(const std::string& filename) const override
+   {
+	//   Tpetra::MatrixMarket::Writer<CrsMatrixType>::writeSparseFile(filename, *A);
+   }
 
 private:
    Teuchos::RCP<VectorType> x, dxdt, d2xdt2, f;

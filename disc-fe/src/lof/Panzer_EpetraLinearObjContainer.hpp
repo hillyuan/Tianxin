@@ -50,6 +50,8 @@
 // Epetra includes
 #include "Epetra_Vector.h"
 #include "Epetra_CrsMatrix.h"
+#include "EpetraExt_RowMatrixOut.h"
+#include "EpetraExt_VectorOut.h"
 
 #include "Panzer_LinearObjFactory.hpp" 
 #include "Panzer_ThyraObjContainer.hpp"
@@ -154,6 +156,31 @@ public:
    { A = (in==Teuchos::null) ? Teuchos::null : Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Thyra::get_Epetra_Operator(*in),true); }
    virtual Teuchos::RCP<Thyra::LinearOpBase<double> > get_A_th() const
    { return (A==Teuchos::null) ? Teuchos::null : Thyra::nonconstEpetraLinearOp(A); }
+   
+   // not implemented yet
+   void applyDirichletBoundaryCondition( const std::map< panzer::LocalOrdinal, double >& indx ) override
+   {
+      TEUCHOS_ASSERT(false); // not yet implemented
+   }
+   void applyDirichletBoundaryCondition( const double&, const std::map< panzer::LocalOrdinal, double >& indx ) override
+   {
+      TEUCHOS_ASSERT(false); // not yet implemented
+   }
+   void evalDirichletResidual( const std::map< panzer::LocalOrdinal, double >& indx ) override
+   {
+      TEUCHOS_ASSERT(false); // not yet implemented
+   }
+   void applyConcentratedLoad( const std::map< panzer::LocalOrdinal, double >& indx ) override
+   {
+      TEUCHOS_ASSERT(false); // not yet implemented
+   }
+   
+   void writeMatrixMarket(const std::string& filename) const override
+   {
+	 EpetraExt::RowMatrixToMatlabFile(filename.c_str(), *A);
+     EpetraExt::VectorToMatrixMarketFile("x_vec.mm",*x);
+     EpetraExt::VectorToMatrixMarketFile("b_vec.mm",*f);
+   }
 
 private:
    Teuchos::RCP<const Epetra_Map> domainMap;

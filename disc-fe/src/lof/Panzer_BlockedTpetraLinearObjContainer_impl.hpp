@@ -263,4 +263,31 @@ endFill()
    }
 }
 
+template <typename ScalarT,typename LocalOrdinalT,typename GlobalOrdinalT,typename NodeT>
+void BlockedTpetraLinearObjContainer<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>::
+applyDirichletBoundaryCondition( const std::map< panzer::LocalOrdinal, double >& indx )
+{
+/*	using device_type = typename MapType::device_type;
+   using execution_space = typename MapType::execution_space;
+   using range_type = Kokkos::RangePolicy<execution_space, LocalOrdinalT>;
+	const LocalOrdinalT lclNumRows = indx.size();
+	Kokkos::View<typename MapType::local_ordinal_type*, device_type> lclRowInds("lclRowInds", lclNumRows);
+	Kokkos::parallel_for
+    ("Fill lclRowInds",
+      range_type (0, lclNumRows),
+      KOKKOS_LAMBDA (const LocalOrdinalT lclRow) {
+	    lclRowInds(lclRow) = indx[lclRow];
+      }
+    );
+	   
+	Tpetra::applyDirichletBoundaryConditionToLocalMatrixRows(*A, lclRowInds);*/
+}
+	
+template <typename ScalarT,typename LocalOrdinalT,typename GlobalOrdinalT,typename NodeT>
+void BlockedTpetraLinearObjContainer<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>::
+applyDirichletBoundaryCondition( const double& p, const std::map< panzer::LocalOrdinal, double >& indx )
+{
+}
+
+
 }
