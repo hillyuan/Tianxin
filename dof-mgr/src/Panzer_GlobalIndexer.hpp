@@ -46,6 +46,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map> // a hash table for buildLocalIds()
+#include <set>
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_Comm.hpp"
 #include "Phalanx_KokkosDeviceTypes.hpp"
@@ -441,6 +442,10 @@ public:
 		}
 	 }
    }
+   
+   /* Get dof index of a given field */
+   virtual void getFieldIndex(const std::string& fd, std::set<panzer::LocalOrdinal>& ldofs) const {;}
+   virtual void getFieldIndex_ElementBlock(const std::string& fd, const std::string& eb, std::set<panzer::LocalOrdinal>& ldofs) const {;}
 	
 
 protected:

@@ -47,6 +47,8 @@
 #include "Teuchos_FancyOStream.hpp"
 #include "Panzer_ParameterLibrary.hpp"
 
+#include <map>
+
 namespace panzer {
   
   /** \brief Struct for global data to be stored.
@@ -65,6 +67,9 @@ namespace panzer {
     
     /** \brief Sacado scalar parameter library */
     Teuchos::RCP<panzer::ParamLib> pl;
+	
+	/** \brief Global constants */
+    std::map< std::string, double > constants;
 
     /** \brief Get the output stream */
     std::ostream & out() 

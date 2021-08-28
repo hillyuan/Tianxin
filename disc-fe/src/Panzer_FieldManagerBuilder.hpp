@@ -191,7 +191,7 @@ namespace panzer {
     /// Set a vector of active evaluation types to allocate.
     void setActiveEvaluationTypes(const std::vector<bool>& aet);
 
-  private:
+  protected:
     /** Build the BC field managers. This is the real deal, it correclty handles not having an equation set factory.
       */
     void setupBCFieldManagers(const std::vector<panzer::BC> & bcs,

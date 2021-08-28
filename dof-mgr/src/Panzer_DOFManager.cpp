@@ -1498,6 +1498,55 @@ void DOFManager::buildDofsInfo()
 }
 
 
+void DOFManager::getFieldIndex(const std::string& fd, std::set<panzer::LocalOrdinal>& ldofs) const
+{
+	// All element ids in current cpu
+	const auto elementLIDs = this->getLIDs();
+	// All element blocks in current cpu
+	std::vector< std::string > ebs;
+	this->getElementBlockIds(ebs);
+	
+	int fieldNum = this->getFieldNum(fd);
+
+	ldofs.clear();
+	for( auto eb: ebs ) 
+	{
+		if( !fieldInBlock(fd, eb ) ) continue;
+		const auto eblockLIDs = this->getElementBlock(eb);
+		const std::vector<int> offsets = this->getGIDFieldOffsets(eb, fieldNum);
+		
+		for( auto ele: eblockLIDs )
+		{
+			for(std::size_t basis=0;basis<offsets.size();basis++) {
+          		int offset = offsets[basis];
+          		auto lid   = elementLIDs(ele,offset);
+          		ldofs.emplace( lid );
+        	}
+		}
+	}
+}
+	
+void DOFManager::getFieldIndex_ElementBlock(const std::string& fd, const std::string& eb, std::set<panzer::LocalOrdinal>& ldofs) const
+{
+	// All element ids in current element block
+	const auto elementLIDs = this->getElementBlock(eb);
+	int fieldNum = this->getFieldNum(fd);
+	const std::vector<int> offsets = this->getGIDFieldOffsets(eb, fieldNum);
+	
+	ldofs.clear();
+	for( auto ele: elementLIDs )
+	{
+		auto LIDs = getElementLIDs( ele );
+		for(std::size_t basis=0;basis<offsets.size();basis++) {
+          int offset = offsets[basis];
+          auto lid   = LIDs(offset);
+          ldofs.emplace(lid);
+        }
+	}
+}
+
+
+
 /*
 template <typename panzer::LocalOrdinal,typename panzer::GlobalOrdinal>
 Teuchos::RCP<const Tpetra::Map<panzer::LocalOrdinal,panzer::GlobalOrdinal,panzer::TpetraNodeType> >
