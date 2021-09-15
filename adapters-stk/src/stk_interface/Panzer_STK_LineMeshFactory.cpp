@@ -184,6 +184,9 @@ void LineMeshFactory::buildMetaData(stk::ParallelMachine /* parallelMach */, STK
    // add sidesets 
    mesh.addSideset("left",side_ctd);
    mesh.addSideset("right",side_ctd);
+   
+   mesh.addNodeset("left");
+   mesh.addNodeset("right");
 }
 
 void LineMeshFactory::buildElements(stk::ParallelMachine parallelMach,STK_Interface & mesh) const
@@ -294,6 +297,30 @@ void LineMeshFactory::addSideSets(STK_Interface & mesh) const
             mesh.addEntityToSideset(edge,left);
       }
    }
+
+   mesh.endModification();
+}
+
+void LineMeshFactory::addNodeSets(STK_Interface & mesh) const
+{
+   mesh.beginModification();
+
+   // get all part vectors
+   stk::mesh::Part * left = mesh.getNodeset("left");
+   stk::mesh::Part * right = mesh.getNodeset("right");
+   
+   std::size_t totalXElems = nXElems_*xBlocks_;
+
+   // std::vector<stk::mesh::Entity> localElmts;
+   // mesh.getMyElements(localElmts);
+
+   Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh.getBulkData();
+
+   stk::mesh::Entity node = bulkData->get_entity(mesh.getNodeRank(),1)
+   if(mesh.entityOwnerRank(node)==machRank_) mesh.addEntityToNodeset(node,left);
+   
+   stk::mesh::Entity node = bulkData->get_entity(mesh.getNodeRank(),totalXElems+1)
+   if(mesh.entityOwnerRank(node)==machRank_) mesh.addEntityToNodeset(node,right);
 
    mesh.endModification();
 }
