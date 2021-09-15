@@ -316,11 +316,11 @@ void LineMeshFactory::addNodeSets(STK_Interface & mesh) const
 
    Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh.getBulkData();
 
-   stk::mesh::Entity node = bulkData->get_entity(mesh.getNodeRank(),1)
+   stk::mesh::Entity node = bulkData->get_entity(mesh.getNodeRank(),1);
    if(mesh.entityOwnerRank(node)==machRank_) mesh.addEntityToNodeset(node,left);
    
-   stk::mesh::Entity node = bulkData->get_entity(mesh.getNodeRank(),totalXElems+1)
-   if(mesh.entityOwnerRank(node)==machRank_) mesh.addEntityToNodeset(node,right);
+   stk::mesh::Entity node1 = bulkData->get_entity(mesh.getNodeRank(),totalXElems+1);
+   if(mesh.entityOwnerRank(node1)==machRank_) mesh.addEntityToNodeset(node1,right);
 
    mesh.endModification();
 }
