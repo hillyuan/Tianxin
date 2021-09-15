@@ -111,6 +111,7 @@ void LineMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::Paralle
 
    // now that edges are built, sidets can be added
    addSideSets(mesh);
+   addNodeSets(mesh);
 
    // calls Stk_MeshFactory::rebalance
    this->rebalance(mesh);
