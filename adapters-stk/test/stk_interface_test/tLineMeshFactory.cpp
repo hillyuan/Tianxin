@@ -145,6 +145,7 @@ TEUCHOS_UNIT_TEST(tLineMeshFactory, allblock)
    TEST_EQUALITY(mesh->getDimension(),1);
    TEST_EQUALITY(mesh->getNumElementBlocks(),(std::size_t) bx);
    TEST_EQUALITY(mesh->getNumSidesets(),2);
+   TEST_EQUALITY(mesh->getNumNodesets(),2);
    TEST_EQUALITY(mesh->getEntityCounts(mesh->getElementRank()),(std::size_t) xe);
    TEST_EQUALITY(mesh->getEntityCounts(mesh->getSideRank()),(std::size_t) xe+1);
    TEST_EQUALITY(mesh->getEntityCounts(mesh->getNodeRank()),(std::size_t) xe+1);

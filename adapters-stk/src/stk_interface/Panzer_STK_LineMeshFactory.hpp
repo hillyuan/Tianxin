@@ -87,7 +87,6 @@ protected:
    std::pair<int,int> determineXElemSizeAndStart(int xBlock,unsigned int size,unsigned int rank) const;
 
    void addSideSets(STK_Interface & mesh) const;
-   void addNodeSets(STK_Interface & mesh) const;
 
    double x0_;
    double xf_;

@@ -111,7 +111,6 @@ void LineMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::Paralle
 
    // now that edges are built, sidets can be added
    addSideSets(mesh);
-   addNodeSets(mesh);
 
    // calls Stk_MeshFactory::rebalance
    this->rebalance(mesh);
@@ -298,30 +297,6 @@ void LineMeshFactory::addSideSets(STK_Interface & mesh) const
             mesh.addEntityToSideset(edge,left);
       }
    }
-
-   mesh.endModification();
-}
-
-void LineMeshFactory::addNodeSets(STK_Interface & mesh) const
-{
-   mesh.beginModification();
-
-   // get all part vectors
-   stk::mesh::Part * left = mesh.getNodeset("left");
-   stk::mesh::Part * right = mesh.getNodeset("right");
-   
-   std::size_t totalXElems = nXElems_*xBlocks_;
-
-   // std::vector<stk::mesh::Entity> localElmts;
-   // mesh.getMyElements(localElmts);
-
-   Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh.getBulkData();
-
-   stk::mesh::Entity node = bulkData->get_entity(mesh.getNodeRank(),1);
-   if(mesh.entityOwnerRank(node)==machRank_) mesh.addEntityToNodeset(node,left);
-   
-   stk::mesh::Entity node1 = bulkData->get_entity(mesh.getNodeRank(),totalXElems+1);
-   if(mesh.entityOwnerRank(node1)==machRank_) mesh.addEntityToNodeset(node1,right);
 
    mesh.endModification();
 }
