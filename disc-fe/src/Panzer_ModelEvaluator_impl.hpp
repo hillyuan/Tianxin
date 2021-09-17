@@ -2570,6 +2570,13 @@ setOneTimeDirichletBeta(const Scalar & beta) const
 }
 
 template <typename Scalar>
+void panzer::ModelEvaluator<Scalar>::
+setKPivot(const Scalar & beta)
+{
+  K_pivot_    = beta;
+}
+
+template <typename Scalar>
 Teuchos::RCP<typename panzer::ModelEvaluator<Scalar>::ParameterObject>
 panzer::ModelEvaluator<Scalar>::
 createScalarParameter(const Teuchos::Array<std::string> & in_names,

@@ -378,6 +378,7 @@ public:
     * \param[in] beta Value of beta to use.
     */
   void setOneTimeDirichletBeta(const Scalar & beta) const;
+  void setKPivot(const Scalar & beta);
 
 
   /** Setup all the assembly input arguments required by "inArgs".
@@ -715,6 +716,10 @@ private: // data members
 
   mutable bool oneTimeDirichletBeta_on_;
   mutable Scalar oneTimeDirichletBeta_;
+  
+  // Equals to 1.0 in general 1-0 matrix clear in Dirichlet condition. But in Eigen analysis
+  // we may need other value specified by user
+  double K_pivot_; 
 
   bool build_volume_field_managers_;
   bool build_bc_field_managers_;
