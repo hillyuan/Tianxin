@@ -86,6 +86,7 @@ namespace panzer {
        , second_sensitivities_name("")
        , apply_dirichlet_beta(false)
        , dirichlet_beta(0.0)
+	   , pivot_dirichlet(1.0)
     { }
 
     Teuchos::RCP<panzer::LinearObjContainer> ghostedContainer_;
