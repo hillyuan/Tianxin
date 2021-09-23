@@ -431,7 +431,7 @@ void SquareTriMeshFactory::addSideSets(STK_Interface & mesh) const
       // vertical boundaries
       ///////////////////////////////////////////
 
-      if(nx+1==totalXElems && lower) { 
+      if(nx+1==totalXElems && lower) {
          stk::mesh::Entity edge = mesh.findConnectivityById(element, stk::topology::EDGE_RANK, 1);
 
          // on the right
@@ -473,6 +473,9 @@ void SquareTriMeshFactory::addSideSets(STK_Interface & mesh) const
 void SquareTriMeshFactory::addNodeSets(STK_Interface & mesh) const
 {
    mesh.beginModification();
+   
+   std::size_t totalXElems = nXElems_*xBlocks_;
+   std::size_t totalYElems = nYElems_*yBlocks_;
 
    // get all part vectors
    stk::mesh::Part * origin = mesh.getNodeset("origin");
@@ -480,14 +483,68 @@ void SquareTriMeshFactory::addNodeSets(STK_Interface & mesh) const
    stk::mesh::Part * right = mesh.getNodeset("right");
    stk::mesh::Part * top = mesh.getNodeset("top");
    stk::mesh::Part * bottom = mesh.getNodeset("bottom");
-
+   
    Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh.getBulkData();
    if(machRank_==0) 
    {
       stk::mesh::Entity node = bulkData->get_entity(mesh.getNodeRank(),1);
-
-      // add zero node to origin node set
       mesh.addEntityToNodeset(node,origin);
+   }
+   
+   std::vector<stk::mesh::Entity> localElmts;
+   mesh.getMyElements(localElmts);
+   
+   // loop over elements adding nodes to nodesets
+   for(stk::mesh::Entity element : localElmts) {
+      stk::mesh::EntityId gid = mesh.elementGlobalId(element);
+
+      bool lower = (gid%2 != 0);
+      std::size_t block = lower ? (gid+1)/2 : gid/2;
+      std::size_t nx,ny;
+      ny = (block-1) / totalXElems;
+      nx = block-ny*totalXElems-1;
+
+      // vertical boundaries
+      ///////////////////////////////////////////
+
+      if(nx+1==totalXElems && lower) {
+        stk::mesh::Entity node0 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 1);
+        if(mesh.entityOwnerRank(node0)==machRank_)
+            mesh.addEntityToNodeset(node0,right);
+        stk::mesh::Entity node1 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 2);
+        if(mesh.entityOwnerRank(node1)==machRank_)
+            mesh.addEntityToNodeset(node1,right);
+      }
+
+      if(nx==0 && !lower) {
+        stk::mesh::Entity node0 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 2);
+        if(mesh.entityOwnerRank(node0)==machRank_)
+            mesh.addEntityToNodeset(node0,left);
+		stk::mesh::Entity node1 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 0);
+         if(mesh.entityOwnerRank(node1)==machRank_)
+            mesh.addEntityToNodeset(node1,left);
+      }
+
+      // horizontal boundaries
+      ///////////////////////////////////////////
+
+      if(ny==0 && lower) {
+        stk::mesh::Entity node0 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 0);
+        if(mesh.entityOwnerRank(node0)==machRank_)
+            mesh.addEntityToNodeset(node0,bottom);
+		stk::mesh::Entity node1 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 1);
+        if(mesh.entityOwnerRank(node1)==machRank_)
+            mesh.addEntityToNodeset(node1,bottom);
+      }
+
+      if(ny+1==totalYElems && !lower) {
+        stk::mesh::Entity node0 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 1);
+        if(mesh.entityOwnerRank(node0)==machRank_)
+            mesh.addEntityToNodeset(node0,top);
+		stk::mesh::Entity node1 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 2);
+        if(mesh.entityOwnerRank(node1)==machRank_)
+            mesh.addEntityToNodeset(node1,top);
+      }
    }
 
    mesh.endModification();

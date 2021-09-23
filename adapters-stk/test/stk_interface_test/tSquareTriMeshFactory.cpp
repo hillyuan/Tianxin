@@ -127,8 +127,8 @@ TEUCHOS_UNIT_TEST(tSquareTriMeshFactory, defaults)
    std::vector<std::string> nodesets;
    mesh->getNodesetNames(nodesets);
  
-   TEST_EQUALITY(nodesets.size(),1);
-   TEST_EQUALITY(nodesets[0],"origin");
+   TEST_EQUALITY(nodesets.size(),5);
+   TEST_EQUALITY(nodesets[2],"origin");
 }
 
 TEUCHOS_UNIT_TEST(tSquareTriMeshFactory, default_edge_face_blocks)
