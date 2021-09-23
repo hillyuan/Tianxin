@@ -107,6 +107,7 @@ ModelEvaluator(const Teuchos::RCP<panzer::FieldManagerBuilder>& fmb,
   , solverFactory_(solverFactory)
   , oneTimeDirichletBeta_on_(false)
   , oneTimeDirichletBeta_(0.0)
+  , K_pivot_(1.0)
   , build_volume_field_managers_(true)
   , build_bc_field_managers_(true)
   , active_evaluation_types_(Sacado::mpl::size<panzer::Traits::EvalTypes>::value, true)
@@ -164,6 +165,7 @@ ModelEvaluator(const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits>
   , solverFactory_(solverFactory)
   , oneTimeDirichletBeta_on_(false)
   , oneTimeDirichletBeta_(0.0)
+  , K_pivot_(1.0)
   , build_volume_field_managers_(true)
   , build_bc_field_managers_(true)
   , active_evaluation_types_(Sacado::mpl::size<panzer::Traits::EvalTypes>::value, true)
@@ -217,6 +219,7 @@ ModelEvaluator(const Teuchos::RCP<panzer::FieldManagerBuilder>& fmb,
   , solverFactory_(solverFactory)
   , oneTimeDirichletBeta_on_(false)
   , oneTimeDirichletBeta_(0.0)
+  , K_pivot_(1.0)
   , build_volume_field_managers_(true)
   , build_bc_field_managers_(true)
   , active_evaluation_types_(Sacado::mpl::size<panzer::Traits::EvalTypes>::value, true)
@@ -274,6 +277,7 @@ ModelEvaluator(const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits>
   , solverFactory_(solverFactory)
   , oneTimeDirichletBeta_on_(false)
   , oneTimeDirichletBeta_(0.0)
+  , K_pivot_(1.0)
   , build_volume_field_managers_(true)
   , build_bc_field_managers_(true)
   , active_evaluation_types_(Sacado::mpl::size<panzer::Traits::EvalTypes>::value, true)
@@ -679,8 +683,7 @@ setupAssemblyInArgs(const Thyra::ModelEvaluatorBase::InArgs<Scalar> & inArgs,
 
   // this member is handled in the individual functions
   ae_inargs.apply_dirichlet_beta = false;
-  //ae_inargs.pivot_dirichlet =  inArgs.get_pivot_dirichlet();
-  ae_inargs.pivot_dirichlet = 1.0;
+  ae_inargs.pivot_dirichlet = K_pivot_;
 
   // Set input parameters
   int num_param_vecs = parameters_.size();
