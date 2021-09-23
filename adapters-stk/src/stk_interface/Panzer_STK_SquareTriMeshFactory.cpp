@@ -274,6 +274,10 @@ void SquareTriMeshFactory::buildMetaData(stk::ParallelMachine /* parallelMach */
 
    // add nodesets
    mesh.addNodeset("origin");
+   mesh.addNodeset("left");
+   mesh.addNodeset("right");
+   mesh.addNodeset("top");
+   mesh.addNodeset("bottom");
 
    if(createEdgeBlocks_) {
      const CellTopologyData * edge_ctd = shards::CellTopology(ctd).getBaseCellTopologyData(1,0);
@@ -472,6 +476,10 @@ void SquareTriMeshFactory::addNodeSets(STK_Interface & mesh) const
 
    // get all part vectors
    stk::mesh::Part * origin = mesh.getNodeset("origin");
+   stk::mesh::Part * left = mesh.getNodeset("left");
+   stk::mesh::Part * right = mesh.getNodeset("right");
+   stk::mesh::Part * top = mesh.getNodeset("top");
+   stk::mesh::Part * bottom = mesh.getNodeset("bottom");
 
    Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh.getBulkData();
    if(machRank_==0) 

@@ -305,6 +305,10 @@ void SquareQuadMeshFactory::buildMetaData(stk::ParallelMachine /* parallelMach *
    // add nodesets
    mesh.addNodeset("lower_left");
    mesh.addNodeset("origin");
+   mesh.addNodeset("left");
+   mesh.addNodeset("right");
+   mesh.addNodeset("top");
+   mesh.addNodeset("bottom");
 
    if(createEdgeBlocks_) {
      const CellTopologyData * edge_ctd = shards::CellTopology(ctd).getBaseCellTopologyData(1,0);
@@ -558,9 +562,67 @@ void SquareQuadMeshFactory::addNodeSets(STK_Interface & mesh) const
    // get all part vectors
    stk::mesh::Part * lower_left = mesh.getNodeset("lower_left");
    stk::mesh::Part * origin = mesh.getNodeset("origin");
+   stk::mesh::Part * left = mesh.getNodeset("left");
+   stk::mesh::Part * right = mesh.getNodeset("right");
+   stk::mesh::Part * top = mesh.getNodeset("top");
+   stk::mesh::Part * bottom = mesh.getNodeset("bottom");
 
-   // std::vector<stk::mesh::Entity> localElmts;
-   // mesh.getMyElements(localElmts);
+   std::vector<stk::mesh::Entity> localElmts;
+   mesh.getMyElements(localElmts);
+   
+   // loop over elements adding nodes to nodesets
+   for(stk::mesh::Entity element : localElmts) {
+      stk::mesh::EntityId gid = mesh.elementGlobalId(element);
+
+      // reverse the offset for local gid numbering scheme
+      gid -= offset_;
+
+      std::size_t nx,ny;
+      ny = (gid-1) / totalXElems;
+      nx = gid-ny*totalXElems-1;
+
+      // vertical boundaries
+      ///////////////////////////////////////////
+
+      if(nx+1==totalXElems) { 
+        stk::mesh::Entity node0 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 1);
+        if(mesh.entityOwnerRank(node0)==machRank_)
+            mesh.addEntityToNodeset(node0,right);
+        stk::mesh::Entity node1 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 2);
+        if(mesh.entityOwnerRank(node1)==machRank_)
+            mesh.addEntityToNodeset(node1,right);
+      }
+
+      if(nx==0) {
+        stk::mesh::Entity node0 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 3);
+        if(mesh.entityOwnerRank(node0)==machRank_)
+            mesh.addEntityToNodeset(node0,left);
+		stk::mesh::Entity node1 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 0);
+         if(mesh.entityOwnerRank(node1)==machRank_)
+            mesh.addEntityToNodeset(node1,left);
+      }
+
+      // horizontal boundaries
+      ///////////////////////////////////////////
+
+      if(ny==0) {
+        stk::mesh::Entity node0 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 0);
+        if(mesh.entityOwnerRank(node0)==machRank_)
+            mesh.addEntityToNodeset(node0,bottom);
+		stk::mesh::Entity node1 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 1);
+        if(mesh.entityOwnerRank(node1)==machRank_)
+            mesh.addEntityToNodeset(node1,bottom);
+      }
+
+      if(ny+1==totalYElems) {
+        stk::mesh::Entity node0 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 2);
+        if(mesh.entityOwnerRank(node0)==machRank_)
+            mesh.addEntityToNodeset(node0,top);
+		stk::mesh::Entity node1 = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 3);
+        if(mesh.entityOwnerRank(node1)==machRank_)
+            mesh.addEntityToNodeset(node1,top);
+      }
+   }
 
    Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh.getBulkData();
    if(machRank_==0) 
