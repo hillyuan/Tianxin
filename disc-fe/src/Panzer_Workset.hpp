@@ -236,11 +236,13 @@ namespace panzer {
      * \throws If setup has not been called
      *
      * \param[in] description Descriptor for integration scheme
+     * \param[in] lazy_version Get an empty IntegrationValues2 object that will construct/allocate itself on demand (less memory - EXPERIMENTAL)
      *
      * \return Object containing integration values
      */
     const panzer::IntegrationValues2<double> &
-    getIntegrationValues(const panzer::IntegrationDescriptor & description) const;
+    getIntegrationValues(const panzer::IntegrationDescriptor & description,
+                         const bool lazy_version=false) const;
 
     /*
      * \brief Grab the basis values for a given basis description
@@ -374,7 +376,6 @@ namespace panzer {
     double stage_number;
     std::vector<double> gather_seeds; // generic gather seeds
     bool evaluate_transient_terms;
-    double pivot_dirichlet;
 
     //! other contains details about the side-sharing elements on the other side
     //! of the interface. If Teuchos::nonnull(other), then Workset contains two

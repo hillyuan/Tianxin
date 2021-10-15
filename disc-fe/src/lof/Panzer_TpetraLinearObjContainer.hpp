@@ -93,9 +93,7 @@ public:
       if(get_f()!=Teuchos::null) get_f()->putScalar(0.0);
       if(get_A()!=Teuchos::null) {
         Teuchos::RCP<CrsMatrixType> mat = get_A(); 
-        mat->resumeFill();
         mat->setAllToScalar(0.0);
-        mat->fillComplete();
       }
    }
 
@@ -126,9 +124,7 @@ public:
 
    void initializeMatrix(ScalarT value)
    {  
-     A->resumeFill();
      A->setAllToScalar(value); 
-     A->fillComplete();
    }
 
    virtual void set_x_th(const Teuchos::RCP<Thyra::VectorBase<ScalarT> > & in) 
