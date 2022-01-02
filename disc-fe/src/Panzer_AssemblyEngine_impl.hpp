@@ -392,7 +392,7 @@ evaluateDirichletCondition(const panzer::AssemblyEngineInArgs& in)
   if( pfm == nullptr ) return;
 
   pfm->template preEvaluate<EvalT>(ped);
-  //workset.pivot_dirichlet = in.pivot_dirichlet;
+  workset.pivot_dirichlet = in.pivot_dirichlet;
   pfm->template evaluateFields<EvalT>(workset);
   pfm->template postEvaluate<EvalT>(NULL);
 }
