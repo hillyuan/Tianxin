@@ -1,8 +1,26 @@
-# Panzer
-Panzer, forked from Trilinos package of Panzer, is a toolkit that provides a multiphysics assembly engine for solving large-scale systems of partial differential equations. The original panzer package is far from completed. There are some defectives both in its implementation and design. For example
-- Current implementation only allows one type of element in one application
-- Second order time derivatives are not considered.  
+# Introduction
+Panzer, forked from [Trilinos](https://github.com/trilinos/Trilinos) package of Panzer, is a toolkit that provides a multiphysics assembly engine for solving large-scale systems of partial differential equations. 
 
-are vital drawbacks from the point of view of its application.
+This package of Panzer is developed for the purpose of supporting open source multiphysics FEM software [SiYuan](https://gitlab.com/hillyuan/siyuan). Those 
+defectives of original panzer, which are to be used by SiYuan, such as
+- Different types of element are not allowed
+- Second order time derivatives are not considered
 
-Those problems are supposed to be solved in current package.
+are to be developed/modified in this package.
+
+
+# Usage
+
+The current package of Panzer should be configured and compiled with Trilinos. You could download official Trilinos from https://github.com/trilinos/Trilinos and Panzer here and then modify line 134 of the file PackagesList.cmake of Trilinos from
+```
+Panzer                packages/panzer                   PT 
+```
+to
+```
+Panzer               <folder of current package>        PT 
+```
+The Trilinos could then be compiled with current package of Panzer. Pls check relevent introduction of Trilinos for details.
+
+# License
+
+BSD 3-Clause license. Pls see licensing declaration written in the top of each files for details.
