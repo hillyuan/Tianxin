@@ -10,13 +10,13 @@ are to be developed/modified in this package.
 
 # Usage
 
-Tianxin should be configured and compiled together with Trilinos. You should download official Trilinos from https://github.com/trilinos/Trilinos and Tianxin here and then modify line 134 of the file PackagesList.cmake of Trilinos from
+As a replacement of package Panzer of Trilinos, Tianxin should be configured and compiled together with Trilinos. You should download official Trilinos from https://github.com/trilinos/Trilinos and put the package of Tianxin upon folder, e.g., Trilinon/external. Then you need modify line 134 of the file PackagesList.cmake of Trilinos from
 ```
-Panzer                packages/panzer                   PT 
+Panzer               packages/panzer                   PT 
 ```
 to
 ```
-Tianxin               <folder of current package>        PT 
+Panzer               external/Tianxin                  PT 
 ```
 The Trilinos could then be compiled with current package of Tianxin. Pls check relevent instruction of Trilinos for details.
 
