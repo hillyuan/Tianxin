@@ -138,11 +138,22 @@ public:
 
    /** Add an edge block with a string name
      */
-   void addEdgeBlock(const std::string & name,const CellTopologyData * ctData);
+//   void addEdgeBlock(const std::string & name,const CellTopologyData * ctData);
+   void addEdgeBlock(const std::string & elemBlockName,
+                     const std::string & edgeBlockName,
+                     const stk::topology & topology);
+   void addEdgeBlock(const std::string & elemBlockName,
+                     const std::string & edgeBlockName,
+                     const CellTopologyData * ctData);
 
    /** Add a face block with a string name
      */
-   void addFaceBlock(const std::string & name,const CellTopologyData * ctData);
+   void addFaceBlock(const std::string & elemBlockName,
+                     const std::string & faceBlockName,
+                     const stk::topology & topology);
+   void addFaceBlock(const std::string & elemBlockName,
+                     const std::string & faceBlockName,
+                     const CellTopologyData * ctData);
 
    /** Add a side set with a string name
      */
@@ -422,15 +433,6 @@ public:
      * \param[in,out] sides Vector of entities containing the requested sides.
      */
    void getAllSides(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & sides) const;
-   
-   /** Get Edegs global Id inside the side set requested.
-     * The Entites in the sideset should be a dimension greater/equal to 2.
-     *
-     * \param[in] sideName Name of side set
-     * \param[in,out] edges Vector of entities containing the requested sides.
-     */
-   void getAllSideEdgesId(const std::string & sideName,std::vector<stk::mesh::EntityId> & edges) const;
-
 
    /** Get Entities corresponding to the node set requested. This also limits the entities
      * to be in a particular element block. The Entites in the vector should be of dimension
@@ -441,27 +443,7 @@ public:
      * \param[in,out] nodes Vector of entities containing the requested nodes.
      */
 
-   void getMyNodeSet(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const;
-   void getMyNodeSetIds(const std::string & nodesetName,const std::string & blockName,std::vector<stk::mesh::EntityId> & nodes) const;
-
-   /** Get Entities corresponding to the node set requested. The Entites in the vector should be of dimension
-     * <code>0</code>.
-     *
-     * \param[in] nodesetName Name of node set
-     * \param[in,out] nodes Vector of entities containing the requested nodes.
-     */
-   void getOwnedNodeSet(const std::string & nodesetName, std::vector<stk::mesh::Entity> & nodes) const;
-   void getOwnedNodeSetIds(const std::string & nodesetName, std::vector<stk::mesh::EntityId> & nodeIds) const;
-	
-   /** Get Entities corresponding to the node set requested. The Entites in the vector should be of dimension
-     * <code>0</code>.
-     *
-     * \param[in] nodesetName Name of node set
-     * \param[in,out] nodes Vector of entities containing the requested nodes.
-     */
-   void getAllNodeSet(const std::string & nodesetName, std::vector<stk::mesh::Entity> & nodes) const;
-   void getAllNodeSetIds(const std::string & nodesetName, std::vector<stk::mesh::EntityId> & nodeIds) const;
-   void getAllNodeSetIds(const std::string & nodesetName, std::vector<panzer::GlobalOrdinal> & nodeIds) const;
+   void getMyNodes(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const;
 
    /**
     * Searches for connected entity by rank and relation id. Returns
@@ -1329,8 +1311,6 @@ protected:
    std::map<std::string, stk::mesh::Part*> faceBlocks_;     // Face blocks
 
    std::map<std::string, Teuchos::RCP<shards::CellTopology> > elementBlockCT_;
-   std::map<std::string, Teuchos::RCP<shards::CellTopology> > edgeBlockCT_;
-   std::map<std::string, Teuchos::RCP<shards::CellTopology> > faceBlockCT_;
 
    // for storing/accessing nodes
    stk::mesh::Part * nodesPart_;

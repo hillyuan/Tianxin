@@ -111,9 +111,11 @@ protected:
 
    bool createEdgeBlocks_;
 
-  /// If true, offset mesh GIDs to exercise 32-bit limits.
-  bool offsetGIDs_;
-  mutable stk::mesh::EntityId offset_;
+   /// If true, offset mesh GIDs to exercise 32-bit limits.
+   bool offsetGIDs_;
+   mutable stk::mesh::EntityId offset_;
+
+   std::string edgeBlockName_;
 };
 
 }

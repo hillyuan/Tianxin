@@ -241,6 +241,12 @@ void SquareTriMeshFactory::initializeWithDefaults()
 
    // set that parameter list
    setParameterList(validParams);
+
+   /* This is a tri mesh factory so all elements in all element blocks
+    * will be tri3.  This means that all the edges will be line2.
+    * The edge block name is hard coded to reflect this.
+    */
+   edgeBlockName_ = "line_2_"+panzer_stk::STK_Interface::edgeBlockString;
 }
 
 void SquareTriMeshFactory::buildMetaData(stk::ParallelMachine /* parallelMach */, STK_Interface & mesh) const
@@ -248,6 +254,7 @@ void SquareTriMeshFactory::buildMetaData(stk::ParallelMachine /* parallelMach */
    typedef shards::Triangle<> TriTopo;
    const CellTopologyData * ctd = shards::getCellTopologyData<TriTopo>();
    const CellTopologyData * side_ctd = shards::CellTopology(ctd).getBaseCellTopologyData(1,0);
+   const CellTopologyData * edge_ctd = shards::CellTopology(ctd).getBaseCellTopologyData(1,0);
 
    // build meta data
    //mesh.setDimension(2);
@@ -261,6 +268,11 @@ void SquareTriMeshFactory::buildMetaData(stk::ParallelMachine /* parallelMach */
 
             // add element blocks
             mesh.addElementBlock("eblock"+ebPostfix.str(),ctd);
+            if(createEdgeBlocks_) {
+               mesh.addEdgeBlock("eblock"+ebPostfix.str(),
+                                 edgeBlockName_,
+                                 edge_ctd);
+            }
          }
 
       }
@@ -278,11 +290,6 @@ void SquareTriMeshFactory::buildMetaData(stk::ParallelMachine /* parallelMach */
    mesh.addNodeset("right");
    mesh.addNodeset("top");
    mesh.addNodeset("bottom");
-
-   if(createEdgeBlocks_) {
-     const CellTopologyData * edge_ctd = shards::CellTopology(ctd).getBaseCellTopologyData(1,0);
-     mesh.addEdgeBlock(panzer_stk::STK_Interface::edgeBlockString, edge_ctd);
-   }
 }
 
 void SquareTriMeshFactory::buildElements(stk::ParallelMachine parallelMach,STK_Interface & mesh) const
@@ -554,13 +561,15 @@ void SquareTriMeshFactory::addEdgeBlocks(STK_Interface & mesh) const
 {
    mesh.beginModification();
 
-   stk::mesh::Part * edge_block = mesh.getEdgeBlock(panzer_stk::STK_Interface::edgeBlockString);
-
    Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh.getBulkData();
    Teuchos::RCP<stk::mesh::MetaData> metaData = mesh.getMetaData();
 
+   stk::mesh::Part * edge_block = mesh.getEdgeBlock(edgeBlockName_);
+
+   stk::mesh::Selector owned_block = metaData->locally_owned_part();
+
    std::vector<stk::mesh::Entity> edges;
-   bulkData->get_entities(mesh.getEdgeRank(),metaData->locally_owned_part(),edges);
+   bulkData->get_entities(mesh.getEdgeRank(), owned_block, edges);
    mesh.addEntitiesToEdgeBlock(edges, edge_block);
 
    mesh.endModification();
