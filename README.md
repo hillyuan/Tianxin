@@ -1,8 +1,25 @@
-# Panzer
-Panzer, forked from Trilinos package of Panzer, is a toolkit that provides a multiphysics assembly engine for solving large-scale systems of partial differential equations. The original panzer package is far from completed. There are some defectives both in its implementation and design. For example
-- Current implementation only allows one type of element in one application
-- Second order time derivatives are not considered.  
+# Introduction
+Tianxin, forked from [Trilinos](https://github.com/trilinos/Trilinos) package of Panzer, is a toolkit that provides a multiphysics assembly engine for solving large-scale systems of partial differential equations. 
 
-are vital drawbacks from the point of view of its application.
+Tianxin is developed for the purpose of supporting open source multiphysics FEM software [SiYuan](https://gitlab.com/hillyuan/siyuan). Those defectives of original software package Panzer, which are to be used by SiYuan, such as
+- Different types of element are not allowed
+- Second order time derivatives are not considered
 
-Those problems are supposed to be solved in current package.
+are to be developed/modified in this package.
+
+
+# Usage
+
+As a replacement of package Panzer of Trilinos, Tianxin should be configured and compiled together with Trilinos. You should download official Trilinos from https://github.com/trilinos/Trilinos and put the package of Tianxin upon folder, e.g., Trilinon/external. Then you need modify line 134 of the file PackagesList.cmake of Trilinos from
+```
+Panzer               packages/panzer                   PT 
+```
+to
+```
+Panzer               external/Tianxin                  PT 
+```
+The Trilinos could then be compiled with current package of Tianxin. Pls check relevent instruction of Trilinos for details.
+
+# License
+
+BSD 3-Clause license. Pls see licensing declaration written in the top of each files for details.
