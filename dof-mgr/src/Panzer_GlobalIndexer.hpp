@@ -310,9 +310,9 @@ public:
 	   if( nodeLIDMap_.empty() ) return -1;
 	   auto it = nodeLIDMap_.find(f);
 	   if( it==nodeLIDMap_.end() ) return -1;
-	   auto itt = nodeGIDMap_.at(f).find(nd);
-	   if( itt==nodeGIDMap_.at(f).end() ) return -1;
-	   return nodeGIDMap_.at(f).at(nd); 
+	  // auto itt = nodeGIDMap_.at(f).find(nd);
+	  // if( itt==nodeGIDMap_.at(f).end() ) return -1;
+	   return nodeLIDMap_.at(f).at(nd); 
    }
 	
    /**
