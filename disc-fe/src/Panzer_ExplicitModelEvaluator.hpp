@@ -50,7 +50,6 @@
 
 #include "Panzer_ModelEvaluator.hpp"
 #include "Panzer_ModelEvaluator_Epetra.hpp"
-#include "Panzer_MassMatrixModelEvaluator.hpp"
 
 namespace panzer {
 
@@ -61,8 +60,7 @@ namespace panzer {
   */
 template<typename Scalar>
 class ExplicitModelEvaluator
-  : public Thyra::ModelEvaluatorDelegatorBase<Scalar>,
-    public panzer::MassMatrixModelEvaluator<Scalar> {
+  : public Thyra::ModelEvaluatorDelegatorBase<Scalar> {
 public:
 
   /** \name Constructors/Initializers/Accessors */
@@ -99,6 +97,11 @@ public:
   {
     Thyra::apply(*mass_,Thyra::NOTRANS,*input,output.ptr());
   }
+	  
+protected:
+
+  //! Apply mass matrix inverse within the evaluator
+  mutable bool applyMassInverse_;
 
 private: // data members
 
