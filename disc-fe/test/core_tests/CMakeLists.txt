@@ -65,12 +65,6 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   )
   
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  stlmap_utilities
-  SOURCES stlmap_utilities.cpp ${UNIT_TEST_DRIVER}
-  NUM_MPI_PROCS 1
-  )
-  
-TRIBITS_ADD_EXECUTABLE_AND_TEST(
   shards_utilities
   SOURCES shards_utilities.cpp ${UNIT_TEST_DRIVER}
   NUM_MPI_PROCS 1
