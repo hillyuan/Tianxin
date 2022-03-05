@@ -56,10 +56,8 @@
 #include "Epetra_CrsMatrix.h"
 
 #include "Panzer_GlobalIndexer.hpp"
-#include "Panzer_PtrFromStlVector.hpp"
 #include "Panzer_PureBasis.hpp"
 #include "Panzer_EpetraLinearObjContainer.hpp"
-#include "Panzer_PtrFromStlVector.hpp"
 #include "Panzer_LOCPair_GlobalEvaluationData.hpp"
 #include "Panzer_ParameterList_GlobalEvaluationData.hpp"
 
@@ -215,8 +213,8 @@ evaluateFields(typename TRAITS::EvalData workset)
                int err = Jac->SumIntoMyValues(
                  row,
                  std::min(cLIDs.size(), static_cast<size_t>(scatterField.size())),
-                 panzer::ptrFromStlVector(jacRow),
-                 panzer::ptrFromStlVector(cLIDs));
+                 jacRow.data(),
+                 cLIDs.data() );
                TEUCHOS_ASSERT_EQUALITY(err,0);
             }
          } // end rowBasisNum

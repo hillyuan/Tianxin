@@ -46,8 +46,6 @@
 // only do this if required by the user
 #ifdef Panzer_BUILD_HESSIAN_SUPPORT
 
-#include "Panzer_PtrFromStlVector.hpp"
-
 // the includes for this file come in as a result of the includes in the main 
 // Epetra scatter dirichlet residual file
 
@@ -163,7 +161,6 @@ void
 ScatterDirichletResidual_Epetra<panzer::Traits::Hessian,TRAITS,LO,GO>::
 evaluateFields(typename TRAITS::EvalData workset) 
 {
-  using panzer::ptrFromStlVector;
   using std::vector;
 
    // TEUCHOS_TEST_FOR_EXCEPTION(true,std::logic_error,
@@ -252,7 +249,7 @@ evaluateFields(typename TRAITS::EvalData workset)
     
             if(!preserveDiagonal_) {
               int err = Jac->ReplaceMyValues(row, cLIDs.size(), 
-                ptrFromStlVector(jacRow), &cLIDs[0]);
+                jacRow.data(), &cLIDs[0]);
               TEUCHOS_ASSERT(err==0); 
             }
          }
