@@ -49,7 +49,7 @@
 #include "Intrepid2_Orientation.hpp"
 
 #include "Panzer_BasisIRLayout.hpp"
-#include "Panzer_ArrayTraits.hpp"
+#include "Phalanx_MDField.hpp"
 
 namespace panzer {
 
@@ -99,7 +99,7 @@ namespace panzer {
   template <typename Scalar>
   class BasisValues2 {
   public:
-    typedef typename ArrayTraits<Scalar,PHX::MDField<Scalar> >::size_type size_type;
+    typedef typename PHX::MDField<Scalar>::size_type size_type;
     using IntrepidBasis = Intrepid2::Basis<PHX::Device::execution_space,Scalar,Scalar>;
 
     typedef PHX::MDField<Scalar>                    ArrayDynamic;

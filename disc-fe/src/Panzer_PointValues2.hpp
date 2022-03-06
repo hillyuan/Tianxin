@@ -46,9 +46,8 @@
 #include "PanzerDiscFE_config.hpp"
 
 #include "Panzer_PointRule.hpp"
-#include "Panzer_ArrayTraits.hpp"
 #include "Panzer_Dimension.hpp"
-
+#include "Phalanx_MDField.hpp"
 #include "Teuchos_RCP.hpp"
 
 namespace panzer {
@@ -56,7 +55,7 @@ namespace panzer {
   template <typename Scalar>
   class PointValues2 {
   public:
-    typedef typename ArrayTraits<Scalar, PHX::MDField<Scalar> >::size_type size_type;
+    typedef typename PHX::MDField<Scalar>::size_type size_type;
 
     template<typename SourceScalar>
     PointValues2<Scalar>&

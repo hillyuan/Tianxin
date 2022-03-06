@@ -48,7 +48,6 @@
 #include "Panzer_CellData.hpp"
 #include "Panzer_IntegrationRule.hpp"
 #include "Panzer_IntegrationValues2.hpp"
-#include "Panzer_ArrayTraits.hpp"
 #include "Panzer_CommonArrayFactories.hpp"
 #include "Panzer_SubcellConnectivity.hpp"
 #include "Panzer_LocalMeshInfo.hpp"
@@ -60,7 +59,7 @@ using panzer::IntegrationRule;
 namespace panzer {
 
   TEUCHOS_UNIT_TEST(integration_values, volume)
-  {    
+  {
     Teuchos::RCP<shards::CellTopology> topo = 
        Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Quadrilateral<4> >()));
 
@@ -87,7 +86,7 @@ namespace panzer {
     //   |       |
     // 0(0,0)---1(1,0)
 
-    typedef panzer::ArrayTraits<double,PHX::MDField<double> >::size_type size_type;
+    typedef PHX::MDField<double>::size_type size_type;
     const size_type x = 0;
     const size_type y = 1;
     auto node_coordinates_k = node_coordinates.get_view();
@@ -149,7 +148,7 @@ namespace panzer {
     //   |       |
     // 0(0,0)---1(1,0)
 
-    typedef panzer::ArrayTraits<double,PHX::MDField<double> >::size_type size_type;
+    typedef PHX::MDField<double>::size_type size_type;
     const size_type x = 0;
     const size_type y = 1;
     auto node_coordinates_k = node_coordinates.get_view();
@@ -223,7 +222,7 @@ namespace panzer {
     //   |       |
     // 0(0,0)---1(1,0)
 
-    typedef panzer::ArrayTraits<double,PHX::MDField<double> >::size_type size_type;
+    typedef PHX::MDField<double>::size_type size_type;
     const size_type x = 0;
     const size_type y = 1;
     auto node_coordinates_k = node_coordinates.get_view();

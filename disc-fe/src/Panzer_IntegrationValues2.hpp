@@ -48,7 +48,6 @@
 
 #include "PanzerDiscFE_config.hpp"
 #include "Panzer_IntegrationRule.hpp"
-#include "Panzer_ArrayTraits.hpp"
 #include "Panzer_Dimension.hpp"
 #include "Phalanx_MDField.hpp"
 #include "Intrepid2_Cubature.hpp"
@@ -60,7 +59,7 @@ namespace panzer {
   template <typename Scalar>
   class IntegrationValues2 {
   public:
-    typedef typename ArrayTraits<Scalar,PHX::MDField<Scalar> >::size_type size_type;
+    typedef typename PHX::MDField<Scalar>::size_type size_type;
 
     typedef PHX::MDField<Scalar> ArrayDynamic;
     typedef PHX::MDField<double> DblArrayDynamic;

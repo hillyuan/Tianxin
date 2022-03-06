@@ -65,12 +65,6 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   )
   
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  stlmap_utilities
-  SOURCES stlmap_utilities.cpp ${UNIT_TEST_DRIVER}
-  NUM_MPI_PROCS 1
-  )
-  
-TRIBITS_ADD_EXECUTABLE_AND_TEST(
   shards_utilities
   SOURCES shards_utilities.cpp ${UNIT_TEST_DRIVER}
   NUM_MPI_PROCS 1
@@ -85,18 +79,6 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
   element_block_to_physics_block_map
   SOURCES element_block_to_physics_block_map.cpp ${UNIT_TEST_DRIVER}
-  NUM_MPI_PROCS 1
-  )
-
-TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  zero_sensitivities
-  SOURCES zero_sensitivities.cpp ${UNIT_TEST_DRIVER}
-  NUM_MPI_PROCS 1
-  )
-
-TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  output_stream
-  SOURCES output_stream.cpp ${UNIT_TEST_DRIVER}
   NUM_MPI_PROCS 1
   )
 

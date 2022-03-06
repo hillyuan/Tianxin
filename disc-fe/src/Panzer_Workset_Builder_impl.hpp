@@ -56,7 +56,7 @@
 #include "Phalanx_DataLayout_MDALayout.hpp"
 
 // Intrepid2
-#include "Shards_CellTopology.hpp"
+//#include "Shards_CellTopology.hpp"
 #include "Intrepid2_DefaultCubatureFactory.hpp"
 #include "Intrepid2_CellTools.hpp"
 #include "Intrepid2_FunctionSpaceTools.hpp"

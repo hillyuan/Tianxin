@@ -48,7 +48,6 @@
 #include "Panzer_CellData.hpp"
 #include "Panzer_IntegrationRule.hpp"
 #include "Panzer_IntegrationValues2.hpp"
-#include "Panzer_ArrayTraits.hpp"
 #include "Panzer_BasisValues2.hpp"
 #include "Panzer_PointValues2.hpp"
 #include "Panzer_CommonArrayFactories.hpp"
@@ -62,7 +61,7 @@ namespace panzer {
 
   TEUCHOS_UNIT_TEST(basis_values, const_basis)
   {
-    typedef panzer::ArrayTraits<double,PHX::MDField<double> >::size_type size_type;
+    typedef PHX::MDField<double>::size_type size_type;
 
     Teuchos::RCP<shards::CellTopology> topo =
        Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Quadrilateral<4> >()));
@@ -173,7 +172,7 @@ namespace panzer {
 
   TEUCHOS_UNIT_TEST(basis_values, grad_quad)
   {
-    typedef panzer::ArrayTraits<double,PHX::MDField<double> >::size_type size_type;
+    typedef PHX::MDField<double>::size_type size_type;
 
     Teuchos::RCP<shards::CellTopology> topo =
        Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Quadrilateral<4> >()));
@@ -290,7 +289,7 @@ namespace panzer {
 
   TEUCHOS_UNIT_TEST(basis_values, hcurl_basis)
   {
-    typedef panzer::ArrayTraits<double,PHX::MDField<double> >::size_type size_type;
+    typedef PHX::MDField<double>::size_type size_type;
 
     Teuchos::RCP<shards::CellTopology> topo =
        Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Quadrilateral<4> >()));
@@ -434,7 +433,7 @@ namespace panzer {
 
   TEUCHOS_UNIT_TEST(basis_values, hdiv_basis)
   {
-    typedef panzer::ArrayTraits<double,PHX::MDField<double> >::size_type size_type;
+    typedef PHX::MDField<double>::size_type size_type;
 
     Teuchos::RCP<shards::CellTopology> topo =
        Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Tetrahedron<4> >()));
@@ -628,7 +627,7 @@ namespace panzer {
 
   TEUCHOS_UNIT_TEST(basis_values, hcurl_basis_3d_pv)
   {
-    typedef panzer::ArrayTraits<double,PHX::MDField<double> >::size_type size_type;
+    typedef PHX::MDField<double>::size_type size_type;
 
     Teuchos::RCP<shards::CellTopology> topo =
        Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Hexahedron<8> >()));
@@ -925,7 +924,7 @@ namespace panzer {
 
   TEUCHOS_UNIT_TEST(basis_values, control_vol_hgrad)
   {
-    typedef panzer::ArrayTraits<double,PHX::MDField<double> >::size_type size_type;
+    typedef PHX::MDField<double>::size_type size_type;
 
     Teuchos::RCP<shards::CellTopology> topo =
        Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Quadrilateral<4> >()));
