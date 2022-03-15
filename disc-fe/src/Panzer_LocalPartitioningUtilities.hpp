@@ -71,7 +71,7 @@ class WorksetDescriptor;
  */
 void
 fillLocalCellIDs(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
-                 panzer::ConnManager & conn,
+                 Teuchos::RCP<panzer::ConnManager> & conn,
                  PHX::View<panzer::GlobalOrdinal*> & owned_cells,
                  PHX::View<panzer::GlobalOrdinal*> & ghost_cells,
                  PHX::View<panzer::GlobalOrdinal*> & virtual_cells);

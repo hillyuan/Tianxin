@@ -824,7 +824,7 @@ generateLocalMeshPartitions(const panzer::LocalMeshInfo & mesh_info,
 
 void
 fillLocalCellIDs(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
-                 panzer::ConnManager & conn,
+                 Teuchos::RCP<panzer::ConnManager> & conn,
                  PHX::View<panzer::GlobalOrdinal*> & owned_cells,
                  PHX::View<panzer::GlobalOrdinal*> & ghost_cells,
                  PHX::View<panzer::GlobalOrdinal*> & virtual_cells)
@@ -834,10 +834,10 @@ fillLocalCellIDs(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
 
   // build cell to node map
   PHX::View<panzer::GlobalOrdinal**> owned_cell_to_nodes;
-  buildCellToNodes(conn, owned_cell_to_nodes);
+  buildCellToNodes(*conn, owned_cell_to_nodes);
 
   // Build the local to global cell ID map
-  buildCellGlobalIDs(conn, owned_cells);
+  buildCellGlobalIDs(*conn, owned_cells);
 
   // Get ghost cells
   ghost_cells = buildGhostedCellOneRing(comm,owned_cells,owned_cell_to_nodes);
@@ -847,7 +847,7 @@ fillLocalCellIDs(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
 
   // this class comes from Mini-PIC and Matt B
   auto faceToElement = Teuchos::rcp(new panzer::FaceToElement<panzer::LocalOrdinal,panzer::GlobalOrdinal>());
-  faceToElement->initialize(conn);
+  faceToElement->initialize(*conn);
   auto elems_by_face = faceToElement->getFaceToElementsMap();
   auto face_to_lidx  = faceToElement->getFaceToCellLocalIdxMap();
 

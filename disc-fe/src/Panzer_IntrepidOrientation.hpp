@@ -54,7 +54,7 @@ namespace panzer {
 
   void
   buildIntrepidOrientation(std::vector<Intrepid2::Orientation> & orientation,  
-                           panzer::ConnManager & connMgr);
+                           const Teuchos::RCP<panzer::ConnManager> & connMgr);
 
   /** Build an orientation container from a global indexer and a field.
    * Underneath this does several dynamic casts to determine the type of GlobalIndexer
