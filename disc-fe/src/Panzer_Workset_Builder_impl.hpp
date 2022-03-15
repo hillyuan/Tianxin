@@ -50,13 +50,11 @@
 #include "Panzer_Workset.hpp"
 #include "Panzer_CellData.hpp"
 #include "Panzer_BC.hpp"
-#include "Panzer_Shards_Utilities.hpp"
 #include "Panzer_CommonArrayFactories.hpp"
 
 #include "Phalanx_DataLayout_MDALayout.hpp"
 
 // Intrepid2
-//#include "Shards_CellTopology.hpp"
 #include "Intrepid2_DefaultCubatureFactory.hpp"
 #include "Intrepid2_CellTools.hpp"
 #include "Intrepid2_FunctionSpaceTools.hpp"
