@@ -233,6 +233,15 @@ public:
     void getElementalFaces(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const;
     int getFaceRank() const final {return stkMeshDB_->getFaceRank();}
 
+    virtual Kokkos::View<panzer::GlobalOrdinal*> getOwnedGlobalCellID() const final
+    {
+		return stkMeshDB_->getOwnedGlobalCellIDs();
+	}
+    virtual Kokkos::View<panzer::GlobalOrdinal*> getGhostGlobalCellID() const final
+	{
+		return stkMeshDB_->getGhostGlobalCellIDs();
+	}
+
 protected:
    /** Apply periodic boundary conditions associated with the mesh object.
      *
