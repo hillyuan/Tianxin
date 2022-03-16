@@ -73,61 +73,6 @@ namespace panzer
 namespace
 {
 
-/** Build a Kokkos array of all the global cell IDs from a connection manager.
-  * Note that this is mapping between local IDs to global IDs.
-  */
-void
-buildCellGlobalIDs(panzer::ConnManager & conn,
-                   PHX::View<panzer::GlobalOrdinal*> & globals)
-{
-  // extract topologies, and build global connectivity...currently assuming only one topology
-  std::vector<shards::CellTopology> elementBlockTopologies;
-  conn.getElementBlockTopologies(elementBlockTopologies);
-  const shards::CellTopology & topology = elementBlockTopologies[0];
-
-  // FIXME: We assume that all element blocks have the same topology.
-  for(const auto & other_topology : elementBlockTopologies){
-    TEUCHOS_ASSERT(other_topology.getKey() == topology.getKey());
-  }
-
-  Teuchos::RCP<panzer::FieldPattern> cell_pattern;
-  if(topology.getDimension() == 1){
-    cell_pattern = Teuchos::rcp(new panzer::EdgeFieldPattern(topology));
-  } else if(topology.getDimension() == 2){
-    cell_pattern = Teuchos::rcp(new panzer::FaceFieldPattern(topology));
-  } else if(topology.getDimension() == 3){
-    cell_pattern = Teuchos::rcp(new panzer::ElemFieldPattern(topology));
-  }
-
-//  panzer::EdgeFieldPattern cell_pattern(elementBlockTopologies[0]);
-  conn.buildConnectivity(*cell_pattern);
-
-  // calculate total number of local cells
-  std::vector<std::string> block_ids;
-  conn.getElementBlockIds(block_ids);
-
-  std::size_t totalSize = 0;
-  for (std::size_t which_blk=0;which_blk<block_ids.size();which_blk++) {
-    // get the elem to face mapping
-    const std::vector<int> & localIDs = conn.getElementBlock(block_ids[which_blk]);
-    totalSize += localIDs.size();
-  }
-  globals = PHX::View<panzer::GlobalOrdinal*>("global_cells",totalSize);
-  auto globals_h = Kokkos::create_mirror_view(globals);
-
-  for (std::size_t id=0;id<totalSize; ++id) {
-    // sanity check
-    int n_conn = conn.getConnectivitySize(id);
-    TEUCHOS_ASSERT(n_conn==1);
-
-    const panzer::GlobalOrdinal * connectivity = conn.getConnectivity(id);
-    globals_h(id) = connectivity[0];
-  }
-  Kokkos::deep_copy(globals, globals_h);
-
-//  print_view_1D("buildCellGlobalIDs : globals",globals);
-}
-
 /** Build a Kokkos array mapping local cells to global node IDs.
   * Note that these are 'vertex nodes' and not 'basis nodes', 'quad nodes', or 'dof nodes'
   */
@@ -837,7 +782,7 @@ fillLocalCellIDs(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
   buildCellToNodes(*conn, owned_cell_to_nodes);
 
   // Build the local to global cell ID map
-  buildCellGlobalIDs(*conn, owned_cells);
+  owned_cells = conn->getOwnedGlobalCellID();
 
   // Get ghost cells
   ghost_cells = buildGhostedCellOneRing(comm,owned_cells,owned_cell_to_nodes);
