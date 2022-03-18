@@ -47,12 +47,13 @@
 
 #include <limits>
 
-#include <stk_mesh/base/FieldBase.hpp>
 #include <stk_mesh/base/Comm.hpp>
 #include <stk_mesh/base/Selector.hpp>
 #include <stk_mesh/base/GetEntities.hpp>
 #include <stk_mesh/base/GetBuckets.hpp>
 #include <stk_mesh/base/CreateAdjacentEntities.hpp>
+//#include "stk_search/PeriodicBoundarySearch.hpp"
+#include "/home/yuan/programs/solver/Trilinos1/packages/stk/stk_search_util/stk_search_util/PeriodicBoundarySearch.hpp"
 
 // #include <stk_rebalance/Rebalance.hpp>
 // #include <stk_rebalance/Partition.hpp>
@@ -2238,6 +2239,37 @@ void STK_Interface::refineMesh(const int numberOfLevels, const bool deleteParent
   TEUCHOS_TEST_FOR_EXCEPTION(true,std::logic_error,
                              "ERROR: Uniform refinement requested. This requires the Percept package to be enabled in Trilinos!");
 #endif
+}
+	
+void STK_Interface::applyPeriodicCondtions(const std::vector< std::tuple<std::string, std::string, std::string> > & periodicity) {
+    typedef stk::mesh::GetCoordinates<VectorFieldType> CoordinateFunctor;
+    typedef stk::mesh::PeriodicBoundarySearch<CoordinateFunctor> PeriodicSearch;
+    PeriodicSearch pbc_search(*bulkData_, CoordinateFunctor(*bulkData_, *coordinatesField_));
+	
+	stk::mesh::Part * set0;
+    stk::mesh::Part * set1;
+
+	for( auto atuple : periodicity ) {
+		const std::string& settype = std::get<0>(atuple);
+		if (settype==std::string("NodeSet")) {
+		  set0 = this->getNodeset( std::get<1>(atuple) );
+          set1 = this->getNodeset( std::get<2>(atuple) );
+		} else if( settype==std::string("EdgeSet" ) ) {
+		  set0 = this->getSideset( std::get<1>(atuple) );
+          set1 = this->getSideset( std::get<2>(atuple) );
+		} else if( settype==std::string("FaceSet" ) ) {
+		  set0 = this->getFaceBlock( std::get<1>(atuple) );
+          set1 = this->getFaceBlock( std::get<2>(atuple) );
+		}
+		const stk::mesh::Selector selector0 = *set0 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
+        const stk::mesh::Selector selector1 = *set1 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
+        pbc_search.add_linear_periodic_pair(selector0, selector1);
+        pbc_search.find_periodic_nodes(bulkData_ -> parallel());
+	}
+
+	bulkData_ ->modification_begin();
+    pbc_search.create_ghosting("periodic_ghosts");
+    bulkData_ ->modification_end();
 }
 
 

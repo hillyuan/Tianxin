@@ -774,9 +774,6 @@ fillLocalCellIDs(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
                  PHX::View<panzer::GlobalOrdinal*> & ghost_cells,
                  PHX::View<panzer::GlobalOrdinal*> & virtual_cells)
 {
-
-  using Teuchos::RCP;
-
   // build cell to node map
   PHX::View<panzer::GlobalOrdinal**> owned_cell_to_nodes;
   buildCellToNodes(*conn, owned_cell_to_nodes);
