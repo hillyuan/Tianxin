@@ -305,6 +305,9 @@ public:
 
    Kokkos::View<panzer::GlobalOrdinal*> getOwnedGlobalCellIDs() const;
    Kokkos::View<panzer::GlobalOrdinal*> getGhostGlobalCellIDs() const;
+	
+   void getOwnedGlobalCellIDs(std::vector<panzer::GlobalOrdinal> & elements) const;
+   void getGhostGlobalCellIDs(std::vector<panzer::GlobalOrdinal> & elements) const;
 
    /** Get a vector of elements that share an edge/face with an owned element. Note that these elements
      * are not owned.
