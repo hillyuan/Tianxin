@@ -110,8 +110,9 @@ void LineMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::Paralle
    mesh.buildLocalElementIDs();
 
    // now that edges are built, sidets can be added
+   addNodeSets(mesh);
    addSideSets(mesh);
-
+   //mesh.applyPeriodicCondition();
    // calls Stk_MeshFactory::rebalance
    this->rebalance(mesh);
 }
@@ -295,6 +296,45 @@ void LineMeshFactory::addSideSets(STK_Interface & mesh) const
          // on the left
          if(mesh.entityOwnerRank(edge)==machRank_)
             mesh.addEntityToSideset(edge,left);
+      }
+   }
+
+   mesh.endModification();
+}
+
+void LineMeshFactory::addNodeSets(STK_Interface & mesh) const
+{
+   mesh.beginModification();
+
+   std::size_t totalXElems = nXElems_*xBlocks_;
+
+   // get all part vectors
+   stk::mesh::Part * left = mesh.getNodeset("left");
+   stk::mesh::Part * right = mesh.getNodeset("right");
+
+   std::vector<stk::mesh::Entity> localElmts;
+   mesh.getMyElements(localElmts);
+
+   // loop over elements adding nodes to nodesets
+   for(stk::mesh::Entity& element : localElmts ) {
+      stk::mesh::EntityId gid = mesh.elementGlobalId(element);
+
+      std::size_t nx = gid-1;
+
+      if(nx+1==totalXElems) { 
+         stk::mesh::Entity edge = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 1);
+
+         // on the right
+         if(mesh.entityOwnerRank(edge)==machRank_)
+            mesh.addEntityToNodeset(edge,right);
+      }
+
+      if(nx==0) {
+         stk::mesh::Entity edge = mesh.findConnectivityById(element, stk::topology::NODE_RANK, 0);
+
+         // on the left
+         if(mesh.entityOwnerRank(edge)==machRank_)
+            mesh.addEntityToNodeset(edge,left);
       }
    }
 

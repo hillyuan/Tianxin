@@ -2271,7 +2271,7 @@ void STK_Interface::refineMesh(const int numberOfLevels, const bool deleteParent
 #endif
 }
 	
-void STK_Interface::applyPeriodicCondtions(const std::vector< std::tuple<std::string, std::string, std::string> > & periodicity) {
+void STK_Interface::applyPeriodicCondition(const std::vector< std::tuple<std::string, std::string, std::string> > & periodicity) {
     typedef stk::mesh::GetCoordinates<VectorFieldType> CoordinateFunctor;
     typedef stk::mesh::PeriodicBoundarySearch<CoordinateFunctor> PeriodicSearch;
     PeriodicSearch pbc_search(*bulkData_, CoordinateFunctor(*bulkData_, *coordinatesField_));
@@ -2286,16 +2286,22 @@ void STK_Interface::applyPeriodicCondtions(const std::vector< std::tuple<std::st
 		const std::string& settype = std::get<0>(atuple);
 		if (settype==std::string("NodeSet")) {
 		  set0 = this->getNodeset( std::get<1>(atuple) );
-          set1 = this->getNodeset( std::get<2>(atuple) );
+          set1 = this->getNodeset( std::get<2>(atuple) ); 
 		} else if( settype==std::string("EdgeSet" ) ) {
 		  set0 = this->getSideset( std::get<1>(atuple) );
           set1 = this->getSideset( std::get<2>(atuple) );
 		} else if( settype==std::string("FaceSet" ) ) {
 		  set0 = this->getFaceBlock( std::get<1>(atuple) );
           set1 = this->getFaceBlock( std::get<2>(atuple) );
+		} else
+			continue;
+		if( set0==nullptr || set1==nullptr ) {
+			std::cout << std::get<1>(atuple) << " not found!\n";
+			continue;
 		}
 		const stk::mesh::Selector selector0 = *set0 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
         const stk::mesh::Selector selector1 = *set1 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
+		
         pbc_search.add_linear_periodic_pair(selector0, selector1);
         pbc_search.find_periodic_nodes(bulkData_ -> parallel());
 		
@@ -2309,13 +2315,16 @@ void STK_Interface::applyPeriodicCondtions(const std::vector< std::tuple<std::st
           bool isOwnedRange = bulkData_->is_valid(range_node) ? bulkData_->bucket(range_node).owned() : false;
           int domain_proc = search_results[j].first.proc();
           int range_proc = search_results[j].second.proc();
-		  
-		  if (range_proc == domain_proc) continue;
+		//	std::cout<< parallel_rank << ", " << bulkData_->is_valid(domain_node) << ", " << bulkData_->is_valid(range_node)
+		//		<< ", " << isOwnedDomain<< ", " << isOwnedRange<< std::endl;
+	//std::cout << parallel_rank << ", "  << range_proc << ", " << domain_proc<< ", "  << bulkData_->identifier(domain_node)
+//		<< ", " << bulkData_->identifier(range_node) << std::endl;
+		  //if (range_proc == domain_proc) continue;
 		  
 		  if (isOwnedDomain && domain_proc == parallel_rank) {  // if in owned domain
 			 if (range_proc == parallel_rank) continue;        // if range in the same proc, do nothing
 			 
-			 //stk::ThrowRequire(bulkData_->parallel_owner_rank(domain_node) == domain_proc);
+			// stk::ThrowRequire(bulkData_->parallel_owner_rank(domain_node) == domain_proc);
 			 if( bulkData_->is_communicated_with_proc(domain_node, range_proc) ) continue;
 			 
 			 unsigned numElems = bulkData_->num_elements(domain_node);
@@ -2329,14 +2338,15 @@ void STK_Interface::applyPeriodicCondtions(const std::vector< std::tuple<std::st
 					 if( bulkData_->is_communicated_with_proc(elems[k], range_proc) ) continue;
 					 send_nodes.emplace_back(elems[k], range_proc);
 					 
-				//	 std::cout << "On proc " << parallel_rank << " we are sending domain element "
-                //        << bulkData_->identifier(elems[k]) << " to proc " << range_proc << std::endl;
+					 std::cout << "On proc " << parallel_rank << " we are sending domain element "
+                        << bulkData_->identifier(elems[k]) << " to proc " << range_proc << std::endl;
                  }
             }
 		  }
 		  else if (isOwnedRange && range_proc == parallel_rank)
           {
           	 if (domain_proc == parallel_rank) continue;
+            // stk::ThrowRequire(bulkData_->parallel_owner_rank(range_node) == range_proc);
 			 if( bulkData_->is_communicated_with_proc(range_node, domain_proc) ) continue;
 			 
 			 unsigned numElems = bulkData_->num_elements(range_node);
@@ -2349,22 +2359,47 @@ void STK_Interface::applyPeriodicCondtions(const std::vector< std::tuple<std::st
 				//	 if( bulkData_->in_shared(elems[k], domain_proc) ) continue;
 					 if( bulkData_->is_communicated_with_proc(elems[k], domain_proc) ) continue;
                      send_nodes.emplace_back(elems[k], domain_proc); 
-				//	 std::cout << "On proc " << parallel_rank << " we are sending range element "
-                //        << bulkData_->identifier(elems[k]) << " to proc " << domain_proc << std::endl;
+					 std::cout << "On proc " << parallel_rank << " we are sending range element "
+                        << bulkData_->identifier(elems[k]) << " to proc " << domain_proc << std::endl;
                  }
-            }
+             }
 		  }
 	   }
 	}
 
-    bulkData_->modification_begin();
-    stk::mesh::Ghosting &periodic_ghosts = bulkData_->create_ghosting("periodic_ghosts");
+   // if( !send_nodes.empty() ) {
+      bulkData_->modification_begin();
+      stk::mesh::Ghosting &periodic_ghosts = bulkData_->create_ghosting("periodic_ghosts");
    //auto & auro = bulkData_->shared_ghosting();
-    bulkData_->change_ghosting(periodic_ghosts, send_nodes);
+      bulkData_->change_ghosting(periodic_ghosts, send_nodes);
    //pbc_search.create_ghosting("periodic_ghosts");
    //stk::mesh::fixup_ghosted_to_shared_nodes(bulkData_);
-    bulkData_->modification_end();
+      bulkData_->modification_end();
+	//}
 }
+	
+void STK_Interface::applyPeriodicCondition() {
+	const std::vector<Teuchos::RCP<const PeriodicBC_MatcherBase> > & bcVector = getPeriodicBCVector();
+    std::vector< std::tuple<std::string, std::string, std::string> > periodicity;
+    for(std::size_t i=0;i<bcVector.size();i++) {
+        std::string left = bcVector[i]->getLeftSidesetName();
+        std::string right = bcVector[i]->getRightSidesetName();
+        std::string type = bcVector[i]->getType();
 
+		std::tuple<std::string, std::string, std::string> t;
+	    if (type=="coord") {
+		   t= std::make_tuple("NodeSet", left, right);
+		} else if( type=="edge" ) {
+		   t= std::make_tuple("EdgeSet", left, right);
+		} else if( type=="face" ) {
+		   t= std::make_tuple("FaceSet", left, right);
+		} else {
+			continue;
+		}
+		periodicity.emplace_back( t );
+	}
+
+    if( !periodicity.empty() ) applyPeriodicCondition(periodicity);
+}
 
 } // end namespace panzer_stk

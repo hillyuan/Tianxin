@@ -251,7 +251,7 @@ namespace panzer {
     std::tuple<std::string, std::string, std::string> t = std::make_tuple("NodeSet", "left","right");
     periodics.emplace_back( t );
 
-    mesh->applyPeriodicCondtions(periodics);
+    mesh->applyPeriodicCondition(periodics);
 	  
     const std::vector<stk::mesh::Ghosting*> ghosts = mesh->getBulkData()->ghostings();
     TEST_EQUALITY(ghosts[2]->name(),"periodic_ghosts");

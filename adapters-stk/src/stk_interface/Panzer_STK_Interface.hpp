@@ -1165,7 +1165,8 @@ public:
    std::pair<Teuchos::RCP<std::vector<std::pair<std::size_t,std::size_t> > >, Teuchos::RCP<std::vector<unsigned int> > >
    getPeriodicNodePairing() const;
 
-   void applyPeriodicCondtions(const std::vector< std::tuple<std::string, std::string, std::string> > & periodicity);
+   void applyPeriodicCondition(const std::vector< std::tuple<std::string, std::string, std::string> > & periodicity);
+   void applyPeriodicCondition();
 
    /** check for a valid block id
      */
