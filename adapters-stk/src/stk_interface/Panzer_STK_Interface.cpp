@@ -1204,6 +1204,27 @@ Kokkos::View<panzer::GlobalOrdinal*> STK_Interface::getGhostGlobalCellIDs() cons
 	
    return ghost_cell_global_ids;
 }
+
+Kokkos::View<panzer::GlobalOrdinal*> STK_Interface::findGhostGlobalCellIDs()
+{
+   std::vector<stk::mesh::Entity> elements;
+   Kokkos::View<panzer::GlobalOrdinal*> ghost_cell_global_ids;
+   this->applyPeriodicCondition();
+//bulkData_->dump_all_mesh_info(std::cout);
+   stk::mesh::Selector ownedPart = !metaData_->locally_owned_part();
+   stk::mesh::EntityRank elementRank = getElementRank();
+   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(elementRank),elements);
+   std::size_t ne = elements.size();
+
+   ghost_cell_global_ids = Kokkos::View<panzer::GlobalOrdinal*>("ghost_global_cells",ne);
+
+   for( std::size_t id=0; id<ne; ++id ) {
+     ghost_cell_global_ids(id) = bulkData_->identifier( elements[id] ) -1;
+   }
+   this->removePeriodicCondition();
+	
+   return ghost_cell_global_ids;
+}
 	
 void STK_Interface::getOwnedGlobalCellIDs(std::vector<panzer::GlobalOrdinal> & elementGIDs) const
 {

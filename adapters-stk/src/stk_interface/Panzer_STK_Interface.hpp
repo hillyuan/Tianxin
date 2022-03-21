@@ -305,6 +305,7 @@ public:
 
    Kokkos::View<panzer::GlobalOrdinal*> getOwnedGlobalCellIDs() const;
    Kokkos::View<panzer::GlobalOrdinal*> getGhostGlobalCellIDs() const;
+   Kokkos::View<panzer::GlobalOrdinal*> findGhostGlobalCellIDs();
 	
    void getOwnedGlobalCellIDs(std::vector<panzer::GlobalOrdinal> & elements) const;
    void getGhostGlobalCellIDs(std::vector<panzer::GlobalOrdinal> & elements) const;

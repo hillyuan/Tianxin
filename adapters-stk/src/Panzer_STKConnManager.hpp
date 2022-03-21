@@ -239,7 +239,8 @@ public:
 	}
     virtual Kokkos::View<panzer::GlobalOrdinal*> getGhostGlobalCellID() const final
 	{
-		return stkMeshDB_->getGhostGlobalCellIDs();
+		STK_Interface mesh(*stkMeshDB_);
+		return mesh.findGhostGlobalCellIDs();
 	}
 
 protected:

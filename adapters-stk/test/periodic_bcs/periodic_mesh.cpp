@@ -279,6 +279,9 @@ namespace panzer {
 	mesh->removePeriodicCondition();
     mesh->getGhostGlobalCellIDs(elementGIDs);
     TEST_EQUALITY(elementGIDs.size(),1);
+
+	Kokkos::View<panzer::GlobalOrdinal*> gid = mesh->getGhostGlobalCellIDs();
+    TEST_EQUALITY(elementGIDs.size(),gid.extent(0) );
   }
 
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager)
