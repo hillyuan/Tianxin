@@ -263,6 +263,7 @@ namespace panzer {
 	stk::mesh::EntityId id = mesh->getBulkData()->identifier(entities[0]);
     std::vector<panzer::GlobalOrdinal> elementGIDs;
 	mesh->getGhostGlobalCellIDs(elementGIDs);
+    TEST_EQUALITY(elementGIDs.size(),2);
 
     if(myRank==0) {
         TEST_EQUALITY(id,10);
@@ -274,6 +275,10 @@ namespace panzer {
 		TEST_EQUALITY(elementGIDs[0],0);
 		TEST_EQUALITY(elementGIDs[1],4);
     }
+	  
+	mesh->removePeriodicCondition();
+    mesh->getGhostGlobalCellIDs(elementGIDs);
+    TEST_EQUALITY(elementGIDs.size(),1);
   }
 
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager)

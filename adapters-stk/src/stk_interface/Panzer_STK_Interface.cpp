@@ -2401,5 +2401,12 @@ void STK_Interface::applyPeriodicCondition() {
 
     if( !periodicity.empty() ) applyPeriodicCondition(periodicity);
 }
+	
+void STK_Interface::removePeriodicCondition() {
+	bulkData_->modification_begin();
+    stk::mesh::Ghosting &periodic_ghosts = bulkData_->custom_ghosting(2);
+    bulkData_->destroy_ghosting(periodic_ghosts);
+    bulkData_->modification_end();
+}
 
 } // end namespace panzer_stk

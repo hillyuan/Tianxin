@@ -1167,6 +1167,7 @@ public:
 
    void applyPeriodicCondition(const std::vector< std::tuple<std::string, std::string, std::string> > & periodicity);
    void applyPeriodicCondition();
+   void removePeriodicCondition();
 
    /** check for a valid block id
      */
