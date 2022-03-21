@@ -2359,8 +2359,8 @@ void STK_Interface::applyPeriodicCondition(const std::vector< std::tuple<std::st
 					 if( bulkData_->is_communicated_with_proc(elems[k], range_proc) ) continue;
 					 send_nodes.emplace_back(elems[k], range_proc);
 					 
-					 std::cout << "On proc " << parallel_rank << " we are sending domain element "
-                        << bulkData_->identifier(elems[k]) << " to proc " << range_proc << std::endl;
+				//	 std::cout << "On proc " << parallel_rank << " we are sending domain element "
+                //        << bulkData_->identifier(elems[k]) << " to proc " << range_proc << std::endl;
                  }
             }
 		  }
@@ -2380,8 +2380,8 @@ void STK_Interface::applyPeriodicCondition(const std::vector< std::tuple<std::st
 				//	 if( bulkData_->in_shared(elems[k], domain_proc) ) continue;
 					 if( bulkData_->is_communicated_with_proc(elems[k], domain_proc) ) continue;
                      send_nodes.emplace_back(elems[k], domain_proc); 
-					 std::cout << "On proc " << parallel_rank << " we are sending range element "
-                        << bulkData_->identifier(elems[k]) << " to proc " << domain_proc << std::endl;
+				//	 std::cout << "On proc " << parallel_rank << " we are sending range element "
+                //        << bulkData_->identifier(elems[k]) << " to proc " << domain_proc << std::endl;
                  }
              }
 		  }
@@ -2424,6 +2424,9 @@ void STK_Interface::applyPeriodicCondition() {
 }
 	
 void STK_Interface::removePeriodicCondition() {
+    const std::vector<stk::mesh::Ghosting*> & ghosts = bulkData_->ghostings();
+    if( ghosts.size()<3 ) return;
+
 	bulkData_->modification_begin();
     stk::mesh::Ghosting &periodic_ghosts = bulkData_->custom_ghosting(2);
     bulkData_->destroy_ghosting(periodic_ghosts);
