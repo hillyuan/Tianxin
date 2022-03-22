@@ -47,7 +47,7 @@
 namespace panzer {
 
   void buildIntrepidOrientation(std::vector<Intrepid2::Orientation> & orientation,
-                                panzer::ConnManager & connMgr)
+                                const Teuchos::RCP<panzer::ConnManager> & connMgr)
   {
     using Teuchos::rcp_dynamic_cast;
     using Teuchos::RCP;
@@ -56,13 +56,13 @@ namespace panzer {
     orientation.clear();
 
     // Retrive element blocks and its meta data
-    const int numElementBlocks = connMgr.numElementBlocks();
+    const int numElementBlocks = connMgr->numElementBlocks();
 
     std::vector<std::string> elementBlockIds;
     std::vector<shards::CellTopology> elementBlockTopologies;
 
-    connMgr.getElementBlockIds(elementBlockIds);
-    connMgr.getElementBlockTopologies(elementBlockTopologies);
+    connMgr->getElementBlockIds(elementBlockIds);
+    connMgr->getElementBlockTopologies(elementBlockTopologies);
 
     TEUCHOS_TEST_FOR_EXCEPTION(numElementBlocks <= 0 &&
                                numElementBlocks != static_cast<int>(elementBlockIds.size()) &&
@@ -75,19 +75,19 @@ namespace panzer {
     const int numVertexPerCell = cellTopo.getVertexCount();
 
     const auto fp = NodalFieldPattern(cellTopo);
-    connMgr.buildConnectivity(fp);
+    connMgr->buildConnectivity(fp);
 
     // Count and pre-alloc orientations
     int total_elems = 0;
     for (int i=0;i<numElementBlocks;++i) {
-      total_elems += connMgr.getElementBlock(elementBlockIds.at(i)).size();
+      total_elems += connMgr->getElementBlock(elementBlockIds.at(i)).size();
     }
 
     orientation.resize(total_elems);
     // Loop over element blocks
     for (int i=0;i<numElementBlocks;++i) {
       // get elements in a block
-      const auto &elementBlock = connMgr.getElementBlock(elementBlockIds.at(i));
+      const auto &elementBlock = connMgr->getElementBlock(elementBlockIds.at(i));
 
       const int numElementsPerBlock = elementBlock.size();
 
@@ -95,7 +95,7 @@ namespace panzer {
       for (int c=0;c<numElementsPerBlock;++c) {
         const int localCellId = elementBlock.at(c);
         Kokkos::View<const panzer::GlobalOrdinal*,Kokkos::HostSpace>
-          nodes(connMgr.getConnectivity(localCellId), numVertexPerCell);
+          nodes(connMgr->getConnectivity(localCellId), numVertexPerCell);
         orientation[localCellId] = (Intrepid2::Orientation::getOrientation(cellTopo, nodes));
       }
     }
@@ -120,7 +120,7 @@ namespace panzer {
         TEUCHOS_TEST_FOR_EXCEPTION(connMgr == Teuchos::null,std::logic_error,
                                    "panzer::buildIntrepidOrientation: ConnManager is null!");
 
-        buildIntrepidOrientation(*orientation, *connMgr);
+        buildIntrepidOrientation(*orientation, connMgr);
         return orientation;
       }
     }

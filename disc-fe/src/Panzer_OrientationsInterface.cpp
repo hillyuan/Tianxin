@@ -58,7 +58,7 @@ namespace
 
 void
 buildIntrepidOrientation(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
-                         panzer::ConnManager & conn,
+                         Teuchos::RCP<panzer::ConnManager> & conn,
                          std::vector<Intrepid2::Orientation> & orientations)
 {
 
@@ -82,13 +82,13 @@ buildIntrepidOrientation(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
   shards::CellTopology topology;
   {
     // Retrive element blocks and its meta data
-    const int numElementBlocks = conn.numElementBlocks();
+    const int numElementBlocks = conn->numElementBlocks();
 
     std::vector<std::string> elementBlockIds;
     std::vector<shards::CellTopology> elementBlockTopologies;
 
-    conn.getElementBlockIds(elementBlockIds);
-    conn.getElementBlockTopologies(elementBlockTopologies);
+    conn->getElementBlockIds(elementBlockIds);
+    conn->getElementBlockTopologies(elementBlockTopologies);
 
     TEUCHOS_TEST_FOR_EXCEPTION(numElementBlocks <= 0 &&
                                numElementBlocks != static_cast<int>(elementBlockIds.size()) &&
@@ -106,7 +106,7 @@ buildIntrepidOrientation(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
 
   // Make sure the conn is setup for a nodal connectivity
   panzer::NodalFieldPattern pattern(topology);
-  conn.buildConnectivity(pattern);
+  conn->buildConnectivity(pattern);
 
   const int num_owned_cells = owned_cells.extent(0);
   const int num_ghost_cells = ghost_cells.extent(0);
@@ -119,7 +119,7 @@ buildIntrepidOrientation(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
   {
     auto vector_view = owned_nodes_vector->getLocalViewHost(Tpetra::Access::OverwriteAll);
     for(int cell=0; cell<owned_cells.extent_int(0); ++cell){
-      const GlobalOrdinal * nodes = conn.getConnectivity(cell);
+      const GlobalOrdinal * nodes = conn->getConnectivity(cell);
       for(int node=0; node<num_nodes_per_cell; ++node)
         vector_view(cell,node) = nodes[node];
     }
@@ -168,7 +168,7 @@ buildIntrepidOrientation(const Teuchos::RCP<const GlobalIndexer> globalIndexer)
   TEUCHOS_TEST_FOR_EXCEPTION(conn == Teuchos::null,std::logic_error,
                              "panzer::buildIntrepidOrientation: Could not cast ConnManagerBase");
 
-  buildIntrepidOrientation(comm, *conn, *orientation);
+  buildIntrepidOrientation(comm, conn, *orientation);
   return orientation;
 
 }

@@ -40,28 +40,37 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef __Panzer_IntrepidOrientation_hpp__
-#define __Panzer_IntrepidOrientation_hpp__
+#ifndef PANZER_STK_TEMPUS_OBSERVER_FACTORY_HPP
+#define PANZER_STK_TEMPUS_OBSERVER_FACTORY_HPP
 
-#include "Intrepid2_Orientation.hpp"
+#include "Tempus_IntegratorObserver.hpp"
 
-#include "PanzerDiscFE_config.hpp"
-#include "Panzer_ConnManager.hpp"
-#include "Panzer_NodalFieldPattern.hpp"
+#include "Teuchos_RCP.hpp"
+#include "Teuchos_Assert.hpp"
+
+#include "Panzer_STK_Interface.hpp"
 #include "Panzer_GlobalIndexer.hpp"
+#include "Panzer_LinearObjFactory.hpp"
 
-namespace panzer {
+#include "Panzer_STK_Utilities.hpp"
 
-  void
-  buildIntrepidOrientation(std::vector<Intrepid2::Orientation> & orientation,  
-                           const Teuchos::RCP<panzer::ConnManager> & connMgr);
+namespace panzer_stk {
 
-  /** Build an orientation container from a global indexer and a field.
-   * Underneath this does several dynamic casts to determine the type of GlobalIndexer
-   * object that has been passed in.
-   */
-  Teuchos::RCP<std::vector<Intrepid2::Orientation> > 
-  buildIntrepidOrientation(const Teuchos::RCP<const panzer::GlobalIndexer> globalIndexer);
+  class TempusObserverFactory {
+
+  public:
+
+    virtual ~TempusObserverFactory() {}
+
+    //! Use the NOX observer as well?
+    virtual bool useNOXObserver() const = 0;
+
+    virtual Teuchos::RCP<Tempus::IntegratorObserver<double> >
+    buildTempusObserver(const Teuchos::RCP<panzer_stk::STK_Interface>& mesh,
+                        const Teuchos::RCP<const panzer::GlobalIndexer> & dof_manager,
+                        const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> >& lof) const = 0;
+  };
+
 }
 
 #endif
