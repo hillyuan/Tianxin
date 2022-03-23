@@ -125,6 +125,7 @@ public:
      */
    virtual void getElementBlockIds(std::vector<std::string> & elementBlockIds) const
    { return stkMeshDB_->getElementBlockNames(elementBlockIds); }
+	
    /** What are the cellTopologies linked to element blocks in this connection manager?
     */
    virtual void getElementBlockTopologies(std::vector<shards::CellTopology> & elementBlockTopologies) const{
@@ -144,6 +145,11 @@ public:
      */
    virtual const std::vector<LocalOrdinal> & getElementBlock(const std::string & blockId) const
    { return *(elementBlocks_.find(blockId)->second); }
+	
+   virtual void getElementBlockGID(const std::string & blockId, std::vector<GlobalOrdinal>& gid) const final
+   {
+	   stkMeshDB_->getMyElementsGID(blockId, gid);
+   }
 
    /** Get the local element IDs for a paricular element
      * block. These element ids are not owned, and the element
@@ -241,6 +247,14 @@ public:
 	{
 		STK_Interface mesh(*stkMeshDB_);
 		return mesh.findGhostGlobalCellIDs();
+	}
+    virtual void getOwnedGlobalCellID(std::vector<panzer::GlobalOrdinal> & elements) const final
+	{
+		stkMeshDB_->getOwnedGlobalCellIDs(elements);
+	}
+	virtual void getGhostGlobalCellID(std::vector<panzer::GlobalOrdinal> & elements) const final
+	{
+		stkMeshDB_->getGhostGlobalCellIDs(elements);
 	}
 
 protected:

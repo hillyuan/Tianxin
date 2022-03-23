@@ -71,7 +71,7 @@ FaceToElement()
 
 template <typename LocalOrdinal,typename GlobalOrdinal>
 FaceToElement<LocalOrdinal,GlobalOrdinal>::
-FaceToElement(panzer::ConnManager & conn)
+FaceToElement(Teuchos::RCP<panzer::ConnManager> & conn)
 {
   initialize(conn);
 }
@@ -79,17 +79,17 @@ FaceToElement(panzer::ConnManager & conn)
 template <typename LocalOrdinal,typename GlobalOrdinal>
 void
 FaceToElement<LocalOrdinal,GlobalOrdinal>::
-initialize(panzer::ConnManager & conn)
+initialize(Teuchos::RCP<panzer::ConnManager> & conn)
 {
   // Create a map of elems
   std::vector<std::string> block_ids;
-  conn.getElementBlockIds(block_ids);
+  conn->getElementBlockIds(block_ids);
 
   const int shift = 1;
 
   int dimension;
   std::vector<shards::CellTopology> ebt;
-  conn.getElementBlockTopologies(ebt);
+  conn->getElementBlockTopologies(ebt);
   dimension = ebt[0].getDimension();
 
   Teuchos::RCP<const Teuchos::Comm<int>> comm(new Teuchos::MpiComm< int>(MPI_COMM_WORLD));
@@ -98,24 +98,29 @@ initialize(panzer::ConnManager & conn)
   int nprocs = comm->getSize();
 #endif
 
-  std::vector<GlobalOrdinal> element_GIDS;
+  std::vector<GlobalOrdinal> element_GIDS, block_gids;
+ /* for ( auto const& iblk : block_ids){
+      conn->getElementBlockGID( iblk , block_gids);
+	  for( auto const& gid: block_gids )
+		  element_GIDS.emplace_back(gid);
+  }*/
   for (size_t iblk = 0 ; iblk < block_ids.size(); ++iblk) {
     // The connectivity takes in a shards class, therefore, it has to be build block by block?
     // This seems odd, but o.k, moving forward.
     if ( dimension == 1 ) {
       panzer::EdgeFieldPattern edge_pattern(ebt[iblk]);
-      conn.buildConnectivity(edge_pattern);
+      conn->buildConnectivity(edge_pattern);
     } else if ( dimension == 2 ){
       panzer::FaceFieldPattern face_pattern(ebt[iblk]);
-      conn.buildConnectivity(face_pattern);
+      conn->buildConnectivity(face_pattern);
     } else {
       panzer::ElemFieldPattern elem_pattern(ebt[iblk]);
-      conn.buildConnectivity(elem_pattern);
+      conn->buildConnectivity(elem_pattern);
     }
-    //const std::vector<GlobalOrdinal> &block_elems = conn.getElementBlock(block_ids[iblk]);
-    const std::vector<LocalOrdinal> &block_elems = conn.getElementBlock(block_ids[iblk]);
+    //const std::vector<GlobalOrdinal> &block_elems = conn->getElementBlock(block_ids[iblk]);
+    const std::vector<LocalOrdinal> &block_elems = conn->getElementBlock(block_ids[iblk]);
     for (size_t i=0; i<block_elems.size(); ++i) {
-      const auto * connectivity = conn.getConnectivity(block_elems[i]);
+      const auto * connectivity = conn->getConnectivity(block_elems[i]);
       element_GIDS.push_back(*connectivity);
     }
   }
@@ -132,19 +137,19 @@ initialize(panzer::ConnManager & conn)
       // This seems odd, but o.k, moving forward.
       if ( dimension == 1 ) {
         panzer::NodalFieldPattern edge_pattern(ebt[iblk]);
-        conn.buildConnectivity(edge_pattern);
+        conn->buildConnectivity(edge_pattern);
       } else if ( dimension == 2 ){
         panzer::EdgeFieldPattern face_pattern(ebt[iblk]);
-        conn.buildConnectivity(face_pattern);
+        conn->buildConnectivity(face_pattern);
       } else {
         panzer::FaceFieldPattern elem_pattern(ebt[iblk]);
-        conn.buildConnectivity(elem_pattern);
+        conn->buildConnectivity(elem_pattern);
       }
-      //const std::vector<GlobalOrdinal> &block_elems = conn.getElementBlock(block_ids[iblk]);
-      const std::vector<LocalOrdinal> &block_elems = conn.getElementBlock(block_ids[iblk]);
+      //const std::vector<GlobalOrdinal> &block_elems = conn->getElementBlock(block_ids[iblk]);
+      const std::vector<LocalOrdinal> &block_elems = conn->getElementBlock(block_ids[iblk]);
       for (size_t i=0; i<block_elems.size(); ++i) {
-        int n_conn = conn.getConnectivitySize(block_elems[i]);
-        const panzer::GlobalOrdinal * connectivity = conn.getConnectivity(block_elems[i]);
+        int n_conn = conn->getConnectivitySize(block_elems[i]);
+        const panzer::GlobalOrdinal * connectivity = conn->getConnectivity(block_elems[i]);
         for (int iface=0; iface<n_conn; ++iface)
           set_of_face_GIDS.insert(connectivity[iface]);
       }
@@ -177,19 +182,19 @@ initialize(panzer::ConnManager & conn)
     // This seems odd, but o.k, moving forward.
     if ( dimension == 1 ) {
       panzer::NodalFieldPattern edge_pattern(ebt[iblk]);
-      conn.buildConnectivity(edge_pattern);
+      conn->buildConnectivity(edge_pattern);
     } else if ( dimension == 2 ){
       panzer::EdgeFieldPattern face_pattern(ebt[iblk]);
-      conn.buildConnectivity(face_pattern);
+      conn->buildConnectivity(face_pattern);
     } else {
       panzer::FaceFieldPattern elem_pattern(ebt[iblk]);
-      conn.buildConnectivity(elem_pattern);
+      conn->buildConnectivity(elem_pattern);
     }
-    //const std::vector<GlobalOrdinal> &block_elems = conn.getElementBlock(block_ids[iblk]);
-    const std::vector<LocalOrdinal> &block_elems = conn.getElementBlock(block_ids[iblk]);
+    //const std::vector<GlobalOrdinal> &block_elems = conn->getElementBlock(block_ids[iblk]);
+    const std::vector<LocalOrdinal> &block_elems = conn->getElementBlock(block_ids[iblk]);
     for (size_t i=0; i<block_elems.size(); ++i) {
-      int n_conn = conn.getConnectivitySize(block_elems[i]);
-      const panzer::GlobalOrdinal * connectivity = conn.getConnectivity(block_elems[i]);
+      int n_conn = conn->getConnectivitySize(block_elems[i]);
+      const panzer::GlobalOrdinal * connectivity = conn->getConnectivity(block_elems[i]);
       for (int iface=0; iface<n_conn; ++iface) {
         LocalOrdinal f = face_map->getLocalElement(connectivity[iface]);
 

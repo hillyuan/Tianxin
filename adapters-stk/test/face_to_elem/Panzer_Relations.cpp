@@ -33,35 +33,12 @@ FaceToElems::FaceToElems(Teuchos::RCP<panzer::ConnManager> conn) :
 
   Teuchos::RCP<const Teuchos::Comm<int>> comm(new Teuchos::MpiComm< int>(MPI_COMM_WORLD));
 
-
-  if ( dimension_ == 1 ) {
-    panzer::EdgeFieldPattern edge_pattern(element_block_topologies_[0]);
-    conn_->buildConnectivity(edge_pattern);
-  } else if ( dimension_ == 2 ){
-    panzer::FaceFieldPattern face_pattern(element_block_topologies_[0]);
-    conn_->buildConnectivity(face_pattern);
-  } else {
-    panzer::ElemFieldPattern elem_pattern(element_block_topologies_[0]);
-    conn_->buildConnectivity(elem_pattern);
-  }
-
-  std::vector<GlobalOrdinal> elem_gids;
-  {
-    total_elements_ = 0;
-    for (int iblk=0; iblk< num_blocks_; ++iblk){
-      auto foo = conn_->getElementBlock(block_ids[iblk]);
-      total_elements_ += conn_->getElementBlock(block_ids[iblk]).size();
-    }
-    elem_gids.resize(total_elements_);
-    for (int iblk=0; iblk< num_blocks_; ++iblk){
-      const std::vector<LocalOrdinal> &localIDs = conn_->getElementBlock(block_ids[iblk]);
-      for (unsigned id=0;id<localIDs.size(); ++id) {
-        int n_conn = conn_->getConnectivitySize(localIDs[id]);
-        const auto * connectivity = conn_->getConnectivity(localIDs[id]);
-        TEUCHOS_ASSERT(n_conn==1);
-        elem_gids[localIDs[id]] = connectivity[0];
-      }
-    }
+  std::vector<GlobalOrdinal> elem_gids, block_gids;
+  for (int iblk=0; iblk< num_blocks_; ++iblk){
+      conn_->getElementBlockGID( block_ids[iblk] , block_gids);
+	  for( auto const& gid: block_gids )
+		  elem_gids.emplace_back(gid);
+    //  elem_gids.insert(elem_gids.end(), block_ids.begin(), block_ids.end()); 
   }
   elem_map = Teuchos::RCP<Map>( new Map(Teuchos::OrdinalTraits<GlobalOrdinal>::invalid(), &elem_gids[0], elem_gids.size(), 0, comm ));
 

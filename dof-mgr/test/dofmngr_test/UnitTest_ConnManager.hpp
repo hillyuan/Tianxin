@@ -183,6 +183,9 @@ public:
      * \returns Vector of local element IDs.
      */
    virtual const std::vector<LocalOrdinal> & getElementBlock(const std::string & blockID) const;
+	
+   virtual void getElementBlockGID(const std::string & blockId, std::vector<GlobalOrdinal>& gid) const final
+   {}
 
    void setBuildConnectivityCallback(const Teuchos::RCP<ConnCallback> & callback)
    { callback_ = callback; }
@@ -198,6 +201,11 @@ public:
    virtual bool hasAssociatedNeighbors() const { return false; }
    
    void getElementalNodeConnectivity(const LocalOrdinal&, std::vector<GlobalOrdinal>&) const {;}
+	
+   virtual void getOwnedGlobalCellID(std::vector<panzer::GlobalOrdinal> & elements) const final
+   {}
+   virtual void getGhostGlobalCellID(std::vector<panzer::GlobalOrdinal> & elements) const final
+   {}
 
 private:
    int procRank_;

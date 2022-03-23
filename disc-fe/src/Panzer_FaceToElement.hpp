@@ -76,11 +76,11 @@ public:
 
   FaceToElement();
 
-  FaceToElement(panzer::ConnManager & conn);
+  FaceToElement(Teuchos::RCP<panzer::ConnManager> & conn);
 
   /** Build the mapping from a mesh topology.
     */
-  void initialize(panzer::ConnManager & conn);
+  void initialize(Teuchos::RCP<panzer::ConnManager> & conn);
 
   GlobalOrdinal getLeftElem (GlobalOrdinal face_id) const 
   {LocalOrdinal lid = face_map_->getLocalElement(face_id); return elems_by_face_(lid,0);}

@@ -1167,6 +1167,26 @@ void STK_Interface::getMyElements(const std::string & blockID,std::vector<stk::m
    stk::mesh::EntityRank elementRank = getElementRank();
    stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(elementRank),elements);
 }
+
+void STK_Interface::getMyElementsGID(const std::string & blockID,std::vector<panzer::GlobalOrdinal> & gids ) const
+{
+   stk::mesh::Part * elementBlock = getElementBlockPart(blockID);
+
+   TEUCHOS_TEST_FOR_EXCEPTION(elementBlock==0,std::logic_error,"Could not find element block \"" << blockID << "\"");
+
+   // setup local ownership
+   // stk::mesh::Selector block = *elementBlock;
+   stk::mesh::Selector ownedBlock = metaData_->locally_owned_part() & (*elementBlock);
+
+   // grab elements
+   stk::mesh::EntityRank elementRank = getElementRank();
+   std::vector<stk::mesh::Entity> elements;
+   stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(elementRank),elements);
+
+   for( auto const& e: elements ) {
+	   gids.emplace_back( bulkData_->identifier( e ) -1 );
+   }
+}
 	
 
 Kokkos::View<panzer::GlobalOrdinal*> STK_Interface::getOwnedGlobalCellIDs() const
