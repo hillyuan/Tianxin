@@ -1183,6 +1183,7 @@ void STK_Interface::getMyElementsGID(const std::string & blockID,std::vector<pan
    std::vector<stk::mesh::Entity> elements;
    stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(elementRank),elements);
 
+   gids.clear();
    for( auto const& e: elements ) {
 	   gids.emplace_back( bulkData_->identifier( e ) -1 );
    }

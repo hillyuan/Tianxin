@@ -99,30 +99,10 @@ initialize(Teuchos::RCP<panzer::ConnManager> & conn)
 #endif
 
   std::vector<GlobalOrdinal> element_GIDS, block_gids;
- /* for ( auto const& iblk : block_ids){
+  for ( auto const& iblk : block_ids){
       conn->getElementBlockGID( iblk , block_gids);
 	  for( auto const& gid: block_gids )
 		  element_GIDS.emplace_back(gid);
-  }*/
-  for (size_t iblk = 0 ; iblk < block_ids.size(); ++iblk) {
-    // The connectivity takes in a shards class, therefore, it has to be build block by block?
-    // This seems odd, but o.k, moving forward.
-    if ( dimension == 1 ) {
-      panzer::EdgeFieldPattern edge_pattern(ebt[iblk]);
-      conn->buildConnectivity(edge_pattern);
-    } else if ( dimension == 2 ){
-      panzer::FaceFieldPattern face_pattern(ebt[iblk]);
-      conn->buildConnectivity(face_pattern);
-    } else {
-      panzer::ElemFieldPattern elem_pattern(ebt[iblk]);
-      conn->buildConnectivity(elem_pattern);
-    }
-    //const std::vector<GlobalOrdinal> &block_elems = conn->getElementBlock(block_ids[iblk]);
-    const std::vector<LocalOrdinal> &block_elems = conn->getElementBlock(block_ids[iblk]);
-    for (size_t i=0; i<block_elems.size(); ++i) {
-      const auto * connectivity = conn->getConnectivity(block_elems[i]);
-      element_GIDS.push_back(*connectivity);
-    }
   }
   Teuchos::RCP<const Map> elem_map =
       Teuchos::RCP<Map>( new Map(Teuchos::OrdinalTraits<GlobalOrdinal>::invalid(), &element_GIDS[0], element_GIDS.size(), 0, comm ));
