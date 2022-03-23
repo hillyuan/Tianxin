@@ -244,6 +244,9 @@ public:
 	
    virtual void getElementBlockGID(const std::string & blockId, std::vector<GlobalOrdinal>& gid) const final
    {}
+	
+   virtual void getFaceBlockGID(const std::string & blockId, std::vector<GlobalOrdinal>& gid) const final
+   {}
 
    virtual const std::vector<LocalOrdinal> & getNeighborElementBlock(const std::string & /* s */) const
    { return emptyVector_; }

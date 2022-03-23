@@ -186,6 +186,9 @@ public:
 	
    virtual void getElementBlockGID(const std::string & blockId, std::vector<GlobalOrdinal>& gid) const final
    {}
+	
+   virtual void getFaceBlockGID(const std::string & blockId, std::vector<GlobalOrdinal>& gid) const final
+   {}
 
    void setBuildConnectivityCallback(const Teuchos::RCP<ConnCallback> & callback)
    { callback_ = callback; }

@@ -239,6 +239,11 @@ public:
     void getElementalFaces(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const;
     int getFaceRank() const final {return stkMeshDB_->getFaceRank();}
 
+    virtual void getFaceBlockGID(const std::string & blockId, std::vector<GlobalOrdinal>& gid) const final
+    {
+	   stkMeshDB_->getMyFacesGID(blockId, gid);
+    }
+
     virtual Kokkos::View<panzer::GlobalOrdinal*> getOwnedGlobalCellID() const final
     {
 		return stkMeshDB_->getOwnedGlobalCellIDs();

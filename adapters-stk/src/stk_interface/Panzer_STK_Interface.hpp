@@ -373,7 +373,8 @@ public:
      * \param[in] faceBlockName Name of face block
      * \param[in,out] faces Vector of entities containing the requested faces.
      */
-   void getMyFaces(const std::string & faceBlockName,std::vector<stk::mesh::Entity> & faces) const;
+   void getMyFaces(const std::string & faceBlockName,std::vector<stk::mesh::Entity>& faces) const;
+   void getMyFacesGID(const std::string & faceBlockName,std::vector<panzer::GlobalOrdinal>& faces) const;
 
    /** Get Entities corresponding to the locally owned part of the face block requested. This also limits
      * the entities to be in a particular element block. The Entites in the vector should be a dimension
