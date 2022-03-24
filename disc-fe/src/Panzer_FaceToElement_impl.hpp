@@ -135,6 +135,7 @@ initialize(Teuchos::RCP<panzer::ConnManager> & conn)
       }
     }
     face_GIDS.insert(face_GIDS.begin(), set_of_face_GIDS.begin(), set_of_face_GIDS.end());
+   // conn->getFaceBlockGID( face_GIDS );
 
     face_map = Teuchos::RCP<Map>( new Map(Teuchos::OrdinalTraits<GlobalOrdinal>::invalid(), &face_GIDS[0], face_GIDS.size(), 0, comm ));
     owned_face_map = Tpetra::createOneToOne(face_map);

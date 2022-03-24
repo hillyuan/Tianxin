@@ -26,19 +26,19 @@ FaceToElems::FaceToElems(Teuchos::RCP<panzer::ConnManager> conn) :
     TEUCHOS_ASSERT(element_block_topologies_[i] ==element_block_topologies_[0] );
   }
 
-  std::set<GlobalOrdinal> face_gids;
-
 
   Teuchos::RCP<const Map> elem_map,face_map;
 
   Teuchos::RCP<const Teuchos::Comm<int>> comm(new Teuchos::MpiComm< int>(MPI_COMM_WORLD));
 
   std::vector<GlobalOrdinal> elem_gids, block_gids;
+  total_elements_ = 0;
   for (int iblk=0; iblk< num_blocks_; ++iblk){
       conn_->getElementBlockGID( block_ids[iblk] , block_gids);
 	  for( auto const& gid: block_gids )
 		  elem_gids.emplace_back(gid);
     //  elem_gids.insert(elem_gids.end(), block_ids.begin(), block_ids.end()); 
+	  total_elements_ += block_gids.size();
   }
   elem_map = Teuchos::RCP<Map>( new Map(Teuchos::OrdinalTraits<GlobalOrdinal>::invalid(), &elem_gids[0], elem_gids.size(), 0, comm ));
 
@@ -54,15 +54,7 @@ FaceToElems::FaceToElems(Teuchos::RCP<panzer::ConnManager> conn) :
     conn_->buildConnectivity(face_pattern);
   }
 
-
-
-  total_elements_ = 0;
-  for (int iblk=0; iblk< num_blocks_; ++iblk){
-    auto foo = conn_->getElementBlock(block_ids[iblk]);
-    total_elements_ += conn_->getElementBlock(block_ids[iblk]).size();
-  }
   elem_to_face_.resize(total_elements_);
-
   for (int iblk=0; iblk< num_blocks_; ++iblk){
     const std::vector<LocalOrdinal> &localIDs = conn_->getElementBlock(block_ids[iblk]);
     for (unsigned id=0;id<localIDs.size(); ++id) {
@@ -71,16 +63,14 @@ FaceToElems::FaceToElems(Teuchos::RCP<panzer::ConnManager> conn) :
       elem_to_face_[id].resize(n_conn);
       for (int iconn=0;iconn<n_conn; ++iconn) {
         elem_to_face_[id][iconn] = connectivity[iconn];
-        face_gids.insert(connectivity[iconn]);
       }
     }
   }
 
+  std::vector<GlobalOrdinal> face_gids;
+  conn_->getFaceBlockGID( face_gids );
 
-  std::vector<GlobalOrdinal> face_gids_vec;
-  face_gids_vec.insert(face_gids_vec.begin(), face_gids.begin(), face_gids.end());
-
-  face_map = Teuchos::RCP<const Map>(new Map( Teuchos::OrdinalTraits<GlobalOrdinal>::invalid(), &face_gids_vec[0], face_gids_vec.size(), 0, comm ));
+  face_map = Teuchos::RCP<const Map>(new Map( Teuchos::OrdinalTraits<GlobalOrdinal>::invalid(), &face_gids[0], face_gids.size(), 0, comm ));
 
 
   Teuchos::RCP<const Map>  owned_face_map = Tpetra::createOneToOne(face_map);

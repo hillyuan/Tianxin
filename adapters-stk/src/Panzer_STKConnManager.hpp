@@ -243,6 +243,10 @@ public:
     {
 	   stkMeshDB_->getMyFacesGID(blockId, gid);
     }
+	virtual void getFaceBlockGID(std::vector<GlobalOrdinal>& gid) const final
+    {
+	   stkMeshDB_->getMyFacesGID(gid);
+    }
 
     virtual Kokkos::View<panzer::GlobalOrdinal*> getOwnedGlobalCellID() const final
     {

@@ -1379,6 +1379,23 @@ void STK_Interface::getMyFaces(std::vector<stk::mesh::Entity> & faces) const
    stk::mesh::EntityRank faceRank = getFaceRank();
    stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(faceRank),faces);
 }
+	
+void STK_Interface::getMyFacesGID(std::vector<panzer::GlobalOrdinal>& gids) const
+{
+   std::vector<stk::mesh::Entity> faces;
+   // setup local ownership
+   stk::mesh::Selector ownedPart = metaData_->locally_owned_part() | metaData_->globally_shared_part();
+
+   // grab elements
+   stk::mesh::EntityRank faceRank = getSideRank();
+   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(faceRank),faces);
+
+   gids.clear();
+   for( auto const& e: faces ) {
+	   gids.emplace_back( bulkData_->identifier( e ) -1 );
+   }
+}
+
 
 void STK_Interface::getMyFaces(const std::string & faceBlockName,std::vector<stk::mesh::Entity> & faces) const
 {
@@ -2448,7 +2465,7 @@ void STK_Interface::applyPeriodicCondition() {
         std::string type = bcVector[i]->getType();
 
 		std::tuple<std::string, std::string, std::string> t;
-	    if (type=="coord") {
+	    if (type=="coord" || type=="all") {
 		   t= std::make_tuple("NodeSet", left, right);
 		} else if( type=="edge" ) {
 		   t= std::make_tuple("EdgeSet", left, right);

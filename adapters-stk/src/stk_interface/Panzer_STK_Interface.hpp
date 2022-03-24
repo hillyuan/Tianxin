@@ -365,6 +365,7 @@ public:
    /** Get a vector of faces owned by this processor
      */
    void getMyFaces(std::vector<stk::mesh::Entity> & faces) const;
+   void getMyFacesGID(std::vector<panzer::GlobalOrdinal>& faces) const;
 
    /** Get Entities corresponding to the face block requested.
      * The Entites in the vector should be a dimension
