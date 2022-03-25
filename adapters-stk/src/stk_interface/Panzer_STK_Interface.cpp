@@ -53,7 +53,7 @@
 #include <stk_mesh/base/GetBuckets.hpp>
 #include <stk_mesh/base/CreateAdjacentEntities.hpp>
 //#include "stk_search/PeriodicBoundarySearch.hpp"
-#include "/home/yuan/programs/solver/Trilinos1/packages/stk/stk_search_util/stk_search_util/PeriodicBoundarySearch.hpp"
+
 
 // #include <stk_rebalance/Rebalance.hpp>
 // #include <stk_rebalance/Partition.hpp>
@@ -2350,8 +2350,6 @@ void STK_Interface::refineMesh(const int numberOfLevels, const bool deleteParent
 }
 	
 void STK_Interface::applyPeriodicCondition(const std::vector< std::tuple<std::string, std::string, std::string> > & periodicity) {
-    typedef stk::mesh::GetCoordinates<VectorFieldType> CoordinateFunctor;
-    typedef stk::mesh::PeriodicBoundarySearch<CoordinateFunctor> PeriodicSearch;
     PeriodicSearch pbc_search(*bulkData_, CoordinateFunctor(*bulkData_, *coordinatesField_));
 	
 	stk::mesh::Part * set0;
