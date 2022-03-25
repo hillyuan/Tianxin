@@ -2272,9 +2272,7 @@ void STK_Interface::addPeriodicBC(const std::vector< std::tuple<std::string, std
 	stk::mesh::Part* set0;
     stk::mesh::Part* set1;
 	
-	//const int parallel_rank = bulkData_->parallel_rank();
-    //std::vector<stk::mesh::EntityProc> send_nodes;
-	for( auto& atuple : periodicity ) {
+	for( const auto& atuple : periodicity ) {
 		const std::string& settype = std::get<0>(atuple);
 		if (settype==std::string("NodeSet")) {
 		  set0 = this->getNodeset( std::get<1>(atuple) );
@@ -2296,10 +2294,85 @@ void STK_Interface::addPeriodicBC(const std::vector< std::tuple<std::string, std
 		const stk::mesh::Selector selector1 = *set1 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
 		
 		pbc_search_->add_linear_periodic_pair(selector0, selector1);
-		//pbc_search_->find_periodic_nodes(bulkData_ -> parallel());
 	}
 	pbc_search_->find_periodic_nodes(bulkData_ -> parallel());
 }
 
+void STK_Interface::applyPeriodicCondition() {
+	if( !pbc_search_ ) return;
+	if( pbc_search_->size()==0 ) return;
+
+    auto& search_results = pbc_search_->get_pairs();
+	const int parallel_rank = bulkData_->parallel_rank();
+    std::vector<stk::mesh::EntityProc> send_nodes;
+	
+	for( unsigned j=0; j<search_results.size(); ++j) {
+          stk::mesh::Entity domain_node = bulkData_->get_entity( search_results[j].first.id() );
+          stk::mesh::Entity range_node = bulkData_->get_entity( search_results[j].second.id() );
+		  
+		  bool isOwnedDomain = bulkData_->is_valid(domain_node) ? bulkData_->bucket(domain_node).owned() : false;
+          bool isOwnedRange = bulkData_->is_valid(range_node) ? bulkData_->bucket(range_node).owned() : false;
+          int domain_proc = search_results[j].first.proc();
+          int range_proc = search_results[j].second.proc();
+		//	std::cout<< parallel_rank << ", " << bulkData_->is_valid(domain_node) << ", " << bulkData_->is_valid(range_node)
+		//		<< ", " << isOwnedDomain<< ", " << isOwnedRange<< std::endl;
+	//std::cout << parallel_rank << ", "  << range_proc << ", " << domain_proc<< ", "  << bulkData_->identifier(domain_node)
+//		<< ", " << bulkData_->identifier(range_node) << std::endl;
+		  //if (range_proc == domain_proc) continue;
+		  
+		  if (isOwnedDomain && domain_proc == parallel_rank) {  // if in owned domain
+			 if (range_proc == parallel_rank) continue;        // if range in the same proc, do nothing
+			 
+			// stk::ThrowRequire(bulkData_->parallel_owner_rank(domain_node) == domain_proc);
+			 if( bulkData_->is_communicated_with_proc(domain_node, range_proc) ) continue;
+			 
+			 unsigned numElems = bulkData_->num_elements(domain_node);
+             if(numElems > 0)
+             {
+                 const stk::mesh::Entity* elems = bulkData_->begin_elements(domain_node);
+                 for(unsigned k = 0; k < numElems; k++)
+                 {
+					 if( !(bulkData_->bucket(elems[k]).owned()) ) continue;
+				//	 if( bulkData_->in_send_ghost(bulkData_->entity_key(elems[k]), range_proc) ) continue;
+					 if( bulkData_->is_communicated_with_proc(elems[k], range_proc) ) continue;
+					 send_nodes.emplace_back(elems[k], range_proc);
+					 
+				//	 std::cout << "On proc " << parallel_rank << " we are sending domain element "
+                //        << bulkData_->identifier(elems[k]) << " to proc " << range_proc << std::endl;
+                 }
+            }
+		  }
+		  else if (isOwnedRange && range_proc == parallel_rank)
+          {
+          	 if (domain_proc == parallel_rank) continue;
+            // stk::ThrowRequire(bulkData_->parallel_owner_rank(range_node) == range_proc);
+			 if( bulkData_->is_communicated_with_proc(range_node, domain_proc) ) continue;
+			 
+			 unsigned numElems = bulkData_->num_elements(range_node);
+             if(numElems > 0)
+             {
+                 const stk::mesh::Entity* elems = bulkData_->begin_elements(range_node);
+                 for(unsigned k = 0; k < numElems; k++)
+                 {
+					 if( !(bulkData_->bucket(elems[k]).owned()) ) continue;
+				//	 if( bulkData_->in_shared(elems[k], domain_proc) ) continue;
+					 if( bulkData_->is_communicated_with_proc(elems[k], domain_proc) ) continue;
+                     send_nodes.emplace_back(elems[k], domain_proc); 
+				//	 std::cout << "On proc " << parallel_rank << " we are sending range element "
+                //        << bulkData_->identifier(elems[k]) << " to proc " << domain_proc << std::endl;
+                 }
+             }
+		  }
+	   }
+	   
+	// if( !send_nodes.empty() ) {
+      bulkData_->modification_begin();
+      stk::mesh::Ghosting &periodic_ghosts = bulkData_->create_ghosting("periodic_ghosts");
+   //auto & auro = bulkData_->shared_ghosting();
+      bulkData_->change_ghosting(periodic_ghosts, send_nodes);
+   //pbc_search.create_ghosting("periodic_ghosts");
+   //stk::mesh::fixup_ghosted_to_shared_nodes(bulkData_);
+      bulkData_->modification_end();
+}
 
 } // end namespace panzer_stk

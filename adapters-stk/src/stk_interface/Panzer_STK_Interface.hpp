@@ -1150,6 +1150,7 @@ public:
      */
    void addPeriodicBC(const std::tuple<std::string, std::string, std::string>& bc);
    void addPeriodicBC(const std::vector< std::tuple<std::string, std::string, std::string> >& bc);
+   void applyPeriodicCondition();
 
    /** Return a vector containing all the periodic boundary conditions.
      */
@@ -1286,6 +1287,25 @@ public:
    * \param[in] deleteParentElements If true, deletes the parent elements from the mesh to save memory.
    */
   void refineMesh(const int numberOfLevels, const bool deleteParentElements);
+  
+  /**
+ * \brief Get the owned, ghost and virtual global cell ids for this process
+ *
+ * This is designed to support a single nodally connected halo of ghost cells.
+ * Virtual cells, however, are defined by face connectivity since they are only used in discontinuous discretizations (e.g. FV and DG).
+ *
+ * \note This is a collective call over processors
+ * \note Local cell indexing is evaluated as [owned][ghost][virtual]
+ * \note Global ids for virtual cells exist at the end of the global indexing scheme, and can safely be ignored
+ *
+ * \param[out] owned_cells Will be filled with owned cell global indexes. These are cells owned by this process.
+ * \param[out] ghost_cells Will be filled with ghost cell global indexes. These are halo cells owned by other processors.
+ * \param[out] virtual_cells Will be filled with virtual cell global indexes. These are non-existant cells that represent the boundary of the mesh.
+ */
+ void
+ fillLocalCellIDs(Kokkos::View<panzer::GlobalOrdinal*> & owned_cells,
+                 Kokkos::View<panzer::GlobalOrdinal*> & ghost_cells,
+                 Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells);
 
 public: // static operations
    static const std::string coordsString;

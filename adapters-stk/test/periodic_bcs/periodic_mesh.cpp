@@ -214,10 +214,10 @@ namespace panzer {
     Teuchos::ParameterList pl("top_list");
 
     pl.set("Count",2);
-    pl.set("Periodic Condition 1","y-coord left;right");
-    pl.set("Periodic Condition 2","x-coord top;bottom");
-	  // pl.set("Periodic Condition 3","y-edge left;right");
-      // pl.set("Periodic Condition 4","x-edge top;bottom");
+    //pl.set("Periodic Condition 1","y-coord left;right");
+    //pl.set("Periodic Condition 2","x-coord top;bottom");
+	pl.set("Periodic Condition 1","y-edge left;right");
+    pl.set("Periodic Condition 2","x-edge top;bottom");
     mesh_factory->parsePeriodicBCList(pl,periodicBC);
     TEST_EQUALITY(mesh->num_pbc_search(),0);
 	mesh->addPeriodicBC(periodicBC);
