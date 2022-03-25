@@ -91,6 +91,38 @@ public:
       parser.setParameterList(pl);
       periodicBC = parser.getMatchers();
    }
+   
+   static void parsePeriodicBCList(const Teuchos::ParameterList & pl,
+             std::vector< std::tuple<std::string, std::string, std::string> > & periodicBC)
+   {
+	  std::string type, s0, s1;
+	  periodicBC.clear();
+	   
+      int numBCs = pl.get<int>("Count");
+	  for(int i=1;i<=numBCs;i++) {
+		std::stringstream ss;
+		ss << "Periodic Condition " << i; 
+        std::string cond = pl.get<std::string>(ss.str());
+        std::string::size_type d0 = cond.find_first_of(' ');
+        std::string matcher = cond.substr(0,d0);
+        if( matcher.find("coord") ) {
+           type = std::string("NodeSet");
+        } else if( matcher.find("edge") ) {
+           type = std::string("EdgeSet");
+		} else if( matcher.find("face") ) {
+           type = std::string("FaceSet");
+		} else if( matcher.find("all") ) {
+           type = std::string("All");
+		} else {
+			type = std::string("");
+		};
+		std::string::size_type d1 = cond.find_first_of(';');
+        s0 = cond.substr(d0+1,d1-d0-1);
+		s1 = cond.substr(d1+1,cond.length()-d1-1);
+		std::tuple<std::string, std::string, std::string> t = std::make_tuple(type, s0, s1);
+		periodicBC.emplace_back( t );
+	  }
+   }
 
    void enableRebalance(bool enable,const Teuchos::RCP<const Teuchos::ParameterList> & rebalanceList=Teuchos::null) 
    { enableRebalance_ = enable; 
@@ -136,6 +168,7 @@ public:
 protected:
    // vector of periodic boundary condition objects
    std::vector<Teuchos::RCP<const PeriodicBC_MatcherBase> > periodicBCVec_; 
+   std::vector< std::tuple<std::string, std::string, std::string> > periodicity_;
 
    // for managing rebalance
    bool enableRebalance_;

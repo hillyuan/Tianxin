@@ -153,6 +153,7 @@ namespace panzer_stk {
 
     // read in periodic boundary conditions
     parsePeriodicBCList(Teuchos::rcpFromRef(paramList->sublist("Periodic BCs")),periodicBCVec_);
+	parsePeriodicBCList(paramList->sublist("Periodic BCs"),periodicity_);
   }
 
   //! From ParameterListAcceptor

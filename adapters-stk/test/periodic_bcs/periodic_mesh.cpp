@@ -191,44 +191,52 @@ namespace panzer {
     }
   }
 
-  TEUCHOS_UNIT_TEST(periodic_mesh, add_get_vector)
+  TEUCHOS_UNIT_TEST(periodic_mesh, pbc_search)
   {
     using Teuchos::RCP;
-    using Teuchos::Tuple;
 
-    panzer_stk::SquareQuadMeshFactory mesh_factory;
+    std::unique_ptr<panzer_stk::STK_MeshFactory> mesh_factory( new panzer_stk::SquareQuadMeshFactory );
+    std::vector< std::tuple<std::string, std::string, std::string> > periodicBC;
 
     // setup mesh
     /////////////////////////////////////////////
-    RCP<panzer_stk::STK_Interface> mesh;
+    Teuchos::RCP<panzer_stk::STK_Interface> mesh;
     {
-       RCP<Teuchos::ParameterList> pl = rcp(new Teuchos::ParameterList);
-       pl->set("X Blocks",2);
-       pl->set("Y Blocks",1);
-       pl->set("X Elements",6);
-       pl->set("Y Elements",4);
-       mesh_factory.setParameterList(pl);
-       mesh = mesh_factory.buildMesh(MPI_COMM_WORLD);
+       Teuchos::RCP<Teuchos::ParameterList> pl0 = Teuchos::rcp(new Teuchos::ParameterList);
+       pl0->set("X Blocks",2);
+       pl0->set("Y Blocks",1);
+       pl0->set("X Elements",6);
+       pl0->set("Y Elements",4);
+       mesh_factory->setParameterList(pl0);
+       mesh = mesh_factory->buildMesh(MPI_COMM_WORLD);
     }
 
-    panzer_stk::CoordMatcher x_matcher(0);
-    panzer_stk::CoordMatcher y_matcher(1);
-    mesh->addPeriodicBC(panzer_stk::buildPeriodicBC_Matcher("top","bottom",x_matcher));
-    mesh->addPeriodicBC(panzer_stk::buildPeriodicBC_Matcher("left","right",y_matcher));
-    mesh->addPeriodicBC(panzer_stk::buildPeriodicBC_Matcher("top","bottom",x_matcher,"edge"));
-    mesh->addPeriodicBC(panzer_stk::buildPeriodicBC_Matcher("left","right",y_matcher,"edge"));
+    Teuchos::ParameterList pl("top_list");
 
-    std::vector<RCP<const panzer_stk::PeriodicBC_MatcherBase> > & mod_vec = mesh->getPeriodicBCVector();
-    TEST_EQUALITY(mod_vec.size(),4);
+    pl.set("Count",2);
+    pl.set("Periodic Condition 1","y-coord left;right");
+    pl.set("Periodic Condition 2","x-coord top;bottom");
+	  // pl.set("Periodic Condition 3","y-edge left;right");
+      // pl.set("Periodic Condition 4","x-edge top;bottom");
+    mesh_factory->parsePeriodicBCList(pl,periodicBC);
+    TEST_EQUALITY(mesh->num_pbc_search(),0);
+	mesh->addPeriodicBC(periodicBC);
+	 
+    Epetra_MpiComm Comm(MPI_COMM_WORLD);
+    TEUCHOS_ASSERT(Comm.NumProc()==2);
+    int myRank = Comm.MyPID();
 
-    const std::vector<RCP<const panzer_stk::PeriodicBC_MatcherBase> > & const_vec = mesh.getConst()->getPeriodicBCVector();
-    TEST_EQUALITY(const_vec.size(),4);
+    // cpu　0: 7*5 elements; cpu 1: 5*5 elements
+	if(myRank==0) {
+	   TEST_EQUALITY(mesh->num_pbc_search(),13);
+    } else
+		TEST_EQUALITY(mesh->num_pbc_search(),12);
+
   }
 
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager)
   {
     using Teuchos::RCP;
-    using Teuchos::Tuple;
 
     Epetra_MpiComm Comm(MPI_COMM_WORLD);
     TEUCHOS_ASSERT(Comm.NumProc()==2);

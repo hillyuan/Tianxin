@@ -45,9 +45,6 @@
 
 #include <Teuchos_as.hpp>
 
-#include <limits>
-
-#include <stk_mesh/base/FieldBase.hpp>
 #include <stk_mesh/base/Comm.hpp>
 #include <stk_mesh/base/Selector.hpp>
 #include <stk_mesh/base/GetEntities.hpp>
@@ -77,6 +74,7 @@
 #include "Panzer_STK_PeriodicBC_Matcher.hpp"
 
 #include <set>
+#include <limits>
 
 using Teuchos::RCP;
 using Teuchos::rcp;
@@ -388,7 +386,7 @@ void STK_Interface::initialize(stk::ParallelMachine parallelMach,bool setupIO,
       instantiateBulkData(*mpiComm_->getRawMpiComm());
 
    metaData_->commit();
-
+   pbc_search_ = std::shared_ptr<PeriodicSearch>( new PeriodicSearch(*bulkData_, CoordinateFunctor(*bulkData_, *coordinatesField_) ) );
    initialized_ = true;
 }
 
@@ -2238,6 +2236,69 @@ void STK_Interface::refineMesh(const int numberOfLevels, const bool deleteParent
   TEUCHOS_TEST_FOR_EXCEPTION(true,std::logic_error,
                              "ERROR: Uniform refinement requested. This requires the Percept package to be enabled in Trilinos!");
 #endif
+}
+
+void STK_Interface::addPeriodicBC(const std::tuple<std::string, std::string, std::string>& periodicity) {
+	stk::mesh::Part* set0;
+    stk::mesh::Part* set1;
+	
+	//const int parallel_rank = bulkData_->parallel_rank();
+    //std::vector<stk::mesh::EntityProc> send_nodes;
+	
+	const std::string& settype = std::get<0>(periodicity);
+	if (settype==std::string("NodeSet")) {
+		  set0 = this->getNodeset( std::get<1>(periodicity) );
+          set1 = this->getNodeset( std::get<2>(periodicity) ); 
+	} else if( settype==std::string("EdgeSet" ) ) {
+		  set0 = this->getSideset( std::get<1>(periodicity) );
+          set1 = this->getSideset( std::get<2>(periodicity) );
+	} else if( settype==std::string("FaceSet" ) ) {
+		  set0 = this->getFaceBlock( std::get<1>(periodicity) );
+          set1 = this->getFaceBlock( std::get<2>(periodicity) );
+	} else
+		return;
+	
+	if( set0==nullptr || set1==nullptr ) {
+		std::cout << std::get<1>(periodicity) << " not found!\n";
+		return;
+	}
+	const stk::mesh::Selector selector0 = *set0 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
+    const stk::mesh::Selector selector1 = *set1 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
+		
+    pbc_search_->add_linear_periodic_pair(selector0, selector1);
+}
+
+void STK_Interface::addPeriodicBC(const std::vector< std::tuple<std::string, std::string, std::string> >& periodicity) {
+	stk::mesh::Part* set0;
+    stk::mesh::Part* set1;
+	
+	//const int parallel_rank = bulkData_->parallel_rank();
+    //std::vector<stk::mesh::EntityProc> send_nodes;
+	for( auto& atuple : periodicity ) {
+		const std::string& settype = std::get<0>(atuple);
+		if (settype==std::string("NodeSet")) {
+		  set0 = this->getNodeset( std::get<1>(atuple) );
+          set1 = this->getNodeset( std::get<2>(atuple) ); 
+		} else if( settype==std::string("EdgeSet" ) ) {
+		  set0 = this->getSideset( std::get<1>(atuple) );
+          set1 = this->getSideset( std::get<2>(atuple) );
+		} else if( settype==std::string("FaceSet" ) ) {
+		  set0 = this->getFaceBlock( std::get<1>(atuple) );
+          set1 = this->getFaceBlock( std::get<2>(atuple) );
+		} else
+			continue;
+	
+		if( set0==nullptr || set1==nullptr ) {
+			std::cout << std::get<1>(atuple) << " or " << std::get<2>(atuple) << " not found!\n";
+			continue;
+		}
+		const stk::mesh::Selector selector0 = *set0 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
+		const stk::mesh::Selector selector1 = *set1 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
+		
+		pbc_search_->add_linear_periodic_pair(selector0, selector1);
+		//pbc_search_->find_periodic_nodes(bulkData_ -> parallel());
+	}
+	pbc_search_->find_periodic_nodes(bulkData_ -> parallel());
 }
 
 

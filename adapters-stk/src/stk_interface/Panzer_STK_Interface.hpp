@@ -53,6 +53,7 @@
 #include <stk_mesh/base/FieldBase.hpp>
 #include <stk_mesh/base/MetaData.hpp>
 #include <stk_mesh/base/CoordinateSystems.hpp>
+#include <stk_search/PeriodicBoundarySearch.hpp>
 
 #include "Kokkos_Core.hpp"
 
@@ -63,6 +64,7 @@
 #include <Kokkos_ViewFactory.hpp>
 
 #include <unordered_map>
+#include <memory>
 
 #ifdef PANZER_HAVE_IOSS
 #include <stk_io/StkMeshIoBroker.hpp>
@@ -107,6 +109,8 @@ public:
    typedef stk::mesh::Field<double> SolutionFieldType;
    typedef stk::mesh::Field<double,stk::mesh::Cartesian> VectorFieldType;
    typedef stk::mesh::Field<ProcIdData> ProcIdFieldType;
+   typedef stk::mesh::GetCoordinates<VectorFieldType> CoordinateFunctor;
+   typedef stk::mesh::PeriodicBoundarySearch<CoordinateFunctor> PeriodicSearch;
 
    // some simple exception classes
    struct ElementBlockException : public std::logic_error
@@ -1130,6 +1134,22 @@ public:
    /** Setup local face IDs
      */
    void buildLocalFaceIDs();
+   
+   std::size_t num_pbc_search() const
+   { 
+	  if(  pbc_search_ )
+		return pbc_search_->size(); 
+	  else
+		return 0;
+   }
+   
+   /** Add a periodic boundary condition.
+     *
+     * \note This does not actually change the underlying mesh.
+     *       The object itself only communciates the matched IDs (currently nodes)
+     */
+   void addPeriodicBC(const std::tuple<std::string, std::string, std::string>& bc);
+   void addPeriodicBC(const std::vector< std::tuple<std::string, std::string, std::string> >& bc);
 
    /** Return a vector containing all the periodic boundary conditions.
      */
@@ -1361,6 +1381,7 @@ protected:
    VectorFieldType * facesField_;
    ProcIdFieldType * processorIdField_;
    SolutionFieldType * loadBalField_;
+   std::shared_ptr<PeriodicSearch> pbc_search_;
 
    // maps field names to solution field stk mesh handles
    std::map<std::pair<std::string,std::string>,SolutionFieldType*> fieldNameToSolution_;
