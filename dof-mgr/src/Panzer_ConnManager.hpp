@@ -160,20 +160,6 @@ class FieldPattern; // from DOFManager
     virtual void getElementalFaces(const LocalOrdinal&, std::vector<GlobalOrdinal>&) const {}
     virtual int getFaceRank() const {return 2;}
 
-	/// Get the local cell IDs for the workset getLocalCellIDs
-	//virtual Kokkos::View<panzer::GlobalOrdinal*> getOwnedGlobalCellID() const =0;
-    //virtual Kokkos::View<panzer::GlobalOrdinal*> getGhostGlobalCellID() const =0;
-    virtual Kokkos::View<panzer::GlobalOrdinal*> getOwnedGlobalCellID() const
-    {
-		Kokkos::View<panzer::GlobalOrdinal*> global_ids_;
-		return global_ids_;
-	}
-    virtual Kokkos::View<panzer::GlobalOrdinal*> getGhostGlobalCellID() const
-	{
-		Kokkos::View<panzer::GlobalOrdinal*> global_ids_;
-		return global_ids_;
-	}
-	
 	virtual void fillLocalCellIDs(Kokkos::View<panzer::GlobalOrdinal*> & owned_cells,
                  Kokkos::View<panzer::GlobalOrdinal*> & ghost_cells,
                  Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells) {}

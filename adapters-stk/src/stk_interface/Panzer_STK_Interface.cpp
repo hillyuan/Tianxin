@@ -2012,8 +2012,23 @@ void STK_Interface::buildLocalFaceIDs()
    orderedFaceVector_ = Teuchos::rcp(new std::vector<stk::mesh::Entity>(faces));
 }
 
-bool
-STK_Interface::isMeshCoordField(const std::string & eBlock,
+Kokkos::View<panzer::GlobalOrdinal*[2]> STK_Interface::getSideToElementsMap() const
+{
+	Kokkos::View<panzer::GlobalOrdinal *[2]>  f2e;
+	std::vector<stk::mesh::Entity> faces;
+	// setup local ownership
+    stk::mesh::Selector ownedPart = metaData_->locally_owned_part();
+
+   // grab elements
+    stk::mesh::EntityRank sideRank = getSideRank();
+    stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(sideRank),faces);
+	std::size_t nfaces = faces.size();
+	f2e = Kokkos::View<panzer::GlobalOrdinal *[2]>("FaceToElement", nfaces);
+
+    return f2e;
+}
+
+bool STK_Interface::isMeshCoordField(const std::string & eBlock,
                                 const std::string & fieldName,
                                 int & axis) const
 {
@@ -2416,12 +2431,12 @@ void STK_Interface::fillLocalCellIDs(Kokkos::View<panzer::GlobalOrdinal*> & owne
     }
 
     panzer::GlobalOrdinal num_global_real_cells=0;
-    for(std::size_t i=0;i<num_ranks;++i){
+    for(int i=0;i<num_ranks; ++i){
       num_global_real_cells+=owned_cell_distribution[i];
     }
 
     panzer::GlobalOrdinal global_virtual_start_idx = num_global_real_cells;
-    for(std::size_t i=0;i<rank;++i){
+    for(int i=0;i<rank; ++i){
       global_virtual_start_idx += virtual_cell_distribution[i];
     }
 

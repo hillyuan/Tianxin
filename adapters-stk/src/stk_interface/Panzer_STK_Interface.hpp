@@ -1131,9 +1131,11 @@ public:
      */
    void buildLocalEdgeIDs();
 
-   /** Setup local face IDs
-     */
+   /** Setup local face IDs */
    void buildLocalFaceIDs();
+   
+   /** Find two elements attched to Face */
+   Kokkos::View<panzer::GlobalOrdinal*[2]> getSideToElementsMap() const;
    
    std::size_t num_pbc_search() const
    { 

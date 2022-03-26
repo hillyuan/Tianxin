@@ -46,18 +46,6 @@
 #include "Teuchos_Comm.hpp"
 #include "Teuchos_Assert.hpp"
 
-#include "Tpetra_CrsMatrix.hpp"
-#include "Tpetra_RowMatrixTransposer.hpp"
-
-#include "Panzer_FaceToElement.hpp"
-#include "Panzer_ConnManager.hpp"
-#include "Panzer_NodeType.hpp"
-#include "Panzer_FieldPattern.hpp"
-#include "Panzer_NodalFieldPattern.hpp"
-#include "Panzer_EdgeFieldPattern.hpp"
-#include "Panzer_FaceFieldPattern.hpp"
-#include "Panzer_ElemFieldPattern.hpp"
-
 #include "Panzer_Workset_Builder.hpp"
 #include "Panzer_WorksetDescriptor.hpp"
 
