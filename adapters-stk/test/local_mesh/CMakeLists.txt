@@ -28,13 +28,13 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   NUM_MPI_PROCS 2
   )
 
-TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  LocalMesh_ParallelPeriodicTests
-  SOURCES parallel_periodic_local_mesh_utilities.cpp 
-          PanzerSTK_UnitTest_BuildMesh.cpp
-          PanzerSTK_UnitTest_STKInterfaceGenerator.cpp
-          ${UNIT_TEST_DRIVER}
-  COMM mpi
-  NUM_MPI_PROCS 2
-  )
+#TRIBITS_ADD_EXECUTABLE_AND_TEST(
+#  LocalMesh_ParallelPeriodicTests
+#  SOURCES parallel_periodic_local_mesh_utilities.cpp 
+#          PanzerSTK_UnitTest_BuildMesh.cpp
+#          PanzerSTK_UnitTest_STKInterfaceGenerator.cpp
+#          ${UNIT_TEST_DRIVER}
+#  COMM mpi
+#  NUM_MPI_PROCS 2
+#  )
   

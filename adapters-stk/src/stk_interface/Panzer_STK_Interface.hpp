@@ -1307,7 +1307,7 @@ public:
  void
  fillLocalCellIDs(Kokkos::View<panzer::GlobalOrdinal*> & owned_cells,
                  Kokkos::View<panzer::GlobalOrdinal*> & ghost_cells,
-                 Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells);
+                 Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells) const;
 
 public: // static operations
    static const std::string coordsString;

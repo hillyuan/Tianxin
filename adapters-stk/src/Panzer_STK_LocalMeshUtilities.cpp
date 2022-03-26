@@ -484,8 +484,9 @@ generateLocalMeshInfo(const panzer_stk::STK_Interface & mesh)
   RCP<panzer::ConnManager> conn_rcp = rcp(new panzer_stk::STKConnManager(mesh_rcp));
   panzer::ConnManager & conn = *conn_rcp;
 
-  PHX::View<panzer::GlobalOrdinal*> owned_cells, ghost_cells, virtual_cells;
-  panzer::fillLocalCellIDs(comm, conn_rcp, owned_cells, ghost_cells, virtual_cells);
+  Kokkos::View<panzer::GlobalOrdinal*> owned_cells, ghost_cells, virtual_cells;
+  mesh.fillLocalCellIDs(owned_cells, ghost_cells, virtual_cells);
+//  panzer::fillLocalCellIDs(comm, conn_rcp, owned_cells, ghost_cells, virtual_cells);
 
   // build cell maps
   /////////////////////////////////////////////////////////////////////

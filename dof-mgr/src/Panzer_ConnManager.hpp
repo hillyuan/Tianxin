@@ -173,6 +173,7 @@ class FieldPattern; // from DOFManager
 		Kokkos::View<panzer::GlobalOrdinal*> global_ids_;
 		return global_ids_;
 	}
+
   };
 
 }

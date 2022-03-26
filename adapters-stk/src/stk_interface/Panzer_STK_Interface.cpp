@@ -2378,7 +2378,7 @@ void STK_Interface::PeriodicGhosting() {
 
 void STK_Interface::fillLocalCellIDs(Kokkos::View<panzer::GlobalOrdinal*> & owned_cells,
                  Kokkos::View<panzer::GlobalOrdinal*> & ghost_cells,
-                 Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells)
+                 Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells) const
 {
   owned_cells = this->getOwnedGlobalCellIDs();
   ghost_cells = this->getGhostGlobalCellIDs();

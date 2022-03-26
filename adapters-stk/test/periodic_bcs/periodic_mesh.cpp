@@ -313,7 +313,6 @@ namespace panzer {
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager_edge)
   {
     using Teuchos::RCP;
-    using Teuchos::Tuple;
 
     Epetra_MpiComm Comm(MPI_COMM_WORLD);
     TEUCHOS_ASSERT(Comm.NumProc()==2);
@@ -360,7 +359,6 @@ namespace panzer {
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager2)
   {
     using Teuchos::RCP;
-    using Teuchos::Tuple;
 
     Epetra_MpiComm Comm(MPI_COMM_WORLD);
     TEUCHOS_ASSERT(Comm.NumProc()==2);
@@ -425,7 +423,6 @@ namespace panzer {
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager2_edge)
   {
     using Teuchos::RCP;
-    using Teuchos::Tuple;
 
     Epetra_MpiComm Comm(MPI_COMM_WORLD);
     TEUCHOS_ASSERT(Comm.NumProc()==2);
