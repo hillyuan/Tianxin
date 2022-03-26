@@ -173,6 +173,10 @@ class FieldPattern; // from DOFManager
 		Kokkos::View<panzer::GlobalOrdinal*> global_ids_;
 		return global_ids_;
 	}
+	
+	virtual void fillLocalCellIDs(Kokkos::View<panzer::GlobalOrdinal*> & owned_cells,
+                 Kokkos::View<panzer::GlobalOrdinal*> & ghost_cells,
+                 Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells) {}
 
   };
 

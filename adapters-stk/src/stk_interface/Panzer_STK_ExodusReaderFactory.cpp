@@ -123,7 +123,7 @@ Teuchos::RCP<STK_Interface> STK_ExodusReaderFactory::buildMesh(stk::ParallelMach
    mesh->initialize(parallelMach,false,doPerceptRefinement());
 
    completeMeshConstruction(*mesh,parallelMach);
-
+   mesh->PeriodicGhosting();
    return mesh;
 }
 

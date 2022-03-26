@@ -72,7 +72,7 @@ Teuchos::RCP<STK_Interface> LineMeshFactory::buildMesh(stk::ParallelMachine para
 
    // build bulk data
    completeMeshConstruction(*mesh,parallelMach);
-
+   mesh->PeriodicGhosting();
    return mesh;
 }
 
@@ -130,6 +130,7 @@ void LineMeshFactory::setParameterList(const Teuchos::RCP<Teuchos::ParameterList
 
    // read in periodic boundary conditions
    parsePeriodicBCList(Teuchos::rcpFromRef(paramList->sublist("Periodic BCs")),periodicBCVec_);
+   parsePeriodicBCList(paramList->sublist("Periodic BCs"),periodicity_);
 }
 
 //! From ParameterListAcceptor

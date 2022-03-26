@@ -75,7 +75,7 @@ Teuchos::RCP<STK_Interface> SquareQuadMeshFactory::buildMesh(stk::ParallelMachin
 
    // build bulk data
    completeMeshConstruction(*mesh,parallelMach);
-
+   mesh->PeriodicGhosting();
    return mesh;
 }
 
@@ -175,7 +175,7 @@ void SquareQuadMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::P
    if(createEdgeBlocks_) {
       addEdgeBlocks(mesh);
    }
-   mesh.PeriodicGhosting();
+
    // calls Stk_MeshFactory::rebalance
    this->rebalance(mesh);
 }

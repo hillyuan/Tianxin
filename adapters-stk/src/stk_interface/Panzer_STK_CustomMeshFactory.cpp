@@ -73,7 +73,7 @@ namespace panzer_stk {
 
     // build bulk data
     completeMeshConstruction(*mesh,parallelMach);
-
+    mesh->PeriodicGhosting();
     return mesh;
   }
 

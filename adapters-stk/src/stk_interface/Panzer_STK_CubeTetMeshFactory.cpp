@@ -72,7 +72,7 @@ Teuchos::RCP<STK_Interface> CubeTetMeshFactory::buildMesh(stk::ParallelMachine p
 
    // build bulk data
    completeMeshConstruction(*mesh,parallelMach);
-
+   mesh->PeriodicGhosting();
    return mesh;
 }
 

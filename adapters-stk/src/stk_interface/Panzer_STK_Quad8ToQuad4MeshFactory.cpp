@@ -99,7 +99,7 @@ Teuchos::RCP<STK_Interface> Quad8ToQuad4MeshFactory::buildMesh(stk::ParallelMach
 
    // build bulk data
    this->completeMeshConstruction(*mesh,parallelMach);
-
+   mesh->PeriodicGhosting();
    return mesh;
 }
 

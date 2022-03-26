@@ -46,7 +46,6 @@
 #include "Panzer_ConnManager.hpp"
 #include "PanzerDiscFE_config.hpp"
 #include "Panzer_NodalFieldPattern.hpp"
-#include "Panzer_LocalPartitioningUtilities.hpp"
 #include "Panzer_NodeType.hpp"
 #include "Tpetra_Import.hpp"
 #include "Tpetra_MultiVector.hpp"
@@ -68,8 +67,8 @@ buildIntrepidOrientation(const Teuchos::RCP<const Teuchos::Comm<int>> & comm,
   using NodeView = Kokkos::View<panzer::GlobalOrdinal*, Kokkos::DefaultHostExecutionSpace>;
 
   // First we need to build the indexing scheme
-  PHX::View<panzer::GlobalOrdinal*> owned_cells, ghost_cells, virtual_cells;
-  fillLocalCellIDs(comm, conn, owned_cells, ghost_cells, virtual_cells);
+  Kokkos::View<panzer::GlobalOrdinal*> owned_cells, ghost_cells, virtual_cells;
+  conn->fillLocalCellIDs(owned_cells, ghost_cells, virtual_cells);
 
   // Build a map and importer for syncing the nodal connectivity
   auto owned_cell_map = Teuchos::rcp(new Map(Teuchos::OrdinalTraits<Tpetra::global_size_t>::invalid(),owned_cells,0,comm));

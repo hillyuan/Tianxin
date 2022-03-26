@@ -74,7 +74,7 @@ Teuchos::RCP<STK_Interface> SculptMeshFactory::buildMesh(stk::ParallelMachine pa
 
    // build bulk data
    completeMeshConstruction(*mesh,parallelMach);
-
+   mesh->PeriodicGhosting();
    // wrtie exodus file
    //mesh->writeToExodus("STKSculptMesh.exo");
  

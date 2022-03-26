@@ -72,7 +72,7 @@ Teuchos::RCP<STK_Interface> SquareTriMeshFactory::buildMesh(stk::ParallelMachine
 
    // build bulk data
    completeMeshConstruction(*mesh,parallelMach);
-
+   mesh->PeriodicGhosting();
    return mesh;
 }
 

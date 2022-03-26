@@ -241,6 +241,13 @@ public:
 	{
 		return stkMeshDB_->getGhostGlobalCellIDs();
 	}
+	
+	virtual void fillLocalCellIDs(Kokkos::View<panzer::GlobalOrdinal*> & owned_cells,
+                 Kokkos::View<panzer::GlobalOrdinal*> & ghost_cells,
+                 Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells) final
+	{
+		stkMeshDB_->fillLocalCellIDs(owned_cells,ghost_cells,virtual_cells);
+	}
 
 protected:
    /** Apply periodic boundary conditions associated with the mesh object.
