@@ -50,6 +50,7 @@
 #include <stk_mesh/base/GetEntities.hpp>
 #include <stk_mesh/base/GetBuckets.hpp>
 #include <stk_mesh/base/CreateAdjacentEntities.hpp>
+#include <stk_mesh/base/SkinBoundary.hpp>
 
 // #include <stk_rebalance/Rebalance.hpp>
 // #include <stk_rebalance/Partition.hpp>
@@ -2373,6 +2374,62 @@ void STK_Interface::PeriodicGhosting() {
    //pbc_search.create_ghosting("periodic_ghosts");
    //stk::mesh::fixup_ghosted_to_shared_nodes(bulkData_);
       bulkData_->modification_end();
+}
+
+void STK_Interface::fillLocalCellIDs(Kokkos::View<panzer::GlobalOrdinal*> & owned_cells,
+                 Kokkos::View<panzer::GlobalOrdinal*> & ghost_cells,
+                 Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells)
+{
+  owned_cells = this->getOwnedGlobalCellIDs();
+  ghost_cells = this->getGhostGlobalCellIDs();
+  std::size_t num_owned_cells = owned_cells.extent(0);
+
+  stk::mesh::Part &skinPart = metaData_->declare_part("skin", metaData_->side_rank());
+  stk::mesh::create_exposed_block_boundary_sides( *bulkData_ , metaData_->universal_part(), {&skinPart} );
+  
+  stk::mesh::Selector skin( skinPart & metaData_->locally_owned_part() );
+  std::size_t numSkinnedSides = stk::mesh::count_selected_entities(skin, bulkData_->buckets(metaData_->side_rank()));
+  //std::cout << numSkinnedSides << " in part " << skinPart.name() << std::endl;
+  
+  virtual_cells = Kokkos::View<panzer::GlobalOrdinal*>("virtual_cells",numSkinnedSides);
+  auto virtual_cells_h = Kokkos::create_mirror_view(virtual_cells);
+  {
+    PANZER_FUNC_TIME_MONITOR_DIFF("Initial global index creation",InitialGlobalIndexCreation);
+
+    const int num_ranks = mpiComm_->getSize();
+    const int rank = mpiComm_->getRank();
+
+    std::vector<panzer::GlobalOrdinal> owned_cell_distribution(num_ranks,0);
+    {
+      std::vector<panzer::GlobalOrdinal> my_owned_cell_distribution(num_ranks,0);
+      my_owned_cell_distribution[rank] = num_owned_cells;
+
+      Teuchos::reduceAll(*mpiComm_,Teuchos::REDUCE_SUM, num_ranks, my_owned_cell_distribution.data(),owned_cell_distribution.data());
+    }
+
+    std::vector<panzer::GlobalOrdinal> virtual_cell_distribution(num_ranks,0);
+    {
+      std::vector<panzer::GlobalOrdinal> my_virtual_cell_distribution(num_ranks,0);
+      my_virtual_cell_distribution[rank] = numSkinnedSides;
+
+      Teuchos::reduceAll(*mpiComm_,Teuchos::REDUCE_SUM, num_ranks, my_virtual_cell_distribution.data(),virtual_cell_distribution.data());
+    }
+
+    panzer::GlobalOrdinal num_global_real_cells=0;
+    for(std::size_t i=0;i<num_ranks;++i){
+      num_global_real_cells+=owned_cell_distribution[i];
+    }
+
+    panzer::GlobalOrdinal global_virtual_start_idx = num_global_real_cells;
+    for(std::size_t i=0;i<rank;++i){
+      global_virtual_start_idx += virtual_cell_distribution[i];
+    }
+
+    for(std::size_t i=0;i<numSkinnedSides;++i){
+      virtual_cells_h(i) = global_virtual_start_idx + panzer::GlobalOrdinal(i);
+    }
+  }
+  Kokkos::deep_copy(virtual_cells, virtual_cells_h);
 }
 
 } // end namespace panzer_stk

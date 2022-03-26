@@ -193,7 +193,7 @@ namespace panzer {
 
   TEUCHOS_UNIT_TEST(periodic_mesh, pbc_search)
   {
-    using Teuchos::RCP;
+    Kokkos::View<panzer::GlobalOrdinal*> owned_cells,ghost_cells,virtual_cells;
 
     std::unique_ptr<panzer_stk::STK_MeshFactory> mesh_factory( new panzer_stk::SquareQuadMeshFactory );
     std::vector< std::tuple<std::string, std::string, std::string> > periodicBC;
@@ -212,7 +212,6 @@ namespace panzer {
     }
 
     Teuchos::ParameterList pl("top_list");
-
     pl.set("Count",2);
     //pl.set("Periodic Condition 1","y-coord left;right");
     //pl.set("Periodic Condition 2","x-coord top;bottom");
@@ -226,12 +225,24 @@ namespace panzer {
     TEUCHOS_ASSERT(Comm.NumProc()==2);
     int myRank = Comm.MyPID();
 
-    // cpu　0: 7*5 elements; cpu 1: 5*5 elements
+    mesh->fillLocalCellIDs(owned_cells,ghost_cells,virtual_cells);
+	unsigned num_o = owned_cells.extent(0);
+	unsigned num_v = virtual_cells.extent(0);
+    // 12*4 elements; with 12+12+4+4=32 virtual elements 
 	if(myRank==0) {
 	   TEST_EQUALITY(mesh->num_pbc_search(),13);
-    } else
+	   TEST_EQUALITY(num_o,24);
+	   TEST_EQUALITY(num_v,16);
+    } else {
 		TEST_EQUALITY(mesh->num_pbc_search(),12);
-
+		TEST_EQUALITY(num_o,24);
+		TEST_EQUALITY(num_v,16);
+	}
+	
+	/*num_v = owned_cells.extent(0);
+	Kokkos::parallel_for( num_v, KOKKOS_LAMBDA(const int i) {
+		std::cout << i << ", " << owned_cells(i)<< std::endl;
+	});*/
   }
 
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager)
