@@ -175,7 +175,7 @@ void SquareQuadMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::P
    if(createEdgeBlocks_) {
       addEdgeBlocks(mesh);
    }
-
+   mesh.PeriodicGhosting();
    // calls Stk_MeshFactory::rebalance
    this->rebalance(mesh);
 }

@@ -1150,7 +1150,9 @@ public:
      */
    void addPeriodicBC(const std::tuple<std::string, std::string, std::string>& bc);
    void addPeriodicBC(const std::vector< std::tuple<std::string, std::string, std::string> >& bc);
-   void applyPeriodicCondition();
+   
+   /** Modify ghosting infomation due to periodic condition*/
+   void PeriodicGhosting();
 
    /** Return a vector containing all the periodic boundary conditions.
      */

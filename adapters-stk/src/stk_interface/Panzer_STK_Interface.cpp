@@ -2298,7 +2298,7 @@ void STK_Interface::addPeriodicBC(const std::vector< std::tuple<std::string, std
 	pbc_search_->find_periodic_nodes(bulkData_ -> parallel());
 }
 
-void STK_Interface::applyPeriodicCondition() {
+void STK_Interface::PeriodicGhosting() {
 	if( !pbc_search_ ) return;
 	if( pbc_search_->size()==0 ) return;
 

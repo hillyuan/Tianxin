@@ -44,11 +44,12 @@
 #define PANZER_STK_VERSION_HPP
 
 #include <string>
-#include "PanzerAdaptersSTK_config.hpp"
 
 namespace panzer_stk {
   
-  std::string version();
+  inline std::string version() { 
+    return("Panzer STK Version: development"); 
+  }
 
 }
 #endif
