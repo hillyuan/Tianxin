@@ -93,11 +93,6 @@ class FieldPattern; // from DOFManager
      */
     virtual const GlobalOrdinal * getConnectivity(LocalOrdinal localElmtId) const = 0;
 
-    /** Get the block ID for a particular element.
-     *
-     * \param[in] localElmtId Local element ID
-     */
-    virtual std::string getBlockId(LocalOrdinal localElmtId) const = 0;
 
     /** Returns the number of element blocks in this mesh */
     virtual std::size_t numElementBlocks() const = 0;

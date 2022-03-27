@@ -168,32 +168,6 @@ Teuchos::RCP<panzer::ConnManager> IOSSConnManager::noConnectivityClone(
 	   return Teuchos::rcp(new IOSSConnManager(iossMeshDB));
 }
 
-std::string IOSSConnManager::getBlockId(LocalOrdinal localElmtId) const {
-   std::string blockId = "";
-   Teuchos::RCP<std::vector<LocalOrdinal>> elementBlock;
-   bool found = false;
-   for (auto it = elementBlocks_.begin(); it != elementBlocks_.end(); ++it) {
-	 elementBlock = it->second;
-	 if ((*elementBlock).size() == 0)
-	   continue;
-	 if (*(elementBlock->end()-1) < localElmtId)
-       continue;
-	 for (auto vec_it = elementBlock->begin(); vec_it != elementBlock->end(); ++vec_it) {
-       if (*vec_it == localElmtId) {
-         blockId = it->first;
-         found = true;
-         break;
-       }
-     if (found)
-       break;
-	 }
-   }
-   TEUCHOS_TEST_FOR_EXCEPTION(!found, std::logic_error,
-     "Could not find blockId for local element" << localElmtId
-	 << ", global element " << elmtLidToGid_[localElmtId] << ".");
-   return blockId;
-}
-
 void IOSSConnManager::getDofCoords(const std::string & blockId,
                                        const panzer::Intrepid2FieldPattern & coordProvider,
                                        std::vector<LocalOrdinal> & localCellIds,

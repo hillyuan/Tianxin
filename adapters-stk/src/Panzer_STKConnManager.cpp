@@ -301,14 +301,6 @@ void STKConnManager::buildConnectivity(const panzer::FieldPattern & fp)
      applyInterfaceConditions();
 }
 
-std::string STKConnManager::getBlockId(STKConnManager::LocalOrdinal localElmtId) const
-{
-   // walk through the element blocks and figure out which this ID belongs to
-   stk::mesh::Entity element = elements_[localElmtId];
-
-   return stkMeshDB_->containingBlockId(element);
-}
-
 void STKConnManager::applyPeriodicBCs(const panzer::FieldPattern & fp, GlobalOrdinal nodeOffset, GlobalOrdinal edgeOffset,
                                       GlobalOrdinal faceOffset, GlobalOrdinal /* cellOffset */)
 {
