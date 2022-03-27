@@ -46,10 +46,8 @@
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "Panzer_STKConnManager.hpp"
 
-#include "Panzer_HashUtils.hpp"
 #include "Panzer_LocalMeshInfo.hpp"
 #include "Panzer_LocalPartitioningUtilities.hpp"
-#include "Panzer_FaceToElement.hpp"
 
 #include "Panzer_FieldPattern.hpp"
 #include "Panzer_NodalFieldPattern.hpp"
@@ -65,6 +63,7 @@
 #include "Teuchos_OrdinalTraits.hpp"
 
 #include "Tpetra_Import.hpp"
+#include <Tpetra_MultiVector.hpp>
 
 #include <string>
 #include <map>
@@ -536,11 +535,14 @@ generateLocalMeshInfo(const panzer_stk::STK_Interface & mesh)
   for(size_t i=0;i<ghost_cells.extent(0);i++)
     global_to_local[ghost_cells_h(i)] = i+Teuchos::as<int>(owned_cells.extent(0));
 
-  // this class comes from Mini-PIC and Matt B
-  RCP<panzer::FaceToElement<panzer::LocalOrdinal,panzer::GlobalOrdinal> > faceToElement = rcp(new panzer::FaceToElement<panzer::LocalOrdinal,panzer::GlobalOrdinal>());
-  faceToElement->initialize(conn);
-  auto elems_by_face = faceToElement->getFaceToElementsMap();
-  auto face_to_lidx  = faceToElement->getFaceToCellLocalIdxMap();
+  Kokkos::View<panzer::GlobalOrdinal*[2]> elems_by_face;
+  Kokkos::View<panzer::LocalOrdinal*[2]> face_to_lidx;
+  mesh.getSideToElementsMap(elems_by_face,face_to_lidx);
+ // std::cout << elems_by_face.extent(0) << ", " << elems_by_face1.extent(0) << "  ssa\n";
+ // Kokkos::parallel_for(elems_by_face.extent(0),KOKKOS_LAMBDA (int i) {
+//	std::cout << i << " , " << face_to_lidx1(i,0) << ", " <<  face_to_lidx1(i,1) 
+//	 << " , " << face_to_lidx(i,0) << ", " <<  face_to_lidx(i,1) <<std::endl;} );
+
 
   // We also need to consider faces that connect to cells that do not exist, but are needed for boundary conditions
   // We dub them virtual cell since there should be no geometry associated with them, or topology really

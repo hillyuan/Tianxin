@@ -1135,7 +1135,7 @@ public:
    void buildLocalFaceIDs();
    
    /** Find two elements attched to Face */
-   Kokkos::View<panzer::GlobalOrdinal*[2]> getSideToElementsMap() const;
+   void getSideToElementsMap(Kokkos::View<panzer::GlobalOrdinal*[2]>&, Kokkos::View<panzer::LocalOrdinal*[2]>&) const;
    
    std::size_t num_pbc_search() const
    { 

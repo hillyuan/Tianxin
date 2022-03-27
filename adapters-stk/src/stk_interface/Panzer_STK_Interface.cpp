@@ -2012,20 +2012,48 @@ void STK_Interface::buildLocalFaceIDs()
    orderedFaceVector_ = Teuchos::rcp(new std::vector<stk::mesh::Entity>(faces));
 }
 
-Kokkos::View<panzer::GlobalOrdinal*[2]> STK_Interface::getSideToElementsMap() const
+void STK_Interface::getSideToElementsMap(Kokkos::View<panzer::GlobalOrdinal*[2]>& f2e, 
+		Kokkos::View<panzer::LocalOrdinal*[2]>& f2e_l) const
 {
-	Kokkos::View<panzer::GlobalOrdinal *[2]>  f2e;
 	std::vector<stk::mesh::Entity> faces;
 	// setup local ownership
-    stk::mesh::Selector ownedPart = metaData_->locally_owned_part();
+    stk::mesh::Selector ownedPart = (metaData_->locally_owned_part() | metaData_->globally_shared_part());
 
    // grab elements
     stk::mesh::EntityRank sideRank = getSideRank();
     stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(sideRank),faces);
 	std::size_t nfaces = faces.size();
-	f2e = Kokkos::View<panzer::GlobalOrdinal *[2]>("FaceToElement", nfaces);
-
-    return f2e;
+	f2e = Kokkos::View<panzer::GlobalOrdinal *[2]>(Kokkos::ViewAllocateWithoutInitializing("FaceToElement"), nfaces);
+	f2e_l = Kokkos::View<panzer::LocalOrdinal *[2]>(Kokkos::ViewAllocateWithoutInitializing("FaceToElement_l"), nfaces);
+	for( std::size_t j=0; j<nfaces; ++j ) {
+		const auto& s = faces[j];
+		const auto& sid = bulkData_->identifier( s );
+		unsigned numElems = bulkData_->num_elements(s);
+		if( numElems<=0 ) continue;
+		if( numElems>2 ) {
+			std::cout << numElems << " elements attached to a side, it is impossible!";
+			continue;
+		}
+		const stk::mesh::Entity* elems = bulkData_->begin_elements(s);
+		f2e(j,0) = -1; f2e(j,1) = -1;
+		f2e_l(j,0) = -1; f2e_l(j,1) = -3;
+		for (unsigned i=0; i<numElems; ++i) {
+			stk::mesh::Entity elem = elems[i];
+			const auto& gid = bulkData_->identifier( elem );
+			f2e(j,i) = gid-1;
+			unsigned numSides = bulkData_->num_sides(elem);
+			if( numSides<=0 ) continue;
+			const stk::mesh::Entity* sides = bulkData_->begin(elem, sideRank);
+			for (unsigned is=0; is<numSides; ++is) {
+				if( bulkData_->identifier( sides[is] ) == sid ) {
+					f2e_l(j,i) = is; break;
+				}
+			}
+		//	std::cout << gid << ", " << this->elementLocalId(gid) << ", " << this->elementLocalId(elem) << std::endl;
+		}
+	//	if( f2e(j,1)>-1 && f2e(j,0)>f2e(j,1) )
+	//		std::swap(f2e(j,0),f2e(j,1));
+	}
 }
 
 bool STK_Interface::isMeshCoordField(const std::string & eBlock,
