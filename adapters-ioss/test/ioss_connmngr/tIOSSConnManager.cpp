@@ -336,14 +336,6 @@ TEUCHOS_UNIT_TEST(tIOSSConnManager, basic)
       TEST_EQUALITY(ownedElementCount, correct.ownedElementCount);
 
 
-      // Check for correct block id for all local elements
-      if (print) output << "Checking for correct block id for all local elements." << std::endl;
-      std::vector<std::string> localElementBlockIds;
-      for (size_t localElementId = 0; localElementId < ownedElementCount; ++localElementId) {
-        localElementBlockIds.push_back(connManager.getBlockId(localElementId));
-      }
-      TEST_COMPARE_ARRAYS(localElementBlockIds, correct.localElementBlockIds);
-
       // Check for correct connectivity size for all local elements
       if (print) output << "Checking for correct connectivity size for all local elements." << std::endl;
       std::vector<int> connectivitySize;
