@@ -543,8 +543,7 @@ public:
    *                      results.
    */
   void
-  writeToExodus(
-    double timestep);
+  writeToExodus( double timestep );
 
   /**
    *  \brief Add an `int` global variable to the information to be written to
@@ -566,9 +565,7 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus(
-    const std::string& key,
-    const int&         value);
+  addGlobalToExodus(const std::string& key, const int& value);
 
   /**
    *  \brief Add a `double` global variable to the information to be written to
@@ -590,9 +587,7 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus(
-    const std::string& key,
-    const double&      value);
+  addGlobalToExodus( const std::string& key, const double& value);
 
   /**
    *  \brief Add a `std::vector<int>` global variable to the information to be
@@ -614,9 +609,7 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus(
-    const std::string&      key,
-    const std::vector<int>& value);
+  addGlobalToExodus( const std::string&   key, const std::vector<int>& value);
 
   /**
    *  \brief Add a `std::vector<double>` global variable to the information to
@@ -638,8 +631,7 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus(
-    const std::string&         key,
+  addGlobalToExodus( const std::string&         key,
     const std::vector<double>& value);
 
    // Accessor functions
@@ -795,6 +787,12 @@ public:
 
    //! force the mesh to build subcells: edges and faces
    void buildSubcells();
+	
+   /** Get the block ID for a particular element.
+     *
+     * \param[in] localElmtId Local element ID
+     */
+   std::string getBlockId(panzer::LocalOrdinal localElmtId) const;
 
    /** Get an elements local index
      */
@@ -1380,6 +1378,8 @@ protected:
   Teuchos::RCP<percept::PerceptMesh> refinedMesh_;
   Teuchos::RCP<percept::URP_Heterogeneous_3D> breakPattern_;
 #endif
+	
+   std::vector<stk::mesh::Entity> ownedElements_;
 
    std::map<std::string, stk::mesh::Part*> elementBlocks_;  // Element blocks
    std::map<std::string, stk::mesh::Part*> sidesets_;       // Side sets

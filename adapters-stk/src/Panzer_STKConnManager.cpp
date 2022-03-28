@@ -88,7 +88,7 @@ STKConnManager::noConnectivityClone() const
 
 void STKConnManager::clearLocalElementMapping()
 {
-   elements_ = Teuchos::null;
+   elements_.clear();
 
    elementBlocks_.clear();
    elmtLidToConn_.clear();
@@ -102,8 +102,6 @@ void STKConnManager::buildLocalElementMapping()
 
    // build element block information
    //////////////////////////////////////////////
-   elements_ = Teuchos::rcp(new std::vector<stk::mesh::Entity>);
-
    // defines ordering of blocks
    std::vector<std::string> blockIds;
    stkMeshDB_->getElementBlockNames(blockIds);
@@ -118,7 +116,7 @@ void STKConnManager::buildLocalElementMapping()
       stkMeshDB_->getMyElements(blockId,blockElmts);
 
       // concatenate them into element LID lookup table
-      elements_->insert(elements_->end(),blockElmts.begin(),blockElmts.end());
+      elements_.insert(elements_.end(),blockElmts.begin(),blockElmts.end());
 
       // build block to LID map
       elementBlocks_[blockId] = Teuchos::rcp(new std::vector<LocalOrdinal>);
@@ -126,7 +124,7 @@ void STKConnManager::buildLocalElementMapping()
          elementBlocks_[blockId]->push_back(stkMeshDB_->elementLocalId(blockElmts[i]));
    }
 
-   ownedElementCount_ = elements_->size();
+   ownedElementCount_ = elements_.size();
 
    blockIndex=0;
    for(std::vector<std::string>::const_iterator idItr=blockIds.begin();
@@ -138,7 +136,7 @@ void STKConnManager::buildLocalElementMapping()
       stkMeshDB_->getNeighborElements(blockId,blockElmts);
 
       // concatenate them into element LID lookup table
-      elements_->insert(elements_->end(),blockElmts.begin(),blockElmts.end());
+      elements_.insert(elements_.end(),blockElmts.begin(),blockElmts.end());
 
       // build block to LID map
       neighborElementBlocks_[blockId] = Teuchos::rcp(new std::vector<LocalOrdinal>);
@@ -147,15 +145,15 @@ void STKConnManager::buildLocalElementMapping()
    }
 
    // this expensive operation gurantees ordering of local IDs
-   std::sort(elements_->begin(),elements_->end(),LocalIdCompare(stkMeshDB_));
+   std::sort(elements_.begin(),elements_.end(),LocalIdCompare(stkMeshDB_));
 
    // allocate space for element LID to Connectivty map
    // connectivity size
    elmtLidToConn_.clear();
-   elmtLidToConn_.resize(elements_->size(),0);
+   elmtLidToConn_.resize(elements_.size(),0);
 
    connSize_.clear();
-   connSize_.resize(elements_->size(),0);
+   connSize_.resize(elements_.size(),0);
 }
 
 void
@@ -270,9 +268,9 @@ void STKConnManager::buildConnectivity(const panzer::FieldPattern & fp)
     // std::cout << "cell: count = " << cellIdCnt << ", offset = " << cellOffset << std::endl;
 
    // loop over elements and build global connectivity
-   for(std::size_t elmtLid=0;elmtLid!=elements_->size();++elmtLid) {
+   for(std::size_t elmtLid=0;elmtLid!=elements_.size();++elmtLid) {
       GlobalOrdinal numIds = 0;
-      stk::mesh::Entity element = (*elements_)[elmtLid];
+      stk::mesh::Entity element = elements_[elmtLid];
 
       // get index into connectivity array
       elmtLidToConn_[elmtLid] = connectivity_.size();
@@ -306,7 +304,7 @@ void STKConnManager::buildConnectivity(const panzer::FieldPattern & fp)
 std::string STKConnManager::getBlockId(STKConnManager::LocalOrdinal localElmtId) const
 {
    // walk through the element blocks and figure out which this ID belongs to
-   stk::mesh::Entity element = (*elements_)[localElmtId];
+   stk::mesh::Entity element = elements_[localElmtId];
 
    return stkMeshDB_->containingBlockId(element);
 }
@@ -405,7 +403,7 @@ getElementIdx(const std::vector<stk::mesh::Entity>& elements,
 void STKConnManager::applyInterfaceConditions()
 {
   stk::mesh::BulkData& bulkData = *stkMeshDB_->getBulkData();
-  elmtToAssociatedElmts_.resize(elements_->size());
+  elmtToAssociatedElmts_.resize(elements_.size());
   for (std::size_t i = 0; i < sidesetsToAssociate_.size(); ++i) {
     std::vector<stk::mesh::Entity> sides;
     stkMeshDB_->getAllSides(sidesetsToAssociate_[i], sides);
@@ -422,8 +420,8 @@ void STKConnManager::applyInterfaceConditions()
         sidesetYieldedAssociations_[i] = false;
         break;
       }
-      const std::size_t ea_id = getElementIdx(*elements_, elements[0]),
-        eb_id = getElementIdx(*elements_, elements[1]);
+      const std::size_t ea_id = getElementIdx(elements_, elements[0]),
+        eb_id = getElementIdx(elements_, elements[1]);
       elmtToAssociatedElmts_[ea_id].push_back(eb_id);
       elmtToAssociatedElmts_[eb_id].push_back(ea_id);
     }
@@ -452,7 +450,7 @@ STKConnManager::getAssociatedNeighbors(const LocalOrdinal& el) const
 void STKConnManager::
 getElementalNodeConnectivity(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const
 {
-	 stk::mesh::Entity element = (*elements_)[elmtLid];
+	 stk::mesh::Entity element = elements_[elmtLid];
      nodesgid.clear();
 
 	 stk::mesh::BulkData& bulkData = *stkMeshDB_->getBulkData();
@@ -470,7 +468,7 @@ getElementalNodeConnectivity(const LocalOrdinal& elmtLid, std::vector<GlobalOrdi
 void STKConnManager::
 getElementalEdges(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& edgesgid) const
 {
-	 stk::mesh::Entity element = (*elements_)[elmtLid];
+	 stk::mesh::Entity element = elements_[elmtLid];
      edgesgid.clear();
 
 	 stk::mesh::BulkData& bulkData = *stkMeshDB_->getBulkData();
@@ -489,7 +487,7 @@ getElementalEdges(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& edges
 void STKConnManager::
 getElementalFaces(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& facesgid) const
 {
-	 stk::mesh::Entity element = (*elements_)[elmtLid];
+	 stk::mesh::Entity element = elements_[elmtLid];
      facesgid.clear();
 
 	 stk::mesh::BulkData& bulkData = *stkMeshDB_->getBulkData();

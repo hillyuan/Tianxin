@@ -49,12 +49,6 @@
 #include "Panzer_LocalMeshInfo.hpp"
 #include "Panzer_LocalPartitioningUtilities.hpp"
 
-#include "Panzer_FieldPattern.hpp"
-#include "Panzer_NodalFieldPattern.hpp"
-#include "Panzer_EdgeFieldPattern.hpp"
-#include "Panzer_FaceFieldPattern.hpp"
-#include "Panzer_ElemFieldPattern.hpp"
-
 #include "Panzer_ConnManager.hpp"
 
 #include "Phalanx_KokkosDeviceTypes.hpp"
@@ -143,31 +137,13 @@ setupLocalMeshBlockInfo(const panzer_stk::STK_Interface & mesh,
 
   const int num_parent_owned_cells = mesh_info.num_owned_cells;
 
-  // Make sure connectivity is setup for interfaces between cells
-  {
-    const shards::CellTopology & topology = *(mesh.getCellTopology(element_block_name));
-    Teuchos::RCP<panzer::FieldPattern> cell_pattern;
-    if(topology.getDimension() == 1){
-      cell_pattern = Teuchos::rcp(new panzer::EdgeFieldPattern(topology));
-    } else if(topology.getDimension() == 2){
-      cell_pattern = Teuchos::rcp(new panzer::FaceFieldPattern(topology));
-    } else if(topology.getDimension() == 3){
-      cell_pattern = Teuchos::rcp(new panzer::ElemFieldPattern(topology));
-    }
-
-    {
-      PANZER_FUNC_TIME_MONITOR("Build connectivity");
-      conn.buildConnectivity(*cell_pattern);
-    }
-  }
-
   std::vector<panzer::LocalOrdinal> owned_block_cells;
   auto local_cells_h = Kokkos::create_mirror_view(mesh_info.local_cells);
   Kokkos::deep_copy(local_cells_h, mesh_info.local_cells);
   for(int parent_owned_cell=0;parent_owned_cell<num_parent_owned_cells;++parent_owned_cell){
     const panzer::LocalOrdinal local_cell = local_cells_h(parent_owned_cell);
-    const bool is_in_block = conn.getBlockId(local_cell) == element_block_name;
-
+    const bool is_in_block = mesh.getBlockId(local_cell) == element_block_name;
+//std::cout << local_cell<< ","  << mesh.getBlockId(local_cell)  << "       " << conn.getBlockId(local_cell) <<std::endl;
     if(is_in_block){
       owned_block_cells.push_back(parent_owned_cell);
     }

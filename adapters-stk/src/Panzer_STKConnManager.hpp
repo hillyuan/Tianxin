@@ -266,7 +266,7 @@ protected:
 
    Teuchos::RCP<const STK_Interface> stkMeshDB_;
 
-   Teuchos::RCP<std::vector<stk::mesh::Entity> > elements_;
+   std::vector<stk::mesh::Entity> elements_;
 
    // element block information
    std::map<std::string,Teuchos::RCP<std::vector<LocalOrdinal> > > elementBlocks_;

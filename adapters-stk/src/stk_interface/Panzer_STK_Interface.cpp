@@ -387,6 +387,7 @@ void STK_Interface::initialize(stk::ParallelMachine parallelMach,bool setupIO,
       instantiateBulkData(*mpiComm_->getRawMpiComm());
 
    metaData_->commit();
+
    pbc_search_ = std::shared_ptr<PeriodicSearch>( new PeriodicSearch(*bulkData_, CoordinateFunctor(*bulkData_, *coordinatesField_) ) );
    initialized_ = true;
 }
@@ -1627,6 +1628,16 @@ void STK_Interface::getFaceBlockNames(std::vector<std::string> & names) const
    for(faceBlockItr=faceBlocks_.begin();faceBlockItr!=faceBlocks_.end();++faceBlockItr)
       names.push_back(faceBlockItr->first);
 }
+	
+std::string STK_Interface::getBlockId(panzer::LocalOrdinal localElmtId) const
+{
+//	std::vector<stk::mesh::Entity> elements;
+//	this->getMyElements( elements );
+//   std::cout << localElmtId << ", " << elements.size() << "  ss\n";
+   stk::mesh::Entity element = ownedElements_[localElmtId];
+
+   return this->containingBlockId(element);
+}
 
 std::size_t STK_Interface::elementLocalId(stk::mesh::Entity elmt) const
 {
@@ -1913,6 +1924,9 @@ void STK_Interface::buildLocalElementIDs()
    currentLocalId_ = 0;
 
    orderedElementVector_ = Teuchos::null; // forces rebuild of ordered lists
+	
+   ownedElements_.clear();
+   getMyElements(ownedElements_);
 
    // might be better (faster) to do this by buckets
    std::vector<stk::mesh::Entity> elements;
