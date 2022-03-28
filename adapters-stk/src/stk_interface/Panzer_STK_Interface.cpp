@@ -1028,15 +1028,57 @@ void STK_Interface::getElementsSharingNodes(const std::vector<stk::mesh::EntityI
    elements = current;
 }
 
-void STK_Interface::getNodeIdsForElement(stk::mesh::Entity element,std::vector<stk::mesh::EntityId> & nodeIds) const
+void STK_Interface::getNodeIdsForElement(const stk::mesh::Entity& element,std::vector<stk::mesh::EntityId> & nodeIds) const
 {
   stk::mesh::Entity const* nodeRel = getBulkData()->begin_nodes(element);
   const size_t numNodes = getBulkData()->num_nodes(element);
 
-  nodeIds.reserve(numNodes);
+  nodeIds.clear();
   for(size_t i = 0; i < numNodes; ++i) {
-    nodeIds.push_back(elementGlobalId(nodeRel[i]));
+    nodeIds.emplace_back(elementGlobalId(nodeRel[i]));
   }
+}
+
+void STK_Interface::getNodeIdsForElement(const panzer::LocalOrdinal& elmtLid, std::vector<panzer::GlobalOrdinal>& nodeIds) const
+{
+  stk::mesh::Entity const& element = ownedElements_[elmtLid];
+  stk::mesh::Entity const* nodeRel = bulkData_->begin_nodes(element);
+  const size_t numNodes = bulkData_->num_nodes(element);
+
+  nodeIds.clear();
+  for(size_t i = 0; i < numNodes; ++i) {
+    nodeIds.emplace_back(elementGlobalId(nodeRel[i]));
+  }
+}
+
+void STK_Interface::getEdgeIdsForElement(const panzer::LocalOrdinal& elmtLid,std::vector<panzer::GlobalOrdinal> & edgsIds) const
+{
+  edgsIds.clear();
+  stk::mesh::Entity const& element = ownedElements_[elmtLid];
+  
+  const stk::mesh::EntityRank rank = this->getEdgeRank();
+  const size_t num_rels = bulkData_->num_connectivity(element, rank);
+  stk::mesh::Entity const* relations = bulkData_->begin(element, rank);
+  for(std::size_t sc=0; sc<num_rels; ++sc) {
+       stk::mesh::Entity nd = relations[sc];
+	   auto id = bulkData_->identifier(nd);
+       edgsIds.emplace_back(id);
+  }
+}
+
+void STK_Interface::getFaceIdsForElement(const panzer::LocalOrdinal& elmtLid,std::vector<panzer::GlobalOrdinal> & facesgid) const
+{
+     facesgid.clear();
+	 stk::mesh::Entity const& element = ownedElements_[elmtLid];
+
+   	 const stk::mesh::EntityRank rank = this->getFaceRank();
+     const size_t num_rels = bulkData_->num_connectivity(element, rank);
+     stk::mesh::Entity const* relations = bulkData_->begin(element, rank);
+     for(std::size_t sc=0; sc<num_rels; ++sc) {
+       stk::mesh::Entity nd = relations[sc];
+	   auto id = bulkData_->identifier(nd);
+       facesgid.emplace_back(id);
+	 }
 }
 
 void STK_Interface::buildEntityCounts()
@@ -1631,11 +1673,7 @@ void STK_Interface::getFaceBlockNames(std::vector<std::string> & names) const
 	
 std::string STK_Interface::getBlockId(panzer::LocalOrdinal localElmtId) const
 {
-//	std::vector<stk::mesh::Entity> elements;
-//	this->getMyElements( elements );
-//   std::cout << localElmtId << ", " << elements.size() << "  ss\n";
    stk::mesh::Entity element = ownedElements_[localElmtId];
-
    return this->containingBlockId(element);
 }
 
