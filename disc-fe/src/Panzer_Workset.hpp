@@ -79,18 +79,14 @@ namespace panzer {
   WorksetOptions
   {
     /// Default constructor
-    WorksetOptions():
-      side_assembly_(false),
-      align_side_points_(false)
-    {
-
-    }
+    WorksetOptions(): side_assembly_(false)
+    {}
 
     /// Build integration values for sides
     bool side_assembly_;
 
     /// If workset side integration values must align with another workset, there must be a unique order assigned
-    bool align_side_points_;
+    //bool align_side_points_;
 
     /// Must be set to apply orientations - if it is set, then orientations will be applied to basis values
     Teuchos::RCP<const OrientationsInterface> orientations_;

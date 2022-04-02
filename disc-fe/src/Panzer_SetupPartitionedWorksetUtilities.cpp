@@ -59,7 +59,6 @@ convertMeshPartitionToWorkset(const panzer::LocalMeshPartition & partition,
 {
   WorksetOptions options;
   options.side_assembly_ = false;
-  options.align_side_points_ = false;
   options.orientations_ = orientations;
 
   // Construct the workset from the partition
