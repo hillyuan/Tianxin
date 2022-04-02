@@ -1,49 +1,56 @@
 // *******************************************************************
-// This file contains a copy of hash support code from boost that
-// didn't make it into the stl.  We only needed two lines code so
-// copied it here. Below is boost copyright.
-// *******************************************************************
-
-// Copyright 2005-2014 Daniel James.
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
-//  Based on Peter Dimov's proposal
-//  http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2005/n1756.pdf
-//  issue 6.18. 
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
 //
-//  This also contains public domain code from MurmurHash. From the
-//  MurmurHash header:
-
-// MurmurHash3 was written by Austin Appleby, and is placed in the public
-// domain. The author hereby disclaims copyright to this source code.
-
-// ******************************************************************* 
+// 1. Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright
+// notice, this list of conditions and the following disclaimer in the
+// documentation and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the Corporation nor the names of the
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
+// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+// EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+// PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+// SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+//  Copyright (2022) YUAN Xi
 // ******************************************************************* 
 
 #ifndef PANZER_HASH_UTILS_HPP
 #define PANZER_HASH_UTILS_HPP
 
+#include <functional>
+
 namespace panzer {
 
-  template <class T>
-  inline void hash_combine(std::size_t& seed, const T& v)
-  {
-    std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-  }
-
-  struct pair_hash
-  {
-    template<typename T1, typename T2>
-    std::size_t operator()(const std::pair<T1,T2>& v) const
-    {
-      std::size_t seed = 0;
-      panzer::hash_combine(seed, v.first);
-      panzer::hash_combine(seed, v.second);
-      return seed;
+struct pair_hash
+{
+    template <class T1, class T2>
+    std::size_t operator() (const std::pair<T1, T2> &p) const {
+		auto hash1 = std::hash<T1>{}(p.first);
+        auto hash2 = std::hash<T2>{}(p.second);
+ 
+        if (hash1 != hash2) {
+            return hash1 ^ hash2;             
+        }
+         
+        // If hash1 == hash2, their XOR is zero.
+        return hash1;
     }
-  };
+};
 
 }
 
@@ -52,12 +59,17 @@ namespace std
 template <typename T1, typename T2>
 struct hash<std::pair<T1,T2> >
 {
-  std::size_t operator()(const std::pair<T1,T2>& v) const
+  std::size_t operator()(const std::pair<T1,T2>& p) const
   {
-    std::size_t seed = 0;
-    panzer::hash_combine(seed, v.first);
-    panzer::hash_combine(seed, v.second);
-    return seed;
+		auto hash1 = std::hash<T1>{}(p.first);
+        auto hash2 = std::hash<T2>{}(p.second);
+ 
+        if (hash1 != hash2) {
+            return hash1 ^ hash2;             
+        }
+         
+        // If hash1 == hash2, their XOR is zero.
+        return hash1;
   }
 };
 }

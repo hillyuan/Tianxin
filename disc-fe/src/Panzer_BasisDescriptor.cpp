@@ -44,7 +44,6 @@
 
 #include "Phalanx_KokkosDeviceTypes.hpp"
 
-#include "Panzer_HashUtils.hpp"
 #include "Panzer_IntrepidBasisFactory.hpp"
 #include "Panzer_PointGenerator.hpp"   // includes Kokkos::DynRankView
 
@@ -139,11 +138,6 @@ getPointDescriptor() const
 std::size_t
 std::hash<panzer::BasisDescriptor>::operator()(const panzer::BasisDescriptor& desc) const
 {
-  std::size_t seed = 0;
-
-  panzer::hash_combine(seed,desc.getType());
-  panzer::hash_combine(seed,desc.getOrder());
-
-  return seed;
+  return std::hash<std::string>()(desc.getType()+std::to_string(desc.getOrder()));
 }
 

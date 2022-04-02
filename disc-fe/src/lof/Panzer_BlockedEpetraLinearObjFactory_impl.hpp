@@ -60,7 +60,6 @@
 #include "Panzer_EpetraVector_ReadOnly_GlobalEvaluationData.hpp"
 #include "Panzer_EpetraVector_Write_GlobalEvaluationData.hpp"
 #include "Panzer_Filtered_GlobalIndexer.hpp"
-#include "Panzer_HashUtils.hpp"
 #include "Panzer_GlobalIndexer.hpp"
 
 // Thyra

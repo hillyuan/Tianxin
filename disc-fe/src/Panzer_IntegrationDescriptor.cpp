@@ -41,9 +41,6 @@
 // @HEADER
 
 #include "Panzer_IntegrationDescriptor.hpp"
-
-#include "Panzer_HashUtils.hpp"
-
 #include "Teuchos_Assert.hpp"
 
 namespace panzer
@@ -79,11 +76,6 @@ IntegrationDescriptor::setup(const int cubature_order, const int integration_typ
 std::size_t
 std::hash<panzer::IntegrationDescriptor>::operator()(const panzer::IntegrationDescriptor& desc) const
 {
-  std::size_t seed = 0;
-
-  panzer::hash_combine(seed,desc.getType());
-  panzer::hash_combine(seed,desc.getOrder());
-  panzer::hash_combine(seed,desc.getSide());
-
-  return seed;
+  std::string ss = std::to_string(desc.getType()) + std::to_string( desc.getOrder() ) + std::to_string(desc.getSide());
+  return std::hash<std::string>()(ss);
 }

@@ -52,7 +52,6 @@
 #include "Panzer_LocalMeshInfo.hpp"
 #include "Panzer_PointGenerator.hpp"
 #include "Panzer_PointValues2.hpp"
-#include "Panzer_HashUtils.hpp"
 #include "Panzer_ConvertNormalToRotationMatrix.hpp"
 
 #include "Panzer_SubcellConnectivity.hpp"
@@ -228,8 +227,6 @@ getIntegrationValues(const panzer::IntegrationDescriptor & description,
 
   // We need unique keys for the lazy copy or else we get some weird behavior
   size_t key = description.getKey();
-  if(lazy_version)
-    panzer::hash_combine<int>(key, 123);
 
   // Check if exists
   const auto itr = integration_values_map_.find(key);
@@ -322,13 +319,9 @@ getBasisValues(const panzer::BasisDescriptor & basis_description,
 
   // We need unique keys for the lazy copy or else we get some weird behavior
   size_t basis_key = basis_description.getKey();
-  if(lazy_version)
-    panzer::hash_combine<int>(basis_key, 123);
 
   // We need unique keys for the lazy copy or else we get some weird behavior
   size_t integration_key = integration_description.getKey();
-  if(lazy_version)
-    panzer::hash_combine<int>(integration_key, 123);
 
   // Check if exists
   const auto itr = basis_integration_values_map_.find(basis_key);
@@ -461,8 +454,6 @@ getBasisValues(const panzer::BasisDescriptor & basis_description,
 
   // We need unique keys for the lazy copy or else we get some weird behavior
   size_t basis_key = basis_description.getKey();
-  if(lazy_version)
-    panzer::hash_combine<int>(basis_key, 123);
 
   // Check if exists
   const auto itr = basis_point_values_map_.find(basis_key);

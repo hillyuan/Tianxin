@@ -58,6 +58,7 @@
 #include "Panzer_PureBasis.hpp"
 #include "Panzer_BlockedEpetraLinearObjContainer.hpp"
 #include "Panzer_GlobalEvaluationDataContainer.hpp"
+#include "Panzer_HashUtils.hpp"
 
 #include "Phalanx_DataLayout_MDALayout.hpp"
 

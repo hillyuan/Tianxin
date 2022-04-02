@@ -48,7 +48,6 @@
 #include "Panzer_IntrepidFieldPattern.hpp"
 #include "Panzer_IntrepidFieldPattern.hpp"
 #include "Panzer_String_Utilities.hpp"
-#include "Panzer_HashUtils.hpp"
 
 namespace panzer {
 

@@ -46,7 +46,6 @@
 #include <string>
 #include <ostream>
 #include <functional>
-#include "Panzer_HashUtils.hpp"
 
 namespace panzer {
 
@@ -312,21 +311,6 @@ inline bool operator==(const WorksetDescriptor & a,const WorksetDescriptor & b)
         && a.useSideset()==b.useSideset();
 }
 
-//! Hash function that satisifies the stl hash interface
-inline std::size_t hash_value(const WorksetDescriptor & wd)
-{
-  std::size_t seed = 0;
-
-  panzer::hash_combine(seed,wd.getElementBlock());
-  if(wd.useSideset()) {
-    // optionally hash on side set and side assembly
-    panzer::hash_combine(seed,wd.getSideset());
-    panzer::hash_combine(seed,wd.sideAssembly());
-  }
-
-  return seed;
-}
-
 //! I/O utility
 inline std::ostream & operator<<(std::ostream & os,const WorksetDescriptor & wd)
 {
@@ -370,18 +354,13 @@ struct hash<panzer::WorksetDescriptor>
 {
   std::size_t operator()(const panzer::WorksetDescriptor& wd) const
   {
-    std::size_t seed = 0;
-
-    panzer::hash_combine(seed,wd.getElementBlock());
-    panzer::hash_combine(seed,wd.requiresPartitioning());
-    panzer::hash_combine(seed,wd.getWorksetSize());
+    std::string ss = wd.getElementBlock() + std::to_string( static_cast<int>(wd.requiresPartitioning()) )
+	              + std::to_string( wd.getWorksetSize() );
     if(wd.useSideset()) {
-      // optionally hash on side set and side assembly
-      panzer::hash_combine(seed,wd.getSideset());
-      panzer::hash_combine(seed,wd.sideAssembly());
+      ss = ss+ wd.getSideset() + std::to_string( static_cast<int>(wd.sideAssembly()) );
     }
 
-    return seed;
+    return std::hash<std::string>()(ss);
   }
 };
 
