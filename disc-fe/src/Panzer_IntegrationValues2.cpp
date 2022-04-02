@@ -41,8 +41,6 @@
 // @HEADER
 
 #include "Panzer_IntegrationValues2.hpp"
-#include "Panzer_UtilityAlgs.hpp"
-
 #include "Shards_CellTopology.hpp"
 
 #include "Kokkos_DynRankView.hpp"

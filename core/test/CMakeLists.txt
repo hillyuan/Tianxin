@@ -11,10 +11,10 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   SOURCES string_utilities.cpp ${UNIT_TEST_DRIVER}
   NUM_MPI_PROCS 1
   )
-
+  
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  utility_algs 
-  SOURCES utility_algs.cpp ${UNIT_TEST_DRIVER}
+  hash_utilities
+  SOURCES hash_utilities.cpp ${UNIT_TEST_DRIVER}
   NUM_MPI_PROCS 1
   )
 
