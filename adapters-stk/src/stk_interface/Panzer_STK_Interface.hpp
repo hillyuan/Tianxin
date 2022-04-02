@@ -504,8 +504,7 @@ public:
    *  \param[in] append If set to true, the output will be appended to the output Exodus file. If set to false, output file will be overwritten. Default is false.
    */
   void
-  writeToExodus(const std::string& filename,
-                const bool append = false);
+  writeToExodus(const std::string& filename, const bool append = false);
 
   /**
    *  \brief Set up an output Exodus file for writing results.
@@ -631,8 +630,7 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus( const std::string&         key,
-    const std::vector<double>& value);
+  addGlobalToExodus( const std::string& key, const std::vector<double>& value);
 
    // Accessor functions
    //////////////////////////////////////////
@@ -708,15 +706,12 @@ public:
      */
    void getFaceBlockNames(std::vector<std::string> & names) const;
 
-   //! Get a pointer to the locally owned part
-   stk::mesh::Part * getOwnedPart() const
-   { return &getMetaData()->locally_owned_part(); } // I don't like the pointer access here, but it will do for now!
 
    //! get the block part
-   stk::mesh::Part * getElementBlockPart(const std::string & name) const
+   stk::mesh::Part* getElementBlockPart(const std::string & name) const
    {
       std::map<std::string, stk::mesh::Part*>::const_iterator itr = elementBlocks_.find(name);   // Element blocks
-      if(itr==elementBlocks_.end()) return 0;
+      if(itr==elementBlocks_.end()) return nullptr;
       return itr->second;
    }
 

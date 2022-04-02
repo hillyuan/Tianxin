@@ -365,7 +365,7 @@ void getSubcellElements(const panzer_stk::STK_Interface & mesh,
 {
   // for verifying that an element is in specified block
   stk::mesh::Part * blockPart = mesh.getElementBlockPart(blockId);
-  stk::mesh::Part * ownedPart = mesh.getOwnedPart();
+  stk::mesh::Part& ownedPart = mesh.getMetaData()->locally_owned_part();
   stk::mesh::BulkData& bulkData = *mesh.getBulkData();
 
   // loop over each entitiy extracting elements and local entity ID that
@@ -384,7 +384,7 @@ void getSubcellElements(const panzer_stk::STK_Interface & mesh,
       // is this element in requested block
       stk::mesh::Bucket const& bucket = bulkData.bucket(element);
       bool inBlock = bucket.member(*blockPart);
-      bool onProc = bucket.member(*ownedPart);
+      bool onProc = bucket.member(ownedPart);
       if(inBlock && onProc) {
         // add element and Side ID to output vectors
         elements.push_back(element);
@@ -402,7 +402,7 @@ void getUniversalSubcellElements(const panzer_stk::STK_Interface & mesh,
 {
   // for verifying that an element is in specified block
   stk::mesh::Part * blockPart = mesh.getElementBlockPart(blockId);
-  stk::mesh::Part * universalPart = &mesh.getMetaData()->universal_part();
+  stk::mesh::Part& universalPart = mesh.getMetaData()->universal_part();
   stk::mesh::BulkData& bulkData = *mesh.getBulkData();
 
   // loop over each entitiy extracting elements and local entity ID that
@@ -421,7 +421,7 @@ void getUniversalSubcellElements(const panzer_stk::STK_Interface & mesh,
       // is this element in requested block
       stk::mesh::Bucket const& bucket = bulkData.bucket(element);
       bool inBlock = bucket.member(*blockPart);
-      bool onProc = bucket.member(*universalPart);
+      bool onProc = bucket.member(universalPart);
       if(inBlock && onProc) {
         // add element and Side ID to output vectors
         elements.push_back(element);
@@ -488,7 +488,7 @@ void getSideElements(const panzer_stk::STK_Interface & mesh,
   // for verifying that an element is in specified block
   stk::mesh::Part * blockPart_a = mesh.getElementBlockPart(blockId_a);
   stk::mesh::Part * blockPart_b = mesh.getElementBlockPart(blockId_b);
-  stk::mesh::Part * ownedPart = mesh.getOwnedPart();
+  stk::mesh::Part& ownedPart = mesh.getMetaData()->locally_owned_part();
   stk::mesh::Part * universalPart = &mesh.getMetaData()->universal_part();
   stk::mesh::BulkData& bulkData = *mesh.getBulkData();
 
@@ -513,7 +513,7 @@ void getSideElements(const panzer_stk::STK_Interface & mesh,
       stk::mesh::Bucket const& bucket = bulkData.bucket(element);
       bool inBlock_a = bucket.member(*blockPart_a);
       bool inBlock_b = bucket.member(*blockPart_b);
-      bool onProc = bucket.member(*ownedPart);
+      bool onProc = bucket.member(ownedPart);
       bool unProc = bucket.member(*universalPart);
 
       if(inBlock_a && onProc) {

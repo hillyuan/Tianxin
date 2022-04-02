@@ -154,4 +154,22 @@ getWorksets(const panzer::WorksetDescriptor & worksetDesc,
   }
 }
 
+void 
+WorksetFactory :: getWorksets(const panzer::WorksetDescriptor& worksetDesc,
+    const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& worksets) const
+{
+	std::vector<panzer::GlobalOrdinal> coords;
+	worksets.clear();
+	const std::string& element_block_name = worksetDesc.getElementBlock();
+	if(worksetDesc.useSideset()){
+	} else {
+		const stk::mesh::Part* eb = mesh_->getElementBlockPart(element_block_name);
+		if( !eb ) return;
+		stk::mesh::Part& universalPart = mesh_->getMetaData()->universal_part();
+		
+		if(worksetDesc.getWorksetSize() == panzer::WorksetSizeType::ALL_ELEMENTS){
+		}
+	}
+}
+
 }
