@@ -149,13 +149,13 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(gather_coordinates,basis,EvalType)
   workset->block_id = "eblock-0_0";
 
   // setup integration rule
-  workset->ir_degrees = Teuchos::rcp(new std::vector<int>);
-  workset->ir_degrees->push_back(quadRule->cubature_degree);
+  workset->ir_degrees.clear();
+  workset->ir_degrees.push_back(quadRule->cubature_degree);
   workset->int_rules.push_back(quadValues);
 
   // setup basis functions
-  workset->basis_names = Teuchos::rcp(new std::vector<std::string>);
-  workset->basis_names->push_back(basis->name());
+  workset->basis_names.clear();
+  workset->basis_names.emplace_back(basis->name());
   workset->bases.push_back(basisValues);
 
   Teuchos::RCP<PHX::FieldManager<panzer::Traits> > fm
@@ -290,13 +290,13 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(gather_coordinates,integration,EvalType)
   workset->block_id = "eblock-0_0";
 
   // setup integration rule
-  workset->ir_degrees = Teuchos::rcp(new std::vector<int>);
-  workset->ir_degrees->push_back(quadRule->cubature_degree);
+  workset->ir_degrees.clear();
+  workset->ir_degrees.push_back(quadRule->cubature_degree);
   workset->int_rules.push_back(quadValues);
 
   // setup basis functions
-  workset->basis_names = Teuchos::rcp(new std::vector<std::string>);
-  workset->basis_names->push_back(basis->name());
+  workset->basis_names.clear();
+  workset->basis_names.emplace_back(basis->name());
   workset->bases.push_back(basisValues);
 
   Teuchos::RCP<PHX::FieldManager<panzer::Traits> > fm

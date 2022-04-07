@@ -56,24 +56,24 @@ namespace panzer {
   std::vector<std::string>::size_type 
   getPureBasisIndex(std::string basis_name, const panzer::Workset& workset, WorksetDetailsAccessor& wda)
   {
-    std::vector<std::string>::iterator basis = wda(workset).basis_names->begin();
-    std::vector<std::string>::const_iterator last = wda(workset).basis_names->end();
+    std::vector<std::string>::iterator basis = wda(workset).basis_names.begin();
+    std::vector<std::string>::const_iterator last = wda(workset).basis_names.end();
     
     while (basis != last) {
 
-      std::vector<std::string>::size_type index = std::distance(wda(workset).basis_names->begin(), basis);
+      std::vector<std::string>::size_type index = std::distance(wda(workset).basis_names.begin(), basis);
       if (wda(workset).bases[index]->basis_layout->getBasis()->name() == basis_name)
 	break;
 
       ++basis;
     }
 
-    TEUCHOS_TEST_FOR_EXCEPTION(basis == wda(workset).basis_names->end(),
+    TEUCHOS_TEST_FOR_EXCEPTION(basis == wda(workset).basis_names.end(),
 			       std::logic_error,
 			       "Could not find the basis named \"" 
                                << basis_name << "\" in the workset!");
 
-    return std::distance(wda(workset).basis_names->begin(), basis);
+    return std::distance(wda(workset).basis_names.begin(), basis);
   }
 
   std::vector<std::string>::size_type 
@@ -81,16 +81,16 @@ namespace panzer {
   {
     std::vector<std::string>::iterator basis;
 
-    basis = std::find(wda(workset).basis_names->begin(),
-		      wda(workset).basis_names->end(),
+    basis = std::find(wda(workset).basis_names.begin(),
+		      wda(workset).basis_names.end(),
 		      basis_name);
 
-    TEUCHOS_TEST_FOR_EXCEPTION(basis == wda(workset).basis_names->end(),
+    TEUCHOS_TEST_FOR_EXCEPTION(basis == wda(workset).basis_names.end(),
 			       std::logic_error,
 			       "Could not find the basis named \"" 
                                << basis_name << "\" in the workset!");
 
-    return std::distance(wda(workset).basis_names->begin(), basis);
+    return std::distance(wda(workset).basis_names.begin(), basis);
   }
 
   std::vector<int>::size_type
@@ -98,16 +98,14 @@ namespace panzer {
   {
     std::vector<int>::iterator ir;
 
-    ir = std::find(wda(workset).ir_degrees->begin(),
-		   wda(workset).ir_degrees->end(),
-		   ir_degree);
+    ir = std::find(wda(workset).ir_degrees.begin(), wda(workset).ir_degrees.end(),ir_degree);
     
-    TEUCHOS_TEST_FOR_EXCEPTION(ir == wda(workset).ir_degrees->end(),
+    TEUCHOS_TEST_FOR_EXCEPTION(ir == wda(workset).ir_degrees.end(),
 			       std::logic_error,
 			       "Could not find the integration rule degree \"" 
                                << ir_degree << "\" in the workset!");
 
-    return std::distance(wda(workset).ir_degrees->begin(), ir);
+    return std::distance(wda(workset).ir_degrees.begin(), ir);
   }
 
   void printWorkset(std::ostream& os, const panzer::Workset & workset, WorksetDetailsAccessor& wda)
@@ -120,12 +118,12 @@ namespace panzer {
         os << wda(workset).cell_local_ids[i] << " ";
      os << "]\n";
      os << "   ir_degrees = [ "; 
-     for(std::size_t i=0;i<wda(workset).ir_degrees->size();i++) 
-        os << (*wda(workset).ir_degrees)[i] << " ";
+     for( const auto& ir : wda(workset).ir_degrees ) 
+        os << ir << " ";
      os << "]\n";
      os << "   basis_names = [ "; 
-     for(std::size_t i=0;i<wda(workset).basis_names->size();i++) 
-        os << (*wda(workset).basis_names)[i] << " ";
+     for( const auto& basis : wda(workset).basis_names ) 
+        os << basis << " ";
      os << "]\n";
      /*
      os << "   int rule = "; wda(workset).int_rules[0]->int_rule->print(os); os << "\n";

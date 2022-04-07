@@ -130,15 +130,14 @@ namespace panzer {
     int subcell_index; //! If workset corresponds to a sub cell, what is the index?
 
     //! Value correspondes to integration order.  Use the offest for indexing.
-    //TEUCHOS_DEPRECATED
-    Teuchos::RCP< std::vector<int> > ir_degrees;
+    mutable std::vector<int> ir_degrees;
 
     //TEUCHOS_DEPRECATED
     mutable std::vector<Teuchos::RCP<panzer::IntegrationValues2<double> > > int_rules;
 
     //! Value corresponds to basis type.  Use the offest for indexing.
     //TEUCHOS_DEPRECATED
-    Teuchos::RCP< std::vector<std::string> > basis_names;
+    mutable std::vector<std::string> basis_names;
 
     //! Static basis function data, key is basis name, value is index in the static_bases vector
     //TEUCHOS_DEPRECATED
@@ -156,33 +155,27 @@ namespace panzer {
     const panzer::PureBasis & getBasis(const panzer::BasisDescriptor & description) const;
 
     /// Get the element block id
-    const std::string &
-    getElementBlock() const
+    const std::string& getElementBlock() const
     {return block_id;}
 
     /// Get the sideset id (returns "" if not a sideset)
-    const std::string &
-    getSideset() const
+    const std::string& getSideset() const
     {return sideset_;}
 
     /// Get the cell dimension for the mesh
-    unsigned int
-    numDimensions() const
+    unsigned int numDimensions() const
     {return num_dimensions_;}
 
     /// Get the subcell index (returns -1 if not a subcell)
-    int
-    getSubcellIndex() const
+    int getSubcellIndex() const
     {return subcell_index;}
 
     /// Get the subcell dimension
-    int
-    getSubcellDimension() const
+    int getSubcellDimension() const
     {return subcell_dim;}
 
     /// Get the vertices for the cells
-    CellCoordArray
-    getCellVertices() const
+    CellCoordArray getCellVertices() const
     {return cell_vertex_coordinates;}
 
     /// Get the local cell IDs for the workset

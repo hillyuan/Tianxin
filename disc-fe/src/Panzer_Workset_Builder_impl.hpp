@@ -84,17 +84,12 @@ panzer::buildWorksets(const WorksetNeeds & needs,
 
   // special case for 0 elements!
   if(total_num_cells==0) {
-
-     // Setup integration rules and basis
-     RCP<vector<int> > ir_degrees = rcp(new vector<int>(0));
-     RCP<vector<string> > basis_names = rcp(new vector<string>(0));
-
      worksets.resize(1);
      std::vector<panzer::Workset>::iterator i = worksets.begin();
      i->setNumberOfCells(0,0,0);
      i->block_id = elementBlock;
-     i->ir_degrees = ir_degrees;
-     i->basis_names = basis_names;
+     i->ir_degrees.clear();
+	 i->basis_names.clear();
 
      for (std::size_t j=0;j<needs.int_rules.size();j++) {
 
@@ -102,7 +97,7 @@ panzer::buildWorksets(const WorksetNeeds & needs,
 	 rcp(new panzer::IntegrationValues2<double>("",true));
        iv2->setupArrays(needs.int_rules[j]);
 
-       ir_degrees->push_back(needs.int_rules[j]->cubature_degree);
+       i->ir_degrees.emplace_back(needs.int_rules[j]->cubature_degree);
        i->int_rules.push_back(iv2);
      }
 
@@ -117,7 +112,7 @@ panzer::buildWorksets(const WorksetNeeds & needs,
 	 bv2->setupArrays(b_layout);
 	 i->bases.push_back(bv2);
 
-	 basis_names->push_back(b_layout->name());
+	 i->basis_names.emplace_back(b_layout->name());
        }
 
      }
@@ -185,14 +180,6 @@ panzer::buildWorksets(const WorksetNeeds & needs,
   }
 
   TEUCHOS_ASSERT(offset == Teuchos::as<std::size_t>(vertex_coordinates.extent(0)));
-
-  // Set ir and basis arrayskset
-  RCP<vector<int> > ir_degrees = rcp(new vector<int>(0));
-  RCP<vector<string> > basis_names = rcp(new vector<string>(0));
-  for (std::vector<panzer::Workset>::iterator wkst = worksets.begin(); wkst != worksets.end(); ++wkst) {
-    wkst->ir_degrees = ir_degrees;
-    wkst->basis_names = basis_names;
-  }
 
   // setup the integration rules and bases
   for(std::vector<panzer::Workset>::iterator wkst = worksets.begin(); wkst != worksets.end(); ++wkst)
@@ -488,11 +475,6 @@ panzer::buildEdgeWorksets(const WorksetNeeds & needs_a,
 
   // special case for 0 elements!
   if(total_num_cells==0) {
-
-     // Setup integration rules and basis
-     RCP<std::vector<int> > ir_degrees = rcp(new std::vector<int>(0));
-     RCP<std::vector<std::string> > basis_names = rcp(new std::vector<std::string>(0));
-
      worksets.resize(1);
      std::vector<panzer::Workset>::iterator i = worksets.begin();
 
@@ -501,8 +483,8 @@ panzer::buildEdgeWorksets(const WorksetNeeds & needs_a,
      i->details(1).block_id = eblock_b;
 
      i->num_cells = 0;
-     i->ir_degrees = ir_degrees;
-     i->basis_names = basis_names;
+     i->ir_degrees.clear();
+     i->basis_names.clear();
 
      for(std::size_t j=0;j<needs_a.int_rules.size();j++) {
 
@@ -510,7 +492,7 @@ panzer::buildEdgeWorksets(const WorksetNeeds & needs_a,
          rcp(new panzer::IntegrationValues2<double>("",true));
        iv2->setupArrays(needs_a.int_rules[j]);
 
-       ir_degrees->push_back(needs_a.int_rules[j]->cubature_degree);
+       i->ir_degrees.emplace_back(needs_a.int_rules[j]->cubature_degree);
        i->int_rules.push_back(iv2);
      }
 
@@ -526,7 +508,7 @@ panzer::buildEdgeWorksets(const WorksetNeeds & needs_a,
 	 bv2->setupArrays(b_layout);
 	 i->bases.push_back(bv2);
 
-	 basis_names->push_back(b_layout->name());
+	 i->basis_names.emplace_back(b_layout->name());
        }
 
      }

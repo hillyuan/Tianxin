@@ -50,7 +50,6 @@
 #include <stk_mesh/base/GetEntities.hpp>
 #include <stk_mesh/base/GetBuckets.hpp>
 #include <stk_mesh/base/CreateAdjacentEntities.hpp>
-#include <stk_mesh/base/SkinBoundary.hpp>
 
 // #include <stk_rebalance/Rebalance.hpp>
 // #include <stk_rebalance/Partition.hpp>

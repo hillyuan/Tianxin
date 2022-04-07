@@ -101,14 +101,12 @@ WorksetDetails()
   : num_cells(0)
   , subcell_dim(-1)
   , subcell_index(-1)
-  , ir_degrees(new std::vector<int>())
-  , basis_names(new std::vector<std::string>())
   , setup_(false)
   , num_owned_cells_(0)
   , num_ghost_cells_(0)
   , num_virtual_cells_(0)
   , num_dimensions_(-1)
-{ }
+{ basis_names.clear(); ir_degrees.clear(); }
 
 void
 WorksetDetails::
@@ -271,7 +269,7 @@ getIntegrationValues(const panzer::IntegrationDescriptor & description,
   }
 
   integration_values_map_[key] = iv;
-  ir_degrees->push_back(iv->int_rule->cubature_degree);
+  ir_degrees.emplace_back(iv->int_rule->cubature_degree);
   int_rules.push_back(iv);
 
   return *iv;
@@ -405,7 +403,7 @@ getBasisValues(const panzer::BasisDescriptor & basis_description,
 
   basis_integration_values_map_[basis_key][integration_key] = biv;
   bases.push_back(biv);
-  basis_names->push_back(biv->basis_layout->name());
+  basis_names.push_back(biv->basis_layout->name());
 
   return *biv;
 
@@ -587,11 +585,10 @@ operator<<(std::ostream& os,
   os << "  subcell_index = " << w.getSubcellIndex() << endl;
 
   os << "  ir_degrees: " << endl;
-  for (std::vector<int>::const_iterator ir = w.ir_degrees->begin();
- ir != w.ir_degrees->end(); ++ir)
-    os << "    " << *ir << std::endl;
+  for ( const auto& ir : w.ir_degrees )
+    os << "    " << ir << std::endl;
 
-  std::vector<int>::const_iterator ir = w.ir_degrees->begin();
+  std::vector<int>::const_iterator ir = w.ir_degrees.begin();
   for (std::vector<Teuchos::RCP<panzer::IntegrationValues2<double> > >::const_iterator irv = w.int_rules.begin();
        irv != w.int_rules.end(); ++irv,++ir) {
 
@@ -638,11 +635,10 @@ operator<<(std::ostream& os,
 
 
   os << "  basis_names: " << endl;
-  for (std::vector<std::string>::const_iterator b = w.basis_names->begin();
- b != w.basis_names->end(); ++b)
-    os << "    " << *b << std::endl;
+  for ( const auto& b : w.basis_names)
+    os << "    " << b << std::endl;
 
-  std::vector<std::string>::const_iterator b = w.basis_names->begin();
+  std::vector<std::string>::const_iterator b = w.basis_names.begin();
 
   for (std::vector<Teuchos::RCP< panzer::BasisValues2<double> > >::const_iterator bv = w.bases.begin(); bv != w.bases.end(); ++bv,++b) {
 

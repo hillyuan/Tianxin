@@ -127,12 +127,12 @@ void populateValueArrays(std::size_t num_cells,bool isSide,const WorksetNeeds & 
     bases     = needs.bases;
   }
 
-  details.ir_degrees = rcp(new std::vector<int>(0));
-  details.basis_names = rcp(new std::vector<std::string>(0));
+  details.ir_degrees.clear();
+  details.basis_names.clear();
 
   for(std::size_t i=0;i<int_rules.size();i++) {
 
-    details.ir_degrees->push_back(int_rules[i]->cubature_degree);
+    details.ir_degrees.emplace_back(int_rules[i]->cubature_degree);
       
     RCP<panzer::IntegrationValues2<double> > iv2 = 
         rcp(new panzer::IntegrationValues2<double>("",true));
@@ -147,11 +147,11 @@ void populateValueArrays(std::size_t num_cells,bool isSide,const WorksetNeeds & 
     // Need to create all combinations of basis/ir pairings 
     for(std::size_t b=0;b<bases.size();b++) {
       RCP<panzer::BasisIRLayout> b_layout = rcp(new panzer::BasisIRLayout(bases[b],*int_rules[i]));
-      details.basis_names->push_back(b_layout->name());
+      details.basis_names.emplace_back(b_layout->name());
 
-      std::size_t int_degree_index = std::distance(details.ir_degrees->begin(), 
-                                                   std::find(details.ir_degrees->begin(), 
-                                                             details.ir_degrees->end(), 
+      std::size_t int_degree_index = std::distance(details.ir_degrees.begin(), 
+                                                   std::find(details.ir_degrees.begin(), 
+                                                             details.ir_degrees.end(), 
                                                              int_rules[i]->order()));
       RCP<panzer::BasisValues2<double> > bv2 = 
           rcp(new panzer::BasisValues2<double>("",true,true));

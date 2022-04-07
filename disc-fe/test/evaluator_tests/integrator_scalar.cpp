@@ -134,8 +134,8 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(integrator_scalar_side,test2d,EvalType)
   workset->cell_local_ids.push_back(0); workset->cell_local_ids.push_back(1);
   workset->num_cells = numCells;
   workset->block_id = "eblock-0_0";
-  workset->ir_degrees = Teuchos::rcp(new std::vector<int>);
-  workset->ir_degrees->push_back(quadRule->cubature_degree);
+  workset->ir_degrees.clear();
+  workset->ir_degrees.push_back(quadRule->cubature_degree);
   workset->int_rules.push_back(quadValues);
 
   Teuchos::RCP<PHX::FieldManager<panzer::Traits> > fm
@@ -274,8 +274,8 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(integrator_scalar_side,test3d,EvalType)
   workset->cell_local_ids.push_back(0); workset->cell_local_ids.push_back(1);
   workset->num_cells = numCells;
   workset->block_id = "eblock-0_0";
-  workset->ir_degrees = Teuchos::rcp(new std::vector<int>);
-  workset->ir_degrees->push_back(quadRule->cubature_degree);
+  workset->ir_degrees.clear();
+  workset->ir_degrees.push_back(quadRule->cubature_degree);
   workset->int_rules.push_back(quadValues);
 
   Teuchos::RCP<PHX::FieldManager<panzer::Traits> > fm
@@ -426,8 +426,8 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(integrator_scalar,test3d,EvalType)
   workset->cell_local_ids.push_back(0); workset->cell_local_ids.push_back(1);
   workset->num_cells = numCells;
   workset->block_id = "eblock-0_0";
-  workset->ir_degrees = Teuchos::rcp(new std::vector<int>);
-  workset->ir_degrees->push_back(quadRule->cubature_degree);
+  workset->ir_degrees.clear();
+  workset->ir_degrees.push_back(quadRule->cubature_degree);
   workset->int_rules.push_back(quadValues);
 
   Teuchos::RCP<PHX::FieldManager<panzer::Traits> > fm

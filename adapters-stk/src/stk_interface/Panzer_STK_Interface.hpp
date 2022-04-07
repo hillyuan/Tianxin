@@ -53,6 +53,7 @@
 #include <stk_mesh/base/FieldBase.hpp>
 #include <stk_mesh/base/MetaData.hpp>
 #include <stk_mesh/base/CoordinateSystems.hpp>
+#include <stk_mesh/base/SkinBoundary.hpp>
 #include <stk_search/PeriodicBoundarySearch.hpp>
 
 #include "Kokkos_Core.hpp"

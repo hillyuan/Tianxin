@@ -281,9 +281,9 @@ namespace panzer {
       TEST_EQUALITY((*worksets)[0].cell_local_ids.size(),2);
       TEST_EQUALITY((*worksets)[0].cell_local_ids[0],1);
       TEST_EQUALITY((*worksets)[0].cell_local_ids[1],5);
-      TEST_EQUALITY((*worksets)[0].ir_degrees->size(),1);
+      TEST_EQUALITY((*worksets)[0].ir_degrees.size(),1);
       TEST_EQUALITY((*worksets)[0].int_rules.size(),1);
-      TEST_EQUALITY((*worksets)[0].basis_names->size(),2);
+      TEST_EQUALITY((*worksets)[0].basis_names.size(),2);
       TEST_EQUALITY((*worksets)[0].bases.size(),2);
 
       cell_vertex_coordinates_0_view = (*worksets)[0](0).cell_vertex_coordinates.get_view();
@@ -297,9 +297,9 @@ namespace panzer {
       TEST_EQUALITY((*worksets)[0](0).cell_local_ids.size(),2);
       TEST_EQUALITY((*worksets)[0](0).cell_local_ids[0],1);
       TEST_EQUALITY((*worksets)[0](0).cell_local_ids[1],5);
-      TEST_EQUALITY((*worksets)[0](0).ir_degrees->size(),1);
+      TEST_EQUALITY((*worksets)[0](0).ir_degrees.size(),1);
       TEST_EQUALITY((*worksets)[0](0).int_rules.size(),1);
-      TEST_EQUALITY((*worksets)[0](0).basis_names->size(),2);
+      TEST_EQUALITY((*worksets)[0](0).basis_names.size(),2);
       TEST_EQUALITY((*worksets)[0](0).bases.size(),2);
 
       auto cell_vertex_coordinates_1_view = (*worksets)[0](1).cell_vertex_coordinates.get_view();
@@ -315,9 +315,9 @@ namespace panzer {
       TEST_EQUALITY((*worksets)[0](1).block_id, "eblock-1_0");
       TEST_EQUALITY((*worksets)[0](1).cell_local_ids[0],2);
       TEST_EQUALITY((*worksets)[0](1).cell_local_ids[1],6);
-      TEST_EQUALITY((*worksets)[0](1).ir_degrees->size(),1);
+      TEST_EQUALITY((*worksets)[0](1).ir_degrees.size(),1);
       TEST_EQUALITY((*worksets)[0](1).int_rules.size(),1);
-      TEST_EQUALITY((*worksets)[0](1).basis_names->size(),2);
+      TEST_EQUALITY((*worksets)[0](1).basis_names.size(),2);
       TEST_EQUALITY((*worksets)[0](1).bases.size(),2);
     }
 
@@ -425,9 +425,9 @@ namespace panzer {
       TEST_EQUALITY(workset.cell_local_ids.size(),2);
       TEST_EQUALITY(workset.cell_local_ids[0],1);
       TEST_EQUALITY(workset.cell_local_ids[1],5);
-      TEST_EQUALITY(workset.ir_degrees->size(),1);
+      TEST_EQUALITY(workset.ir_degrees.size(),1);
       TEST_EQUALITY(workset.int_rules.size(),1);
-      TEST_EQUALITY(workset.basis_names->size(),2);
+      TEST_EQUALITY(workset.basis_names.size(),2);
       TEST_EQUALITY(workset.bases.size(),2);
 
       cell_vertex_coordinates_0_view = workset(0).cell_vertex_coordinates.get_view();
@@ -441,9 +441,9 @@ namespace panzer {
       TEST_EQUALITY(workset(0).cell_local_ids.size(),2);
       TEST_EQUALITY(workset(0).cell_local_ids[0],1);
       TEST_EQUALITY(workset(0).cell_local_ids[1],5);
-      TEST_EQUALITY(workset(0).ir_degrees->size(),1);
+      TEST_EQUALITY(workset(0).ir_degrees.size(),1);
       TEST_EQUALITY(workset(0).int_rules.size(),1);
-      TEST_EQUALITY(workset(0).basis_names->size(),2);
+      TEST_EQUALITY(workset(0).basis_names.size(),2);
       TEST_EQUALITY(workset(0).bases.size(),2);
 
       auto cell_vertex_coordinates_1_view = workset(1).cell_vertex_coordinates.get_view();
@@ -459,9 +459,9 @@ namespace panzer {
       TEST_EQUALITY(workset(1).block_id, "eblock-1_0");
       TEST_EQUALITY(workset(1).cell_local_ids[0],2);
       TEST_EQUALITY(workset(1).cell_local_ids[1],6);
-      TEST_EQUALITY(workset(1).ir_degrees->size(),1);
+      TEST_EQUALITY(workset(1).ir_degrees.size(),1);
       TEST_EQUALITY(workset(1).int_rules.size(),1);
-      TEST_EQUALITY(workset(1).basis_names->size(),2);
+      TEST_EQUALITY(workset(1).basis_names.size(),2);
       TEST_EQUALITY(workset(1).bases.size(),2);
     }
 

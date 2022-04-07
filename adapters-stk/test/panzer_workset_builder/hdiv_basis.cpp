@@ -303,8 +303,8 @@ namespace panzer {
     out <<  worksets[0].bases.size() << std::endl;
 
     const BasisValues2<double> & hdiv_basis_values = *worksets[0].bases[0];
-    out << (*worksets[0].basis_names)[0]
-        << " " << (*worksets[0].basis_names)[1] << std::endl;
+    out << worksets[0].basis_names[0]
+        << " " << worksets[0].basis_names[1] << std::endl;
 
     auto hdiv_weighted_basis_vector = hdiv_basis_values.weighted_basis_vector;
     auto hdiv_weighted_basis_vector_view = PHX::as_view(hdiv_weighted_basis_vector);

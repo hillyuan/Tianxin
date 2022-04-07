@@ -426,4 +426,37 @@ void assignBlock(FieldContainer & block,FieldContainer & vertices, double (* fun
 
 }
 
+TEUCHOS_UNIT_TEST(StkMeshHowTo, SkinExposedHex)
+{
+    // ============================================================
+    // INITIALIZATION
+    MPI_Comm communicator = MPI_COMM_WORLD;
+    if (stk::parallel_machine_size(communicator) != 1) { return; }
+    stk::io::StkMeshIoBroker stkIo(communicator);
+
+    const std::string generatedFileName = "generated:2x2x1";
+    stkIo.add_mesh_database(generatedFileName, stk::io::READ_MESH);
+    stkIo.create_input_mesh();
+    stkIo.populate_bulk_data();
+
+    // ============================================================
+    //+ EXAMPLE
+    //+ Skin the mesh and create the exposed boundary sides..
+    stk::mesh::MetaData &metaData = stkIo.meta_data();
+    stk::mesh::BulkData &bulkData = stkIo.bulk_data();
+    stk::mesh::Selector allEntities = metaData.universal_part();
+    stk::mesh::Part &skinPart = metaData.declare_part("skin", metaData.side_rank());
+    stk::io::put_io_part_attribute(skinPart);
+
+    stk::mesh::create_exposed_block_boundary_sides(bulkData, allEntities, {&skinPart});
+
+    // ==================================================
+    // VERIFICATION
+ //   EXPECT_TRUE(stk::mesh::check_exposed_block_boundary_sides(bulkData, allEntities, skinPart));
+    stk::mesh::Selector skin(skinPart & metaData.locally_owned_part());
+    unsigned numSkinnedSides = stk::mesh::count_selected_entities(skin, bulkData.buckets(metaData.side_rank()));
+	std::cout << numSkinnedSides << "in part " << skinPart.name() << std::endl;
+//    EXPECT_EQ(6u, numSkinnedSides) << "in part " << skinPart.name();
+}
+
 #endif
