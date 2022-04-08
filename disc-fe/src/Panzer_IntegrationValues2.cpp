@@ -847,7 +847,6 @@ getUniformSideCubaturePointsRef(const bool cache,
   if(side_cub_points_evaluated_ and not force)
     return side_cub_points;
 
-  Intrepid2::CellTools<PHX::Device::execution_space> cell_tools;
   MDFieldArrayFactory af(prefix_,true);
 
   int num_space_dim = int_rule->topology->getDimension();
@@ -898,7 +897,6 @@ getUniformCubatureWeightsRef(const bool cache,
   if(cub_weights_evaluated_ and not force)
     return cub_weights;
 
-  Intrepid2::CellTools<PHX::Device::execution_space> cell_tools;
   MDFieldArrayFactory af(prefix_,true);
 
   int num_space_dim = int_rule->topology->getDimension();

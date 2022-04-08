@@ -106,7 +106,7 @@ WorksetDetails()
   , num_ghost_cells_(0)
   , num_virtual_cells_(0)
   , num_dimensions_(-1)
-{ basis_names.clear(); ir_degrees.clear(); }
+{}
 
 void
 WorksetDetails::
