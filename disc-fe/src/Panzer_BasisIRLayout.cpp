@@ -129,7 +129,7 @@ setup(const panzer::PointRule & point_rule)
 							dimension()));
 
   const Teuchos::RCP<const shards::CellTopology>& topology = basis_data_->getCellTopology();
-  cell_topo_info = rcp(new panzer::CellTopologyInfo(numCells(), topology) );
+  cell_topo_info = rcp(new panzer::CellTopologyInfo(numCells(), *topology) );
   
 }
 

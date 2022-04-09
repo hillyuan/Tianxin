@@ -65,7 +65,7 @@ namespace panzer {
 
   public:
     
-    CellTopologyInfo(int numCells, const Teuchos::RCP<const shards::CellTopology>& cellTopo);
+    CellTopologyInfo(int numCells, const shards::CellTopology& cellTopo);
 
     int getNumCells() const
     { return num_cells; }
@@ -79,7 +79,7 @@ namespace panzer {
     std::string getCellName() const
     { return cell_topo_name; }
     
-    Teuchos::RCP<const shards::CellTopology> getCellTopology() const
+    const shards::CellTopology& getCellTopology() const
     { return topology; }
 
   public:
@@ -95,7 +95,7 @@ namespace panzer {
     //! Initialize data layouts
     void initializeDataLayouts();
 
-    Teuchos::RCP<const shards::CellTopology> topology;
+    const shards::CellTopology topology;
 
     std::string cell_topo_name;
 

@@ -51,8 +51,7 @@ namespace panzer {
 
   TEUCHOS_UNIT_TEST(cell_topology_info, quad_test)
   {
-    Teuchos::RCP<shards::CellTopology> topo = 
-       Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Quadrilateral<4> >()));
+    shards::CellTopology topo(shards::getCellTopologyData< shards::Quadrilateral<4> >());
     
     const int num_cells = 20;
     const int num_dims = 2;
@@ -64,8 +63,8 @@ namespace panzer {
     TEST_ASSERT(cellTopoInfo.getNumEdges() == 4);
     TEST_ASSERT(cellTopoInfo.getCellName() == "Quadrilateral_4");
     
-    Teuchos::RCP<const shards::CellTopology> topology = cellTopoInfo.getCellTopology();
-    TEST_ASSERT(!Teuchos::is_null(topology));
+    const shards::CellTopology& topology = cellTopoInfo.getCellTopology();
+    TEST_ASSERT(topology.isValid());
     
     const int num_edges = cellTopoInfo.getNumEdges();
     
@@ -75,8 +74,7 @@ namespace panzer {
   
   TEUCHOS_UNIT_TEST(cell_topology_info, tri_test)
   {
-    Teuchos::RCP<shards::CellTopology> topo = 
-       Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Triangle<3> >()));
+    shards::CellTopology topo(shards::getCellTopologyData< shards::Triangle<3> >());
     
     const int num_cells = 20;
     const int num_dims = 2;
@@ -88,8 +86,8 @@ namespace panzer {
     TEST_ASSERT(cellTopoInfo.getNumEdges() == 3);
     TEST_ASSERT(cellTopoInfo.getCellName() == "Triangle_3");
     
-    Teuchos::RCP<const shards::CellTopology> topology = cellTopoInfo.getCellTopology();
-    TEST_ASSERT(!Teuchos::is_null(topology));
+    const shards::CellTopology& topology = cellTopoInfo.getCellTopology();
+    TEST_ASSERT(topology.isValid());
     
     const int num_edges = cellTopoInfo.getNumEdges();
 
@@ -99,8 +97,7 @@ namespace panzer {
   
   TEUCHOS_UNIT_TEST(cell_topology_info, tet_test)
   {
-    Teuchos::RCP<shards::CellTopology> topo = 
-       Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Tetrahedron<4> >()));
+    shards::CellTopology topo(shards::getCellTopologyData< shards::Tetrahedron<4> >());
     
     const int num_cells = 20;
     const int num_dims = 3;
@@ -112,8 +109,8 @@ namespace panzer {
     TEST_ASSERT(cellTopoInfo.getNumEdges() == 6);
     TEST_ASSERT(cellTopoInfo.getCellName() == "Tetrahedron_4");
     
-    Teuchos::RCP<const shards::CellTopology> topology = cellTopoInfo.getCellTopology();
-    TEST_ASSERT(!Teuchos::is_null(topology));
+    const shards::CellTopology& topology = cellTopoInfo.getCellTopology();
+    TEST_ASSERT(topology.isValid());
     
     const int num_edges = cellTopoInfo.getNumEdges();
 
@@ -123,8 +120,7 @@ namespace panzer {
 
   TEUCHOS_UNIT_TEST(cell_topology_info, hex_test)
   {
-    Teuchos::RCP<shards::CellTopology> topo = 
-       Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Hexahedron<8> >()));
+    shards::CellTopology topo(shards::getCellTopologyData< shards::Hexahedron<8> >());
     
     const int num_cells = 20;
     const int num_dims = 3;
@@ -136,8 +132,8 @@ namespace panzer {
     TEST_ASSERT(cellTopoInfo.getNumEdges() == 12);
     TEST_ASSERT(cellTopoInfo.getCellName() == "Hexahedron_8");
     
-    Teuchos::RCP<const shards::CellTopology> topology = cellTopoInfo.getCellTopology();
-    TEST_ASSERT(!Teuchos::is_null(topology));
+    const shards::CellTopology& topology = cellTopoInfo.getCellTopology();
+    TEST_ASSERT(topology.isValid())
     
     const int num_edges = cellTopoInfo.getNumEdges();
 

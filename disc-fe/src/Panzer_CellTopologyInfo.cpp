@@ -48,16 +48,15 @@
 #include "Phalanx_DataLayout_MDALayout.hpp"
 
 panzer::CellTopologyInfo::
-CellTopologyInfo(int numCells, const Teuchos::RCP<const shards::CellTopology>& cellTopo)
+CellTopologyInfo(int numCells, const shards::CellTopology& cellTopo)
+	: topology(cellTopo)
 {
   num_cells = numCells; 
 
-  dimension = cellTopo->getDimension();
-  num_edges = cellTopo->getEdgeCount();
-  cell_topo_name = cellTopo->getName();
+  dimension = cellTopo.getDimension();
+  num_edges = cellTopo.getEdgeCount();
+  cell_topo_name = cellTopo.getName();
   
-  topology = cellTopo;
-
   initializeDataLayouts();
 }
 
