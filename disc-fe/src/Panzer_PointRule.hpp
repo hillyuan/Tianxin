@@ -106,7 +106,7 @@ namespace panzer {
 
     Teuchos::RCP<const shards::CellTopology> topology;
     
-    Teuchos::RCP<shards::CellTopology> side_topology;
+    shards::CellTopology side_topology;
     
     //! Data layout for scalar fields
     Teuchos::RCP<PHX::DataLayout> dl_scalar;
@@ -152,12 +152,6 @@ namespace panzer {
   protected:
     PointRule() : side(-1) {}
 
-    /** Look up side topology for a cell_data object. Returns null if
-      * cell data does not correspond to a side object.
-      */
-    static Teuchos::RCP<shards::CellTopology> getSideTopology(const CellData & cell_data);
-
-
     void setup(const std::string & point_rule_name,
                const int num_cells,
                const int num_points_per_cell,
@@ -171,6 +165,11 @@ namespace panzer {
   private:
     std::string point_name;
   };
+	
+  /** Look up side topology for a cell_data object. Returns null if
+      * cell data does not correspond to a side object.
+      */
+  void getSideTopology(const CellData & cell_data, shards::CellTopology&);
 
 }
 

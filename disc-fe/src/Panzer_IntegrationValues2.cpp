@@ -82,7 +82,7 @@ getIntrepidCubature(const panzer::IntegrationRule & ir)
   } else if(ir.getType() == ID::VOLUME){
     ic = cubature_factory.create<PHX::Device::execution_space,double,double>(*(ir.topology),ir.getOrder());
   } else if(ir.getType() == ID::SIDE){
-    ic = cubature_factory.create<PHX::Device::execution_space,double,double>(*(ir.side_topology),ir.getOrder());
+    ic = cubature_factory.create<PHX::Device::execution_space,double,double>(ir.side_topology,ir.getOrder());
   } else if(ir.getType() == ID::SURFACE){
     // closed surface integrals don't exist in intrepid.
   } else {
@@ -637,7 +637,7 @@ setupArrays(const Teuchos::RCP<const panzer::IntegrationRule>& ir)
   cub_points = af.template buildStaticArray<Scalar,IP,Dim>("cub_points",num_ip, num_space_dim);
 
   if (ir->isSide() && ir->cv_type == "none")
-    side_cub_points = af.template buildStaticArray<Scalar,IP,Dim>("side_cub_points",num_ip,ir->side_topology->getDimension());
+    side_cub_points = af.template buildStaticArray<Scalar,IP,Dim>("side_cub_points",num_ip,ir->side_topology.getDimension());
 
   cub_weights = af.template buildStaticArray<Scalar,IP>("cub_weights",num_ip);
 
@@ -1062,7 +1062,6 @@ getWeightedMeasure(const bool cache,
   if(weighted_measure_evaluated_ and not force)
     return weighted_measure;
 
-  Intrepid2::CellTools<PHX::Device::execution_space> cell_tools;
   MDFieldArrayFactory af(prefix_,true);
 
   const int num_space_dim = int_rule->topology->getDimension();
@@ -1229,7 +1228,6 @@ getWeightedNormals(const bool cache,
   if(weighted_normals_evaluated_ and not force)
     return weighted_normals;
 
-  Intrepid2::CellTools<PHX::Device::execution_space> cell_tools;
   MDFieldArrayFactory af(prefix_,true);
 
   const int num_space_dim = int_rule->topology->getDimension();

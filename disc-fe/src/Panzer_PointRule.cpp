@@ -108,11 +108,10 @@ setup(const std::string & ptName,
   }
 
   // now extract side topology
-  side_topology = getSideTopology(cell_data);
-  if (side_topology!=Teuchos::null)
-    side = cell_data.side();
+  getSideTopology(cell_data, side_topology);
+  if( side_topology.isValid() ) side = cell_data.side();
 
-  TEUCHOS_TEST_FOR_EXCEPTION(side >= 0 && Teuchos::is_null(side_topology), 
+  TEUCHOS_TEST_FOR_EXCEPTION(side >= 0 && !(side_topology.isValid()), 
 		     std::runtime_error,
 		     "Failed to allocate side topology!");
 
@@ -178,30 +177,7 @@ const std::string & panzer::PointRule::getName() const
 
 bool panzer::PointRule::isSide() const
 {
-  return (!Teuchos::is_null(side_topology));
-}
-
-Teuchos::RCP<shards::CellTopology> panzer::PointRule::getSideTopology(const CellData & cell_data)
-{
-  Teuchos::RCP<shards::CellTopology> sideTopo;
-  int spatial_dimension = cell_data.baseCellDimension();
-  Teuchos::RCP<const shards::CellTopology> topology = cell_data.getCellTopology();
-
-  if (cell_data.isSide() && spatial_dimension>1) {
-    int side = cell_data.side();
-
-    TEUCHOS_TEST_FOR_EXCEPTION( (side >= static_cast<int>(topology->getSideCount())), 
-			std::runtime_error, "Error - local side " 
-			<< side << " is not in range (0->" << topology->getSideCount()-1 
-   			<< ") of topologic entity!");
-    
-    sideTopo = Teuchos::rcp(new shards::CellTopology(topology->getCellTopologyData(topology->getDimension()-1,side)));
-  }
-  else if(cell_data.isSide() && spatial_dimension==1) {
-    sideTopo = Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData<shards::Node>()));
-  }
-  
-  return sideTopo;
+  return (side_topology.isValid());
 }
 
 Teuchos::RCP<PHX::DataLayout>
@@ -266,4 +242,24 @@ void panzer::PointRule::print(std::ostream & os)
       << ", Num Points = " << num_points 
       << ", Side = " << side
       << " )";
+}
+
+void panzer::getSideTopology(const CellData & cell_data, shards::CellTopology& sideTopo)
+{
+  int spatial_dimension = cell_data.baseCellDimension();
+  Teuchos::RCP<const shards::CellTopology> topology = cell_data.getCellTopology();
+
+  if (cell_data.isSide() && spatial_dimension>1) {
+    int side = cell_data.side();
+
+    TEUCHOS_TEST_FOR_EXCEPTION( (side >= static_cast<int>(topology->getSideCount())), 
+			std::runtime_error, "Error - local side " 
+			<< side << " is not in range (0->" << topology->getSideCount()-1 
+   			<< ") of topologic entity!");
+    
+    sideTopo = shards::CellTopology(topology->getCellTopologyData(topology->getDimension()-1,side));
+  }
+  else if(cell_data.isSide() && spatial_dimension==1) {
+    sideTopo = shards::CellTopology(shards::getCellTopologyData<shards::Node>());
+  }
 }

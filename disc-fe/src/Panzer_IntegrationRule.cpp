@@ -147,19 +147,20 @@ void panzer::IntegrationRule::setup(int in_cubature_degree, const panzer::CellDa
   }
 
   const shards::CellTopology & topo = *cell_data.getCellTopology();
-  Teuchos::RCP<shards::CellTopology> sideTopo = getSideTopology(cell_data);
+  shards::CellTopology sideTopo;
+  getSideTopology(cell_data, sideTopo);
 
   Intrepid2::DefaultCubatureFactory cubature_factory;
   Teuchos::RCP<Intrepid2::Cubature<PHX::Device::execution_space,double,double>> intrepid_cubature;
 
   // get side topology
-  if (Teuchos::is_null(sideTopo)) {
+  if (!(sideTopo.isValid())) {
     ss << ",volume)";
     intrepid_cubature = cubature_factory.create<PHX::Device::execution_space,double,double>(topo, cubature_degree);
   }
   else {
     ss << ",side)";
-    intrepid_cubature = cubature_factory.create<PHX::Device::execution_space,double,double>(*sideTopo, cubature_degree);
+    intrepid_cubature = cubature_factory.create<PHX::Device::execution_space,double,double>(sideTopo, cubature_degree);
   }
 
   PointRule::setup(ss.str(),intrepid_cubature->getNumPoints(),cell_data);
@@ -295,7 +296,7 @@ void panzer::IntegrationRule::referenceCoordinates(Kokkos::DynRankView<double,PH
     if (!isSide())
       intrepid_cubature = cubature_factory.create<PHX::Device::execution_space,double,double>(*(topology),cubature_degree);
     else
-      intrepid_cubature = cubature_factory.create<PHX::Device::execution_space,double,double>(*(side_topology),cubature_degree);
+      intrepid_cubature = cubature_factory.create<PHX::Device::execution_space,double,double>(side_topology,cubature_degree);
 
     int num_ip = intrepid_cubature->getNumPoints();
     Kokkos::DynRankView<double,PHX::Device> cub_weights("cub_weights",num_ip);
@@ -306,7 +307,7 @@ void panzer::IntegrationRule::referenceCoordinates(Kokkos::DynRankView<double,PH
       intrepid_cubature->getCubature(cub_points, cub_weights);
     }
     else {
-      cub_points = Kokkos::DynRankView<double,PHX::Device>("cub_points", num_ip, side_topology->getDimension());
+      cub_points = Kokkos::DynRankView<double,PHX::Device>("cub_points", num_ip, side_topology.getDimension());
       intrepid_cubature->getCubature(cub_points, cub_weights);
     }
 }
