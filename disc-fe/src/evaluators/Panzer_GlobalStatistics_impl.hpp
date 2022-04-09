@@ -48,7 +48,6 @@
 #include "Panzer_String_Utilities.hpp"
 #include "Panzer_Workset_Utilities.hpp"
 #include "Panzer_GlobalData.hpp"
-#include "Panzer_IosAllSaver.hpp"
 #include "Phalanx_DataLayout_MDALayout.hpp"
 #include "Teuchos_ScalarTraits.hpp"
 #include "Teuchos_CommHelpers.hpp"
@@ -217,8 +216,6 @@ void GlobalStatistics<panzer::Traits::Residual, panzer::Traits>::postprocess(std
 
   if (comm->getRank() == 0) {
 
-    panzer::ios_all_saver saver(os);
-    
     std::size_t precision = 8;
     os << std::scientific << std::showpoint << std::setprecision(precision) << std::left;
     
