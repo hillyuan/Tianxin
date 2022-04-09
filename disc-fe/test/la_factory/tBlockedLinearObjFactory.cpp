@@ -58,6 +58,7 @@
 #include "Panzer_BlockedEpetraLinearObjFactory.hpp"
 #include "Panzer_PauseToAttach.hpp"
 #include "Panzer_IntrepidFieldPattern.hpp"
+#include "Panzer_CellData.hpp"
 
 #include "UnitTest_GlobalIndexer.hpp"
 
