@@ -1,12 +1,8 @@
 // @HEADER
 // ***********************************************************************
 //
-//           Panzer: A partial differential equation assembly
+//           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2011) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -35,38 +31,33 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Questions? Contact Roger P. Pawlowski (rppawlo@sandia.gov) and
-// Eric C. Cyr (eccyr@sandia.gov)
-// ***********************************************************************
+//  Copyright (2022) YUAN Xi
+// ******************************************************************* 
 // @HEADER
 
 #include "Panzer_CellTopologyInfo.hpp"
-#include "Panzer_IntegrationRule.hpp"
-#include "Panzer_IntrepidBasisFactory.hpp"
-
-#include "Teuchos_Assert.hpp"
 #include "Phalanx_DataLayout_MDALayout.hpp"
 
 panzer::CellTopologyInfo::
 CellTopologyInfo(int numCells, const shards::CellTopology& cellTopo)
-	: topology(cellTopo)
+	: num_cells(numCells), topology(cellTopo)
 {
-  num_cells = numCells; 
-
-  dimension = cellTopo.getDimension();
-  num_edges = cellTopo.getEdgeCount();
-  cell_topo_name = cellTopo.getName();
-  
-  initializeDataLayouts();
+  int num_edges = cellTopo.getEdgeCount();
+  int dimension = topology.getDimension(); 
+  edge_scalar = Teuchos::rcp(new PHX::MDALayout<Cell,Edge>(numCells, num_edges));
+  edge_vector = Teuchos::rcp(new PHX::MDALayout<Cell,Edge,Dim>(numCells, num_edges, dimension));
 }
 
 
-void panzer::CellTopologyInfo::initializeDataLayouts()
+panzer::CellTopologyInfo& 
+panzer::CellTopologyInfo::operator=(const panzer::CellTopologyInfo& topo)
 {
-  using Teuchos::rcp;
-  using PHX::MDALayout;
-
-  edge_scalar = rcp(new MDALayout<Cell,Edge>(num_cells, num_edges));
-  edge_vector = rcp(new MDALayout<Cell,Edge,Dim>(num_cells, num_edges, dimension));
-
+  this->num_cells = topo.num_cells;
+  this->topology = topo.topology;
+  int num_edges = topo.getNumEdges();
+  int dimension = topo.getDimension(); 
+  edge_scalar = Teuchos::rcp(new PHX::MDALayout<Cell,Edge>(num_cells, num_edges));
+  edge_vector = Teuchos::rcp(new PHX::MDALayout<Cell,Edge,Dim>(num_cells, num_edges, dimension));
+	return *this;
 }
+

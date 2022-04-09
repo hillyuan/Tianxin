@@ -49,15 +49,10 @@
 #include "Phalanx_DataLayout.hpp"
 
 #include "Kokkos_DynRankView.hpp"
-#include "Intrepid2_Basis.hpp"
 
 #include "Panzer_Dimension.hpp"
 #include "Panzer_CellData.hpp"
-#include "Panzer_IntrepidBasisFactory.hpp"
 
-
-// Added by Suzey: 06/18/2012, to obtain the edge information of a cell topology
-// and to create the edge data layouts
 
 namespace panzer {
 
@@ -66,18 +61,19 @@ namespace panzer {
   public:
     
     CellTopologyInfo(int numCells, const shards::CellTopology& cellTopo);
+	CellTopologyInfo& operator=(const CellTopologyInfo& topo); 
 
     int getNumCells() const
     { return num_cells; }
     
     int getDimension() const
-    { return dimension; }
+    { return topology.getDimension(); }
     
     int getNumEdges() const
-    { return num_edges; }
+    { return topology.getEdgeCount(); }
     
     std::string getCellName() const
-    { return cell_topo_name; }
+    { return topology.getName(); }
     
     const shards::CellTopology& getCellTopology() const
     { return topology; }
@@ -92,17 +88,8 @@ namespace panzer {
 
   private:
 
-    //! Initialize data layouts
-    void initializeDataLayouts();
-
-    const shards::CellTopology topology;
-
-    std::string cell_topo_name;
-
-    int num_cells;
-    int dimension;
-    int num_edges; 
-
+	int num_cells;
+    shards::CellTopology topology;
   };
 
 }
