@@ -154,8 +154,6 @@ buildWorksets(const panzer_stk::STK_Interface & mesh,
   // condition may have not elements and thus no contribution
   // on this processor
   if(elements.size()!=0) {
-    Teuchos::RCP<const shards::CellTopology> topo = mesh.getCellTopology(eBlock);
-
     // worksets to be returned
     Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new std::vector<panzer::Workset>);
 

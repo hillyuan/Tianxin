@@ -113,11 +113,13 @@ namespace panzer {
     Teuchos::RCP<const shards::CellTopology> getCellTopology() const
     { return m_cell_topo; }
 
+	void setCellSize(std::size_t n)
+	{ m_num_cells = n; }
+
   private:
     std::size_t m_num_cells;
     bool m_is_side;
     int m_side;
-      
  
     Teuchos::RCP<const shards::CellTopology> m_cell_topo;
   };
