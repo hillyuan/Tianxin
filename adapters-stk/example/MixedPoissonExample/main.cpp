@@ -79,7 +79,6 @@
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "Panzer_STK_Utilities.hpp"
 #include "Panzer_STK_ResponseEvaluatorFactory_SolutionWriter.hpp"
-#include "Panzer_HierarchicParallelism.hpp"
 
 #include "Epetra_MpiComm.h"
 
