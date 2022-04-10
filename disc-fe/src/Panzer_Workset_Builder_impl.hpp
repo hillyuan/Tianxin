@@ -64,14 +64,9 @@ template<typename ArrayT>
 Teuchos::RCP< std::vector<panzer::Workset> >
 panzer::buildWorksets(const WorksetNeeds & needs,
                       const std::string & elementBlock,
-		                  const std::vector<std::size_t>& local_cell_ids,
-		                  const ArrayT& vertex_coordinates)
+		              const std::vector<std::size_t>& local_cell_ids,
+		              const ArrayT& vertex_coordinates)
 {
-  using std::vector;
-  using std::string;
-  using Teuchos::RCP;
-  using Teuchos::rcp;
-
   panzer::MDFieldArrayFactory mdArrayFactory("",true);
 
   std::size_t total_num_cells = local_cell_ids.size();
@@ -93,8 +88,8 @@ panzer::buildWorksets(const WorksetNeeds & needs,
 
      for (std::size_t j=0;j<needs.int_rules.size();j++) {
 
-       RCP<panzer::IntegrationValues2<double> > iv2 =
-	 rcp(new panzer::IntegrationValues2<double>("",true));
+       Teuchos::RCP<panzer::IntegrationValues2<double> > iv2 =
+	 Teuchos::rcp(new panzer::IntegrationValues2<double>("",true));
        iv2->setupArrays(needs.int_rules[j]);
 
        i->ir_degrees.emplace_back(needs.int_rules[j]->cubature_degree);
@@ -104,11 +99,11 @@ panzer::buildWorksets(const WorksetNeeds & needs,
      // Need to create all combinations of basis/ir pairings
      for (std::size_t j=0;j<needs.int_rules.size();j++) {
        for (std::size_t b=0;b<needs.bases.size();b++) {
-	 RCP<panzer::BasisIRLayout> b_layout
-             = rcp(new panzer::BasisIRLayout(needs.bases[b],*needs.int_rules[j]));
+	 Teuchos::RCP<panzer::BasisIRLayout> b_layout
+             = Teuchos::rcp(new panzer::BasisIRLayout(needs.bases[b],*needs.int_rules[j]));
 
-	 RCP<panzer::BasisValues2<double> > bv2
-             = rcp(new panzer::BasisValues2<double>("",true,true));
+	 Teuchos::RCP<panzer::BasisValues2<double> > bv2
+             = Teuchos::rcp(new panzer::BasisValues2<double>("",true,true));
 	 bv2->setupArrays(b_layout);
 	 i->bases.push_back(bv2);
 

@@ -134,9 +134,6 @@ namespace panzer {
       panzer_stk::workset_utils::getIdsAndVertices(*mesh, element_blocks[i], local_cell_ids,
 				cell_vertex_coordinates);
 
-      Teuchos::RCP<shards::CellTopology> topo
-         = Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Quadrilateral<4> >()));
-
       Teuchos::RCP<const panzer::PhysicsBlock> pb = panzer::findPhysicsBlock(element_blocks[i],physicsBlocks);
       worksets.push_back(panzer::buildWorksets(pb->getWorksetNeeds(),pb->elementBlockID(),
 					       local_cell_ids,
@@ -469,21 +466,15 @@ namespace panzer {
 
   TEUCHOS_UNIT_TEST(workset_builder, sidesets)
   {
-    using Teuchos::RCP;
-
-
-    RCP<Teuchos::ParameterList> pl = rcp(new Teuchos::ParameterList);
+    Teuchos::RCP<Teuchos::ParameterList> pl = Teuchos::rcp(new Teuchos::ParameterList);
     pl->set("X Blocks",2);
     pl->set("Y Blocks",1);
     pl->set("X Elements",6);
     pl->set("Y Elements",4);
 
-    Teuchos::RCP<shards::CellTopology> topo
-       = Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Quadrilateral<4> >()));
-
     panzer_stk::SquareQuadMeshFactory factory;
     factory.setParameterList(pl);
-    RCP<panzer_stk::STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
+    Teuchos::RCP<panzer_stk::STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
     unsigned dim = mesh->getDimension();
 
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");

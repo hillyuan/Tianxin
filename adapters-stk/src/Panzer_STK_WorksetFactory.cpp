@@ -49,8 +49,9 @@
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_LocalMeshUtilities.hpp"
+#include "Panzer_CommonArrayFactories.hpp"
 
-
+#include <algorithm>
 
 namespace panzer_stk {
 
@@ -141,8 +142,9 @@ getWorksets(const panzer::WorksetDescriptor & worksetDesc,
         worksetSize = elements.size();
       }
       panzer::WorksetNeeds tmpNeeds(needs);
-      tmpNeeds.cellData = panzer::CellData(worksetSize,needs.cellData.getCellTopology());
-      return panzer_stk::buildWorksets(*mesh_,worksetDesc.getElementBlock(), needs);
+	  tmpNeeds.cellData.setCellSize(worksetSize);
+      //tmpNeeds.cellData = panzer::CellData(worksetSize,needs.cellData.getCellTopology());
+      return panzer_stk::buildWorksets(*mesh_,worksetDesc.getElementBlock(), tmpNeeds);
     }
   }
   else if(worksetDesc.useSideset() && worksetDesc.sideAssembly()) {
@@ -158,16 +160,78 @@ void
 WorksetFactory :: getWorksets(const panzer::WorksetDescriptor& worksetDesc,
     const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& worksets) const
 {
+	using LO = panzer::LocalOrdinal;
+	panzer::MDFieldArrayFactory mdArrayFactory("",true);
+
 	std::vector<panzer::GlobalOrdinal> coords;
 	worksets.clear();
+	Teuchos::RCP<stk::mesh::MetaData> metaData = mesh_->getMetaData();
+    Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh_->getBulkData();
+	std::vector<std::size_t> localEntityIds;
+	
 	const std::string& element_block_name = worksetDesc.getElementBlock();
+	Teuchos::RCP<const shards::CellTopology> topo = mesh_->getCellTopology(element_block_name);
+	const unsigned n_dim = topo->getDimension();
+	const unsigned n_nodes = topo->getNodeCount();
 	if(worksetDesc.useSideset()){
 	} else {
+		int worksetSize = worksetDesc.getWorksetSize();
 		const stk::mesh::Part* eb = mesh_->getElementBlockPart(element_block_name);
 		if( !eb ) return;
-		stk::mesh::Part& universalPart = mesh_->getMetaData()->universal_part();
+		std::vector<stk::mesh::Entity> AllElements;
+		stk::mesh::Selector eselect = metaData->universal_part() & (*eb);
+        stk::mesh::EntityRank elementRank = mesh_->getElementRank();
+        stk::mesh::get_selected_entities(eselect,bulkData->buckets(elementRank),AllElements);
+		for( const auto& ele : AllElements )
+		{
+			const auto lid = mesh_->elementLocalId( ele );
+			localEntityIds.emplace_back( lid );
+		}
+		int numElements = localEntityIds.size();
+
+		const int wksize = std::min( worksetSize, numElements );;
+		//if(worksetDesc.getWorksetSize() == panzer::WorksetSizeType::ALL_ELEMENTS)
+		//	wksize = localEntityIds.size();
+		//else
+		//	wksize = std::min( worksetSize, localEntityIds.size() );
+	    int remain = numElements/wksize;
+	    int numWorksets = (numElements-remain)/wksize;
+        if( remain>0 ) ++numWorksets;
+        worksets.resize(numWorksets);
+	
+	    // create workset with size = wksize
+		LO wkset_count =0;
+		LO local_count =0;
+		for( LO i=0; i<numElements; i++ )
+		{
+			worksets[wkset_count].cell_local_ids.emplace_back( localEntityIds[i] );
+			++local_count;
+			if( local_count>=wksize ) {
+				worksets[wkset_count].num_cells = local_count;
+				++wkset_count;
+				local_count = 0;
+			}
+		}
 		
-		if(worksetDesc.getWorksetSize() == panzer::WorksetSizeType::ALL_ELEMENTS){
+		for( auto wkst: worksets )
+		{
+			wkst.cell_vertex_coordinates = mdArrayFactory.buildStaticArray<double,panzer::Cell,panzer::NODE,panzer::Dim>(
+			     "cvc",worksets[wkset_count].num_cells, n_nodes, n_dim);
+			wkst.block_id = element_block_name;
+			wkst.subcell_dim = needs.cellData.baseCellDimension();
+			wkst.subcell_index = 0;
+			
+			Kokkos::DynRankView<double,PHX::Device> vertex_coordinates;
+			mesh_->getElementVertices( wkst.cell_local_ids, vertex_coordinates );
+			
+			// Copy cell vertex coordinates into local workset arrays
+			auto cell_vertex_coordinates = wkst.cell_vertex_coordinates.get_static_view();
+			Kokkos::parallel_for(wkst.num_cells, KOKKOS_LAMBDA (int cell) {
+			for (std::size_t vertex = 0; vertex < vertex_coordinates.extent(1); ++ vertex)
+				for (std::size_t dim = 0; dim < vertex_coordinates.extent(2); ++ dim) {
+					cell_vertex_coordinates(cell,vertex,dim) = vertex_coordinates(cell,vertex,dim);
+				}
+			});
 		}
 	}
 }
