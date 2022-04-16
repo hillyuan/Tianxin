@@ -156,15 +156,18 @@ getWorksets(const panzer::WorksetDescriptor & worksetDesc,
   }
 }
 
-void 
-WorksetFactory :: getWorksets(const panzer::WorksetDescriptor& worksetDesc,
-    const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& worksets) const
+Teuchos::RCP<std::vector<panzer::Workset> >
+WorksetFactory :: buildWorksets(const panzer::WorksetDescriptor& worksetDesc,
+    const panzer::WorksetNeeds& needs ) const
 {
 	using LO = panzer::LocalOrdinal;
 	panzer::MDFieldArrayFactory mdArrayFactory("",true);
+	
+	Teuchos::RCP< std::vector<panzer::Workset> > worksets_ptr =
+    Teuchos::rcp(new std::vector<panzer::Workset>);
+    std::vector<panzer::Workset>& worksets = *worksets_ptr;
 
 	std::vector<panzer::GlobalOrdinal> coords;
-	worksets.clear();
 	Teuchos::RCP<stk::mesh::MetaData> metaData = mesh_->getMetaData();
     Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh_->getBulkData();
 	std::vector<std::size_t> localEntityIds;
@@ -177,7 +180,7 @@ WorksetFactory :: getWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	} else {
 		int worksetSize = worksetDesc.getWorksetSize();
 		const stk::mesh::Part* eb = mesh_->getElementBlockPart(element_block_name);
-		if( !eb ) return;
+		if( !eb ) return worksets_ptr;
 		std::vector<stk::mesh::Entity> AllElements;
 		stk::mesh::Selector eselect = metaData->universal_part() & (*eb);
         stk::mesh::EntityRank elementRank = mesh_->getElementRank();
@@ -189,7 +192,7 @@ WorksetFactory :: getWorksets(const panzer::WorksetDescriptor& worksetDesc,
 		}
 		int numElements = localEntityIds.size();
 
-		const int wksize = std::min( worksetSize, numElements );;
+		const int wksize = (worksetSize<=0) ? numElements : std::min( worksetSize, numElements );
 		//if(worksetDesc.getWorksetSize() == panzer::WorksetSizeType::ALL_ELEMENTS)
 		//	wksize = localEntityIds.size();
 		//else
@@ -213,6 +216,7 @@ WorksetFactory :: getWorksets(const panzer::WorksetDescriptor& worksetDesc,
 			}
 		}
 		
+		wkset_count =0;
 		for( auto wkst: worksets )
 		{
 			wkst.cell_vertex_coordinates = mdArrayFactory.buildStaticArray<double,panzer::Cell,panzer::NODE,panzer::Dim>(
@@ -232,8 +236,11 @@ WorksetFactory :: getWorksets(const panzer::WorksetDescriptor& worksetDesc,
 					cell_vertex_coordinates(cell,vertex,dim) = vertex_coordinates(cell,vertex,dim);
 				}
 			});
+			++wkset_count;
 		}
 	}
+	
+	return worksets_ptr;
 }
 
 }

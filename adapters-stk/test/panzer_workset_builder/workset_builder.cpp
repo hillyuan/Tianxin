@@ -59,6 +59,7 @@ using Teuchos::rcp;
 #include "Panzer_STK_CubeTetMeshFactory.hpp"
 #include "Panzer_Workset_Builder.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
+#include "Panzer_STK_WorksetFactory.hpp"
 #include "Panzer_PhysicsBlock.hpp"
 #include "Panzer_GlobalData.hpp"
 #include "Panzer_BC.hpp"
@@ -70,6 +71,72 @@ namespace panzer {
 
   void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
 			 std::vector<panzer::BC>& bcs);
+			 
+  TEUCHOS_UNIT_TEST(workset_builder, volume0)
+  {
+
+    RCP<Teuchos::ParameterList> pl = rcp(new Teuchos::ParameterList);
+    pl->set("X Blocks",2);
+    pl->set("Y Blocks",1);
+    pl->set("X Elements",2);  // in each block
+    pl->set("Y Elements",2);  // in each block
+
+    panzer_stk::SquareQuadMeshFactory factory;
+    factory.setParameterList(pl);
+    RCP<panzer_stk::STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
+    if(mesh->isWritable())
+      mesh->writeToExodus("blocked_mesh.exo");
+
+    std::vector<std::string> element_blocks;
+    mesh->getElementBlockNames(element_blocks);
+    const std::size_t workset_size = 20;
+
+    Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
+    std::vector<panzer::BC> bcs;
+    testInitialzation(ipb, bcs);
+
+    // build physics blocks
+    //////////////////////////////////////////////////////////////
+    std::vector<Teuchos::RCP<panzer::PhysicsBlock> > physicsBlocks;
+    {
+      const int default_integration_order = 1;
+
+      Teuchos::RCP<user_app::MyFactory> eqset_factory = Teuchos::rcp(new user_app::MyFactory);
+
+      std::map<std::string,std::string> block_ids_to_physics_ids;
+      block_ids_to_physics_ids["eblock-0_0"] = "test physics";
+      block_ids_to_physics_ids["eblock-1_0"] = "test physics";
+
+      std::map<std::string,Teuchos::RCP<const shards::CellTopology> > block_ids_to_cell_topo;
+      block_ids_to_cell_topo["eblock-0_0"] = mesh->getCellTopology("eblock-0_0");
+      block_ids_to_cell_topo["eblock-1_0"] = mesh->getCellTopology("eblock-1_0");
+
+      Teuchos::RCP<panzer::GlobalData> gd = panzer::createGlobalData();
+
+      panzer::buildPhysicsBlocks(block_ids_to_physics_ids,
+				 block_ids_to_cell_topo,
+				 ipb,
+				 default_integration_order,
+				 workset_size,
+				 eqset_factory,
+				 gd,
+				 false,
+				 physicsBlocks);
+    }
+
+    std::vector< Teuchos::RCP<std::vector<panzer::Workset> > > worksets;
+	Teuchos::RCP<panzer_stk::WorksetFactory> wkstFactory
+       = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
+	
+
+    for (auto& eb : element_blocks) {
+      WorksetDescriptor worksetDescriptor(eb, WorksetSizeType::ALL_ELEMENTS,true,false);
+	  Teuchos::RCP<const panzer::PhysicsBlock> pb = panzer::findPhysicsBlock(eb,physicsBlocks);
+      worksets.emplace_back( wkstFactory->buildWorksets(worksetDescriptor, pb->getWorksetNeeds()) );      
+    }
+
+
+  }
 
 
   TEUCHOS_UNIT_TEST(workset_builder, volume)
