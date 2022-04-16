@@ -124,7 +124,7 @@ namespace panzer {
 				 physicsBlocks);
     }
 
-    std::vector< Teuchos::RCP<std::vector<panzer::Workset> > > worksets;
+    std::vector< std::vector<panzer::Workset> > worksets;
 	Teuchos::RCP<panzer_stk::WorksetFactory> wkstFactory
        = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
 	
@@ -132,7 +132,9 @@ namespace panzer {
     for (auto& eb : element_blocks) {
       WorksetDescriptor worksetDescriptor(eb, WorksetSizeType::ALL_ELEMENTS,true,false);
 	  Teuchos::RCP<const panzer::PhysicsBlock> pb = panzer::findPhysicsBlock(eb,physicsBlocks);
-      worksets.emplace_back( wkstFactory->buildWorksets(worksetDescriptor, pb->getWorksetNeeds()) );      
+	  std::vector<panzer::Workset> wkset;
+      wkstFactory->buildWorksets(worksetDescriptor, pb->getWorksetNeeds(), wkset );
+      worksets.emplace_back( wkset );
     }
 
 

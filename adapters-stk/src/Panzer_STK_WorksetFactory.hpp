@@ -94,9 +94,9 @@ public:
    getWorksets(const panzer::WorksetDescriptor & worksetDesc,
                const panzer::WorksetNeeds & needs) const;
 			   
-   Teuchos::RCP< std::vector<panzer::Workset> >
+   void
    buildWorksets(const panzer::WorksetDescriptor& worksetDesc,
-               const panzer::WorksetNeeds& needs ) const;
+               const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& ) const;
 
 private:
 

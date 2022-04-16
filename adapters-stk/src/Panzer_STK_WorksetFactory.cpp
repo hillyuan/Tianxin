@@ -156,16 +156,16 @@ getWorksets(const panzer::WorksetDescriptor & worksetDesc,
   }
 }
 
-Teuchos::RCP<std::vector<panzer::Workset> >
+void
 WorksetFactory :: buildWorksets(const panzer::WorksetDescriptor& worksetDesc,
-    const panzer::WorksetNeeds& needs ) const
+    const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& worksets ) const
 {
 	using LO = panzer::LocalOrdinal;
 	panzer::MDFieldArrayFactory mdArrayFactory("",true);
 	
-	Teuchos::RCP< std::vector<panzer::Workset> > worksets_ptr =
-    Teuchos::rcp(new std::vector<panzer::Workset>);
-    std::vector<panzer::Workset>& worksets = *worksets_ptr;
+//	Teuchos::RCP< std::vector<panzer::Workset> > worksets_ptr =
+//    Teuchos::rcp(new std::vector<panzer::Workset>);
+//    std::vector<panzer::Workset>& worksets = *worksets_ptr;
 
 	std::vector<panzer::GlobalOrdinal> coords;
 	Teuchos::RCP<stk::mesh::MetaData> metaData = mesh_->getMetaData();
@@ -180,7 +180,7 @@ WorksetFactory :: buildWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	} else {
 		int worksetSize = worksetDesc.getWorksetSize();
 		const stk::mesh::Part* eb = mesh_->getElementBlockPart(element_block_name);
-		if( !eb ) return worksets_ptr;
+		if( !eb ) return;
 		std::vector<stk::mesh::Entity> AllElements;
 		stk::mesh::Selector eselect = metaData->universal_part() & (*eb);
         stk::mesh::EntityRank elementRank = mesh_->getElementRank();
@@ -239,8 +239,6 @@ WorksetFactory :: buildWorksets(const panzer::WorksetDescriptor& worksetDesc,
 			++wkset_count;
 		}
 	}
-	
-	return worksets_ptr;
 }
 
 }
