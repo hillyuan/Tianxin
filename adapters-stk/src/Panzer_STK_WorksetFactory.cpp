@@ -242,7 +242,7 @@ WorksetFactory :: buildWorksets(const panzer::WorksetDescriptor& worksetDesc,
 					cell_vertex_coordinates(cell,vertex,dim) = vertex_coordinates(cell,vertex,dim);
 				}
 			});
-			std::cout <<  worksets[i] ;
+		//	std::cout <<  worksets[i] ;
 		}
 	}
 	
