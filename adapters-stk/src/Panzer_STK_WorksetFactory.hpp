@@ -49,6 +49,8 @@
 
 #include "Panzer_STK_Interface.hpp"
 
+#include <memory>
+
 namespace panzer
 {
   struct LocalMeshInfo;

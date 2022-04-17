@@ -124,17 +124,35 @@ namespace panzer {
 				 physicsBlocks);
     }
 
-    std::vector< std::vector<panzer::Workset> > worksets;
+    std::vector< std::unique_ptr< std::vector<panzer::Workset>> > worksets;
 	Teuchos::RCP<panzer_stk::WorksetFactory> wkstFactory
        = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
 	
-
+    std::size_t i=0;
     for (auto& eb : element_blocks) {
       WorksetDescriptor worksetDescriptor(eb, WorksetSizeType::ALL_ELEMENTS,true,false);
 	  Teuchos::RCP<const panzer::PhysicsBlock> pb = panzer::findPhysicsBlock(eb,physicsBlocks);
 	  std::vector<panzer::Workset> wkset;
-      wkstFactory->buildWorksets(worksetDescriptor, pb->getWorksetNeeds(), wkset );
-      worksets.emplace_back( wkset );
+	  wkstFactory->buildWorksets(worksetDescriptor, pb->getWorksetNeeds(), wkset);
+	//  std::cout <<  wkset[0] ;
+    //   Teuchos::RCP< std::vector<panzer::Workset> > wkset = wkstFactory->buildWorksets(worksetDescriptor, pb->getWorksetNeeds() );  
+      worksets.emplace_back( std::make_unique< std::vector<panzer::Workset> >(wkset) );
+	  std::cout <<  (*worksets[0])[0] ;
+	  
+	/*  std::vector<std::size_t> local_cell_ids;
+      Kokkos::DynRankView<double,PHX::Device> cell_vertex_coordinates;
+      panzer_stk::workset_utils::getIdsAndVertices(*mesh, eb, local_cell_ids, cell_vertex_coordinates);
+	 
+	  auto& cur_workset = (*worksets[i])[0]; std::cout << cur_workset ;
+      auto workset_cell_vertex_coordinates_view = cur_workset.cell_vertex_coordinates.get_view();
+      auto workset_cell_vertex_coordinates_h = Kokkos::create_mirror_view(workset_cell_vertex_coordinates_view);
+      Kokkos::deep_copy(workset_cell_vertex_coordinates_h, workset_cell_vertex_coordinates_view);
+
+      auto cell_vertex_coordinates_h = Kokkos::create_mirror_view(cell_vertex_coordinates);
+      Kokkos::deep_copy(cell_vertex_coordinates_h, cell_vertex_coordinates);std::cout << 10000 << std::endl;
+
+      TEST_EQUALITY(workset_cell_vertex_coordinates_h(0,0,0), cell_vertex_coordinates_h(0,0,0));std::cout << 30000 << std::endl;
+      TEST_EQUALITY(workset_cell_vertex_coordinates_h(2,3,1), cell_vertex_coordinates_h(2,3,1));std::cout << 40000 << std::endl;*/
     }
 
 
@@ -208,7 +226,7 @@ namespace panzer {
 					       local_cell_ids,
 					       cell_vertex_coordinates));
 
-      auto& cur_workset = (*worksets[i])[0];
+      auto& cur_workset = (*worksets[i])[0];//std::cout << cur_workset << std::endl;
       auto workset_cell_vertex_coordinates_view = cur_workset.cell_vertex_coordinates.get_view();
       auto workset_cell_vertex_coordinates_h = Kokkos::create_mirror_view(workset_cell_vertex_coordinates_view);
       Kokkos::deep_copy(workset_cell_vertex_coordinates_h, workset_cell_vertex_coordinates_view);

@@ -163,8 +163,7 @@ WorksetFactory :: buildWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	using LO = panzer::LocalOrdinal;
 	panzer::MDFieldArrayFactory mdArrayFactory("",true);
 	
-//	Teuchos::RCP< std::vector<panzer::Workset> > worksets_ptr =
-//    Teuchos::rcp(new std::vector<panzer::Workset>);
+//	Teuchos::RCP< std::vector<panzer::Workset> > worksets_ptr(new std::vector<panzer::Workset>);
 //    std::vector<panzer::Workset>& worksets = *worksets_ptr;
 
 	std::vector<panzer::GlobalOrdinal> coords;
@@ -216,29 +215,38 @@ WorksetFactory :: buildWorksets(const panzer::WorksetDescriptor& worksetDesc,
 			}
 		}
 		
-		wkset_count =0;
-		for( auto wkst: worksets )
+		for( LO i=0; i<numWorksets; i++ )
 		{
-			wkst.cell_vertex_coordinates = mdArrayFactory.buildStaticArray<double,panzer::Cell,panzer::NODE,panzer::Dim>(
-			     "cvc",worksets[wkset_count].num_cells, n_nodes, n_dim);
-			wkst.block_id = element_block_name;
-			wkst.subcell_dim = needs.cellData.baseCellDimension();
-			wkst.subcell_index = 0;
-			
+			std::size_t n_ele = worksets[i].num_cells;
+			worksets[i].cell_vertex_coordinates = mdArrayFactory.buildStaticArray<double,panzer::Cell,panzer::NODE,panzer::Dim>(
+			     "cvc", n_ele, n_nodes, n_dim);		
+			worksets[i].block_id = element_block_name;
+			worksets[i].subcell_dim = needs.cellData.baseCellDimension();
+			worksets[i].subcell_index = 0;
+
+            PHX::View<int*> cell_local_ids_k = PHX::View<int*>("Workset:cell_local_ids",n_ele);
+			auto cell_local_ids_k_h = Kokkos::create_mirror_view(cell_local_ids_k);
+			for(std::size_t j=0;j<n_ele;j++)
+				cell_local_ids_k_h(j) = worksets[i].cell_local_ids[j];
+			Kokkos::deep_copy(cell_local_ids_k, cell_local_ids_k_h);
+			worksets[i].cell_local_ids_k = cell_local_ids_k;
+
 			Kokkos::DynRankView<double,PHX::Device> vertex_coordinates;
-			mesh_->getElementVertices( wkst.cell_local_ids, vertex_coordinates );
+			mesh_->getElementVertices( worksets[i].cell_local_ids, vertex_coordinates );
 			
 			// Copy cell vertex coordinates into local workset arrays
-			auto cell_vertex_coordinates = wkst.cell_vertex_coordinates.get_static_view();
-			Kokkos::parallel_for(wkst.num_cells, KOKKOS_LAMBDA (int cell) {
+			auto cell_vertex_coordinates = worksets[i].cell_vertex_coordinates.get_static_view();
+			Kokkos::parallel_for(worksets[i].num_cells, KOKKOS_LAMBDA (int cell) {
 			for (std::size_t vertex = 0; vertex < vertex_coordinates.extent(1); ++ vertex)
 				for (std::size_t dim = 0; dim < vertex_coordinates.extent(2); ++ dim) {
 					cell_vertex_coordinates(cell,vertex,dim) = vertex_coordinates(cell,vertex,dim);
 				}
 			});
-			++wkset_count;
+			std::cout <<  worksets[i] ;
 		}
 	}
+	
+//	return worksets_ptr;
 }
 
 }
