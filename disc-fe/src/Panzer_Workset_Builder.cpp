@@ -76,18 +76,6 @@ panzer::buildBCWorkset(const WorksetNeeds & needs_a,
                        const std::vector<std::size_t>& local_side_ids_b,
                        const Kokkos::DynRankView<double,PHX::Device> & vertex_coordinates_b);
 
-template
-Teuchos::RCP<std::vector<panzer::Workset> > 
-panzer::buildEdgeWorksets(const panzer::WorksetNeeds & needs_a,
-                          const std::string & eblock_a,
-                          const std::vector<std::size_t>& local_cell_ids_a,
-                          const std::vector<std::size_t>& local_side_ids_a,
-                          const Kokkos::DynRankView<double,PHX::Device> & vertex_coordinates_a,
-                          const panzer::WorksetNeeds & needs_b,
-                          const std::string & eblock_b,
-                          const std::vector<std::size_t>& local_cell_ids_b,
-                          const std::vector<std::size_t>& local_side_ids_b,
-                          const Kokkos::DynRankView<double,PHX::Device> & vertex_coordinates_b);
 
 namespace panzer {
 

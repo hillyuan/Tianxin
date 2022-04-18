@@ -242,8 +242,6 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 		//	std::cout <<  worksets[i] ;
 		}
 	}
-	
-//	return worksets_ptr;
 }
 
 }

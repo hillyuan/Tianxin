@@ -86,40 +86,6 @@ namespace panzer {
                  const std::vector<std::size_t>& local_side_ids_b,
                  const ArrayT& vertex_coordinates_b);
 
-  /** This routine supports construction of worksets that are
-    * more DG like. The elements are assumed to shared an
-    * edge (or face) and the side id is specified accordingly.
-    * Note that no checking of "sharing" is done when the workset
-    * is constructed.
-    */
-  template<typename ArrayT>
-  Teuchos::RCP<std::vector<Workset> > 
-  buildEdgeWorksets(const WorksetNeeds & needs_a,
-                   const std::string & eblock_a,
-                    const std::vector<std::size_t>& local_cell_ids_a,
-                   const std::vector<std::size_t>& local_side_ids_a,
-                   const ArrayT& vertex_coordinates_a,
-                   const WorksetNeeds & needs_b,
-                   const std::string & eblock_b,
-                   const std::vector<std::size_t>& local_cell_ids_b,
-                   const std::vector<std::size_t>& local_side_ids_b,
-                   const ArrayT& vertex_coordinates_b);
-
-  template<typename ArrayT>
-  std::vector<Workset>::iterator
-  buildEdgeWorksets(const std::vector<std::size_t> & cell_indices,
-                    const WorksetNeeds & needs_a,
-                    const std::string & eblock_a,
-                    const std::vector<std::size_t>& local_cell_ids_a,
-                    const std::vector<std::size_t>& local_side_ids_a,
-                    const ArrayT& vertex_coordinates_a,
-                    const WorksetNeeds & needs_b,
-                    const std::string & eblock_b,
-                    const std::vector<std::size_t>& local_cell_ids_b,
-                    const std::vector<std::size_t>& local_side_ids_b,
-                    const ArrayT& vertex_coordinates_b,
-                    std::vector<Workset>::iterator beg);
-
   /** Populate basis values and integration values data structures in
     * the WorksetDetails object being passed in. Note that this works for
     * both edge data structures and for volumetric data structures. Note

@@ -162,7 +162,7 @@ namespace panzer {
     TEST_EQUALITY((*worksets[0])[0].block_id, element_blocks[0]);
     TEST_EQUALITY((*worksets[1])[0].block_id, element_blocks[1]);
   }
-
+/*
   TEUCHOS_UNIT_TEST(workset_builder, edge)
   {
 
@@ -302,7 +302,7 @@ namespace panzer {
     }
 
   }
-
+*/
   TEUCHOS_UNIT_TEST(workset_builder, stk_edge)
   {
 
