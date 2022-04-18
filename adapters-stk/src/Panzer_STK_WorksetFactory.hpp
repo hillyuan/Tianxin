@@ -97,7 +97,7 @@ public:
                const panzer::WorksetNeeds & needs) const;
 			   
    void
-   buildWorksets(const panzer::WorksetDescriptor& worksetDesc,
+   generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
                const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& ) const;
 
 private:

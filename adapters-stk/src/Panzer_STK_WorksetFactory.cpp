@@ -157,15 +157,12 @@ getWorksets(const panzer::WorksetDescriptor & worksetDesc,
 }
 
 void
-WorksetFactory :: buildWorksets(const panzer::WorksetDescriptor& worksetDesc,
+WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
     const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& worksets ) const
 {
 	using LO = panzer::LocalOrdinal;
 	panzer::MDFieldArrayFactory mdArrayFactory("",true);
 	
-//	Teuchos::RCP< std::vector<panzer::Workset> > worksets_ptr(new std::vector<panzer::Workset>);
-//    std::vector<panzer::Workset>& worksets = *worksets_ptr;
-
 	std::vector<panzer::GlobalOrdinal> coords;
 	Teuchos::RCP<stk::mesh::MetaData> metaData = mesh_->getMetaData();
     Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh_->getBulkData();
