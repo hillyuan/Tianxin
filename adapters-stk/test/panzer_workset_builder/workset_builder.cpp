@@ -125,17 +125,17 @@ namespace panzer {
     }
 
     std::vector< std::unique_ptr< std::vector<panzer::Workset>> > worksets;
-	Teuchos::RCP<panzer_stk::WorksetFactory> wkstFactory
-       = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
+	panzer_stk::WorksetFactory wkstFactory(mesh);
+    //   = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
 	
     std::size_t i=0;
     for (auto& eb : element_blocks) {
       WorksetDescriptor worksetDescriptor(eb, WorksetSizeType::ALL_ELEMENTS,true,false);
 	  Teuchos::RCP<const panzer::PhysicsBlock> pb = panzer::findPhysicsBlock(eb,physicsBlocks);
 	  std::vector<panzer::Workset> wkset;
-	  wkstFactory->buildWorksets(worksetDescriptor, pb->getWorksetNeeds(), wkset);
+	  wkstFactory.buildWorksets(worksetDescriptor, pb->getWorksetNeeds(), wkset);
 	//  std::cout <<  wkset[0] ;
-    //   Teuchos::RCP< std::vector<panzer::Workset> > wkset = wkstFactory->buildWorksets(worksetDescriptor, pb->getWorksetNeeds() );  
+    //   Teuchos::RCP< std::vector<panzer::Workset> > wkset = wkstFactory.buildWorksets(worksetDescriptor, pb->getWorksetNeeds() );  
       worksets.emplace_back( std::make_unique< std::vector<panzer::Workset> >(wkset) );
 	  
 	  std::vector<std::size_t> local_cell_ids;
