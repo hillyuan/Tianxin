@@ -303,10 +303,12 @@ public:
    /** Get a vector of elements owned by this processor
      */
    void getMyElements(std::vector<stk::mesh::Entity> & elements) const;
+   void getAllElements(std::vector<stk::mesh::Entity> & elements) const;
 
    /** Get a vector of elements owned by this processor on a particular block ID
      */
    void getMyElements(const std::string & blockID,std::vector<stk::mesh::Entity> & elements) const;
+   void getAllElements(const std::string & blockID,std::vector<stk::mesh::Entity> & elements) const;
 
    Kokkos::View<panzer::GlobalOrdinal*> getOwnedGlobalCellIDs() const;
    Kokkos::View<panzer::GlobalOrdinal*> getGhostGlobalCellIDs() const;

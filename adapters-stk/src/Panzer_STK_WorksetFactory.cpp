@@ -170,17 +170,24 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	
 	const std::string& element_block_name = worksetDesc.getElementBlock();
 	Teuchos::RCP<const shards::CellTopology> topo = mesh_->getCellTopology(element_block_name);
-	const unsigned n_dim = topo->getDimension();
-	const unsigned n_nodes = topo->getNodeCount();
+	const int n_dim = topo->getDimension();
+	const int n_nodes = topo->getNodeCount();
+	const int n_celldata = needs.cellData.numCells();
 	if(worksetDesc.useSideset()){
 	} else {
 		int worksetSize = worksetDesc.getWorksetSize();
+		if( worksetSize>0 ) {
+			if( n_celldata>0 && n_celldata<worksetSize ) worksetSize = n_celldata;
+		} else {
+			worksetSize = n_celldata;
+		}
 		const stk::mesh::Part* eb = mesh_->getElementBlockPart(element_block_name);
 		if( !eb ) return;
 		std::vector<stk::mesh::Entity> AllElements;
 		stk::mesh::Selector eselect = metaData->universal_part() & (*eb);
         stk::mesh::EntityRank elementRank = mesh_->getElementRank();
         stk::mesh::get_selected_entities(eselect,bulkData->buckets(elementRank),AllElements);
+		//mesh_->getMyElements(element_block_name,MyElements);std::cout << MyElements.size() << " , " << AllElements.size() << " size\n";
 		for( const auto& ele : AllElements )
 		{
 			const auto lid = mesh_->elementLocalId( ele );
@@ -188,16 +195,16 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 		}
 		int numElements = localEntityIds.size();
 
-		const int wksize = (worksetSize<=0) ? numElements : std::min( worksetSize, numElements );
+		const int wksize = (worksetSize<=0) ?  numElements : std::min( worksetSize, numElements );
 		//if(worksetDesc.getWorksetSize() == panzer::WorksetSizeType::ALL_ELEMENTS)
 		//	wksize = localEntityIds.size();
 		//else
 		//	wksize = std::min( worksetSize, localEntityIds.size() );
-	    int remain = numElements/wksize;
+	    int remain = numElements%wksize;
 	    int numWorksets = (numElements-remain)/wksize;
         if( remain>0 ) ++numWorksets;
         worksets.resize(numWorksets);
-	
+
 	    // create workset with size = wksize
 		LO wkset_count =0;
 		LO local_count =0;

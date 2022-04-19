@@ -138,7 +138,6 @@ public:
     return _basis_descriptors;
   }
 
-  //TEUCHOS_DEPRECATED
   CellData cellData;
 
   //TEUCHOS_DEPRECATED
