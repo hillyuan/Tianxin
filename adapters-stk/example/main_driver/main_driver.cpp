@@ -294,7 +294,7 @@ int main(int argc, char *argv[])
         builder.cubatureDegree = 2;
   
         std::vector<panzer::WorksetDescriptor> sidesets;
-        sidesets.push_back(panzer::sidesetVolumeDescriptor("eblock-0_0","left"));
+        sidesets.push_back(panzer::sidesetDescriptor("eblock-0_0","left"));
   
         fluxResponseLibrary->addResponse("HO-Flux",sidesets,builder);
       }
