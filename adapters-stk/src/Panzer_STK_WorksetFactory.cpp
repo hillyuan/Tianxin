@@ -167,7 +167,8 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	std::vector<panzer::GlobalOrdinal> coords;
 	Teuchos::RCP<stk::mesh::MetaData> metaData = mesh_->getMetaData();
     Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh_->getBulkData();
-	std::vector<std::size_t> localEntityIds;
+	std::vector<std::size_t> local_cell_ids;
+	std::vector<stk::mesh::Entity> elements;
 	
 	const std::string& element_block_name = worksetDesc.getElementBlock();
 	Teuchos::RCP<const shards::CellTopology> topo = mesh_->getCellTopology(element_block_name);
@@ -177,6 +178,12 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	if(worksetDesc.useSideset()){
 		std::vector<stk::mesh::Entity> sideEntities;
 		mesh_->getMySides(worksetDesc.getSideset(),element_block_name,sideEntities);
+		if( sideEntities.empty() ) return;   // no entity in current cpu
+		std::vector<std::size_t> local_side_ids;
+		panzer_stk::workset_utils::getSideElements(*mesh_, element_block_name,sideEntities,local_side_ids,elements);
+		for(const auto& element: elements) {
+			local_cell_ids.emplace_back(mesh_->elementLocalId(element));
+		}
 	} else {
 		int worksetSize = worksetDesc.getWorksetSize();
 		if( worksetSize>0 ) {
@@ -186,23 +193,23 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 		}
 		const stk::mesh::Part* eb = mesh_->getElementBlockPart(element_block_name);
 		if( !eb ) return;
-		std::vector<stk::mesh::Entity> AllElements;
 		stk::mesh::Selector eselect = metaData->universal_part() & (*eb);
         stk::mesh::EntityRank elementRank = mesh_->getElementRank();
-        stk::mesh::get_selected_entities(eselect,bulkData->buckets(elementRank),AllElements);
-		//mesh_->getMyElements(element_block_name,MyElements);std::cout << MyElements.size() << " , " << AllElements.size() << " size\n";
-		for( const auto& ele : AllElements )
+        stk::mesh::get_selected_entities(eselect,bulkData->buckets(elementRank),elements);
+		if( elements.empty() ) return;     // no entity in current cpu
+		//mesh_->getMyElements(element_block_name,MyElements);std::cout << MyElements.size() << " , " << elements.size() << " size\n";
+		for( const auto& ele : elements )
 		{
 			const auto lid = mesh_->elementLocalId( ele );
-			localEntityIds.emplace_back( lid );
+			local_cell_ids.emplace_back( lid );
 		}
-		int numElements = localEntityIds.size();
+		int numElements = local_cell_ids.size();
 
 		const int wksize = (worksetSize<=0) ?  numElements : std::min( worksetSize, numElements );
 		//if(worksetDesc.getWorksetSize() == panzer::WorksetSizeType::ALL_ELEMENTS)
-		//	wksize = localEntityIds.size();
+		//	wksize = local_cell_ids.size();
 		//else
-		//	wksize = std::min( worksetSize, localEntityIds.size() );
+		//	wksize = std::min( worksetSize, local_cell_ids.size() );
 	    int remain = numElements%wksize;
 	    int numWorksets = (numElements-remain)/wksize;
         if( remain>0 ) ++numWorksets;
@@ -213,7 +220,7 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 		LO local_count =0;
 		for( LO i=0; i<numElements; i++ )
 		{
-			worksets[wkset_count].cell_local_ids.emplace_back( localEntityIds[i] );
+			worksets[wkset_count].cell_local_ids.emplace_back( local_cell_ids[i] );
 			++local_count;
 			if( local_count>=wksize ) {
 				worksets[wkset_count].num_cells = local_count;

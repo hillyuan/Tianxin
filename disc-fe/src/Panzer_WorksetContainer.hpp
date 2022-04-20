@@ -96,10 +96,6 @@ public:
    void setFactory(const Teuchos::RCP<const WorksetFactoryBase> & factory)
    { clear(); wkstFactory_ = factory; }
 
-   //! Access the workset factory pointer.
-   Teuchos::RCP<const WorksetFactoryBase> getFactory() const
-   { return wkstFactory_; }
-
    //! set the workset size
    void setWorksetSize(std::size_t worksetSize)
    { worksetSize_ = worksetSize; }
