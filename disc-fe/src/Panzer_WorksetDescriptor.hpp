@@ -95,36 +95,10 @@ public:
   : elementBlock_(elementBlock),
     worksetSize_(worksetSize),
     requiresPartitioning_(requiresPartitioning),
-    applyOrientations_(applyOrientations),
-    sideAssembly_(false)
+    applyOrientations_(applyOrientations)
   {
     TEUCHOS_TEST_FOR_EXCEPTION(elementBlock_=="",std::runtime_error,
                                    "WorksetDescriptor constr: Element block name must be non-empty!");
-  }
-
-  /** Constructor that defines a side set. Note that the
-   * specified sideset must be a non-empty string.
-   *
-   * \param[in] elementBlock Element block that includes the side
-   * \param[in] sideset Side set that is being used
-   * \param[in] sideAssembly Are integration rules and
-   *                         basis functions evaluated on the
-   *                         side or on the volume of the element.
-   */
-  WorksetDescriptor(const std::string & elementBlock,
-                    const std::string & sideset,
-                    const bool sideAssembly)
-  : elementBlock_(elementBlock),
-    sideset_(sideset),
-    worksetSize_(CLASSIC_MODE),
-    requiresPartitioning_(false),
-    applyOrientations_(true),
-    sideAssembly_(sideAssembly)
-  {
-    TEUCHOS_TEST_FOR_EXCEPTION(elementBlock_=="",std::runtime_error,
-                               "WorksetDescriptor constr: Element block name must be non-empty!");
-    TEUCHOS_TEST_FOR_EXCEPTION(sideset_=="",std::runtime_error,
-                               "WorksetDescriptor constr: Side set name must be non-empty!");
   }
 
   /** Constructor that defines a side set. Note that the
@@ -151,8 +125,7 @@ public:
     sideset_(sideset),
     worksetSize_(worksetSize),
     requiresPartitioning_(requiresPartitioning),
-    applyOrientations_(applyOrientations),
-    sideAssembly_(false)
+    applyOrientations_(applyOrientations)
   {
     TEUCHOS_TEST_FOR_EXCEPTION(elementBlock_=="",std::runtime_error,
                                "WorksetDescriptor constr: Element block name must be non-empty!");
@@ -191,8 +164,7 @@ public:
     sideset_2_(sideset_1),
     worksetSize_(worksetSize),
     requiresPartitioning_(requiresPartitioning),
-    applyOrientations_(applyOrientations),
-    sideAssembly_(false)
+    applyOrientations_(applyOrientations)
   {
     TEUCHOS_TEST_FOR_EXCEPTION(elementBlock_=="",std::runtime_error,
                                "WorksetDescriptor constr: Element block 0 name must be non-empty!");
@@ -227,11 +199,6 @@ public:
   const std::string & getSideset(const int block=0) const
   { return (block==0) ? sideset_ : sideset_2_; }
 
-  //! Expects side set assembly on volume
-  //TEUCHOS_DEPRECATED
-  bool sideAssembly() const
-  { return sideAssembly_; }
-//  { return useSideset(); }
 
   /** \brief Identifies this workset as an interface between two element blocks
    *
@@ -255,7 +222,6 @@ public:
 
   //! This descriptor is for a side set.
   bool useSideset() const
-  //{ return useSideset_; }
   { return sideset_ != ""; }
 
   //! Get the requested workset size (default -2 (workset size is set elsewhere), -1 (largest possible workset size), >0 (workset size))
@@ -286,12 +252,6 @@ private:
 
   //! Apply orientations - used for continuous discretizations with edge/face elements
   bool applyOrientations_;
-
-  /** This indicates if side quadrature rules are constructed
-   * or volume rules are constructued. Ignored if useSideset_
-   * is false.
-   */
-  bool sideAssembly_;
 };
 
 //! Equality operation for use with hash tables and maps
@@ -301,7 +261,6 @@ inline bool operator==(const WorksetDescriptor & a,const WorksetDescriptor & b)
     // if side set is in use, check all fields
     return    a.getElementBlock()==b.getElementBlock()
         && a.getSideset()==b.getSideset()
-        && a.sideAssembly()==b.sideAssembly()
         && a.useSideset()==b.useSideset();
   else
     // otherwise check that both descriptor don't use side sets
@@ -317,8 +276,7 @@ inline std::ostream & operator<<(std::ostream & os,const WorksetDescriptor & wd)
   if(wd.useSideset())
     os << "Side descriptor: "
     << "eblock = \"" << wd.getElementBlock() << "\", "
-    << "ss = \"" << wd.getSideset() << "\", "
-    << "side assembly = " << (wd.sideAssembly() ? "on" : "off");
+    << "ss = \"" << wd.getSideset() << "\", ";
   else
     os << "Block descriptor: "
     << "eblock = \"" << wd.getElementBlock() << "\"";
@@ -336,14 +294,7 @@ inline WorksetDescriptor blockDescriptor(const std::string & eBlock)
  */
 //TEUCHOS_DEPRECATED
 inline WorksetDescriptor sidesetDescriptor(const std::string & eBlock,const std::string & sideset)
-{ return WorksetDescriptor(eBlock,sideset,false); }
-
-/** Builds a descriptor specifying a sideset, however specify volumetric terms not
- * surface terms.
- */
-//TEUCHOS_DEPRECATED
-inline WorksetDescriptor sidesetVolumeDescriptor(const std::string & eBlock,const std::string & sideset)
-{ return WorksetDescriptor(eBlock,sideset,true); }
+{ return WorksetDescriptor(eBlock,sideset); }
 
 }
 
@@ -357,7 +308,7 @@ struct hash<panzer::WorksetDescriptor>
     std::string ss = wd.getElementBlock() + std::to_string( static_cast<int>(wd.requiresPartitioning()) )
 	              + std::to_string( wd.getWorksetSize() );
     if(wd.useSideset()) {
-      ss = ss+ wd.getSideset() + std::to_string( static_cast<int>(wd.sideAssembly()) );
+      ss = ss+ wd.getSideset();
     }
 
     return std::hash<std::string>()(ss);

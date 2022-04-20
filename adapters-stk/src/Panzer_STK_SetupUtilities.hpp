@@ -70,27 +70,6 @@ buildWorksets(const panzer_stk::STK_Interface & mesh,
               const std::string & eBlock,
               const panzer::WorksetNeeds & needs);
 
-/** Build volumetric worksets for a STK mesh with elements that touch a particular sideset.
-  *
-  * \param[in] mesh A pointer to the STK_Interface used to construct the worksets
-  * \param[in] needs Needs associated with the element block
-  * \param[in] workset_size The size of each workset measured in the number of elements
-  * \param[in] sideset The sideset id used to locate volume elements associated with the sideset
-  * \param[in] eBlock Element block to build worksets over (the descriptor information)
-  * \param[in] useCascade If true, worksets will be built for every local node, edge and face
-  *                       that touches the side set. Note that this implies that the workset
-  *                       will have repeated elements. This is useful for higher-order surface
-  *                       flux calculations.
-  *
-  * \returns vector of worksets for the corresponding element block.
-  */
-Teuchos::RCP<std::vector<panzer::Workset> >  
-buildWorksets(const panzer_stk::STK_Interface & mesh,
-              const panzer::WorksetNeeds & needs,
-              const std::string & sideset,
-              const std::string & eBlock,
-              bool useCascade=false);
-
 /** Build side worksets with elements on both sides (this is for DG)
   *
   * \param[in] mesh A pointer to the STK_Interface used to construct the worksets

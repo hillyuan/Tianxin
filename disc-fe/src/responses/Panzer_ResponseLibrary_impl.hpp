@@ -278,14 +278,11 @@ addResponse(const std::string & responseName,
             const std::vector<WorksetDescriptor> & wkst_desc,
             const ResponseEvaluatorFactory_BuilderT & builder) 
 {
-  using Teuchos::RCP;
-  using Teuchos::rcp;
-
   TEUCHOS_TEST_FOR_EXCEPTION(residualType_,std::invalid_argument,
                              "panzer::ResponseLibrary::addResponse: Method can't be called when the "
                              "response library is a \"residualType\"!");
 
-  if(wkst_desc[0].useSideset() && !wkst_desc[0].sideAssembly()) {
+  if(wkst_desc[0].useSideset()) {
     // this is a simple side integration, use the "other" addResponse method
 
     std::vector<std::pair<std::string,std::string> > sideset_blocks;
@@ -302,8 +299,8 @@ addResponse(const std::string & responseName,
   }
 
   // build response factory objects for each evaluation type
-  RCP<ResponseEvaluatorFactory_TemplateManager<TraitsT> > modelFact_tm
-       = rcp(new ResponseEvaluatorFactory_TemplateManager<TraitsT>);
+  Teuchos::RCP<ResponseEvaluatorFactory_TemplateManager<TraitsT> > modelFact_tm
+       = Teuchos::rcp(new ResponseEvaluatorFactory_TemplateManager<TraitsT>);
   modelFact_tm->buildObjects(builder);
 
   addResponse(responseName,wkst_desc,modelFact_tm);

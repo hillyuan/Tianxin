@@ -145,18 +145,11 @@ namespace panzer_stk {
 	  }
     }
 
-    {
+   /* {
       RCP<std::vector<panzer::Workset> > worksets
          = wkstFactory.getWorksets(panzer::sidesetVolumeDescriptor("eblock-0_0","left"),
                                     physics_blocks[0]->getWorksetNeeds());
 
-	//  std::vector<panzer::Workset> worksets0;
-    //  wkstFactory.generateWorksets(panzer::sidesetVolumeDescriptor("eblock-0_0","left"),
-    //                               physics_blocks[0]->getWorksetNeeds(),worksets0);
-	  
-	//  std::vector<stk::mesh::Entity> elements;
-	//  mesh->getAllElements("eblock-0_0", elements);
-//std::cout << tcomm->getRank()<< ","  << elements.size()  <<  "," << worksets0.size() << "    eeeelel\n";
       if(tcomm->getRank()==0) {
         TEST_ASSERT(worksets!=Teuchos::null);
         TEST_EQUALITY(worksets->size(),6);
@@ -196,7 +189,7 @@ namespace panzer_stk {
         TEST_EQUALITY(worksets->size(),0);
       }
 
-    }
+    }*/
   }
 /*
   TEUCHOS_UNIT_TEST(volumetric_side_response, test_wkst2)

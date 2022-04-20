@@ -174,7 +174,7 @@ namespace panzer {
 
     // check side set worksets, both for deviation from 0 (required) and number
     // of unique identifiers
-    {
+  /*  {
       Teuchos::RCP<std::map<unsigned,Workset> > rcp_worksets = wkstContainer->getSideWorksets(sidesetVolumeDescriptor(element_block,sideset));
 
 
@@ -194,6 +194,6 @@ namespace panzer {
         // check uniqueness of identifiers
         TEST_EQUALITY(worksets.size(),identifiers.size());
       }
-    }
+    }*/
   }
 }

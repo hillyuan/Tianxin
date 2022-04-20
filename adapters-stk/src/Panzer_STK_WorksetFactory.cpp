@@ -147,12 +147,13 @@ getWorksets(const panzer::WorksetDescriptor & worksetDesc,
       return panzer_stk::buildWorksets(*mesh_,worksetDesc.getElementBlock(), tmpNeeds);
     }
   }
-  else if(worksetDesc.useSideset() && worksetDesc.sideAssembly()) {
-    // uses cascade by default, each subcell has its own workset
-    return panzer_stk::buildWorksets(*mesh_,needs,worksetDesc.getSideset(),worksetDesc.getElementBlock(),true);
-  }
   else {
-    TEUCHOS_ASSERT(false);
+    // uses cascade by default, each subcell has its own workset
+    //return panzer_stk::buildWorksets(*mesh_,needs,worksetDesc.getSideset(),worksetDesc.getElementBlock(),true);
+//	return panzer_stk::buildBCWorksets(*mesh_,needs,worksetDesc.getElementBlock(),worksetDesc.getSideset());
+//  }
+//  else {
+//    TEUCHOS_ASSERT(false);
   }
 }
 
