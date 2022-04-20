@@ -153,7 +153,7 @@ getWorksets(const panzer::WorksetDescriptor & worksetDesc,
 //	return panzer_stk::buildBCWorksets(*mesh_,needs,worksetDesc.getElementBlock(),worksetDesc.getSideset());
 //  }
 //  else {
-//    TEUCHOS_ASSERT(false);
+    TEUCHOS_ASSERT(false);
   }
 }
 
@@ -174,8 +174,10 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	const int n_dim = topo->getDimension();
 	const int n_nodes = topo->getNodeCount();
 	const int n_celldata = needs.cellData.numCells();
-	//if(worksetDesc.useSideset()){
-	//} else {
+	if(worksetDesc.useSideset()){
+		std::vector<stk::mesh::Entity> sideEntities;
+		mesh_->getMySides(worksetDesc.getSideset(),element_block_name,sideEntities);
+	} else {
 		int worksetSize = worksetDesc.getWorksetSize();
 		if( worksetSize>0 ) {
 			if( n_celldata>0 && n_celldata<worksetSize ) worksetSize = n_celldata;
@@ -248,7 +250,7 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 				}
 			});
 		//	std::cout <<  worksets[i] ;
-		//}
+		}
 	}
 }
 
