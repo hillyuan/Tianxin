@@ -258,7 +258,7 @@ setupBCFieldManagers(const std::vector<panzer::BC> & bcs,
             "panzer::FMB::setupBCFieldManagers: Cannot find physics block corresponding to element block \""
             << element_block_id << "\"");
 
-          const Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(element_block_id)->second;
+          const Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = volume_pb_itr->second;
           const Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
 
           // register evaluators from strategy
@@ -324,7 +324,7 @@ setupBCFieldManagers(const std::vector<panzer::BC> & bcs,
       TEUCHOS_TEST_FOR_EXCEPTION(volume_pb_itr==physicsBlocks_map.end(),std::logic_error,
 				 "panzer::FMB::setupBCFieldManagers: Cannot find physics block corresponding to element block \"" << element_block_id << "\"");
 
-      Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(element_block_id)->second;
+      Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = volume_pb_itr->second;
       Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
 
       // Build one FieldManager for each local side workset for each dirichlet bc
@@ -332,15 +332,13 @@ setupBCFieldManagers(const std::vector<panzer::BC> & bcs,
         bc_field_managers_[*bc];
 
       // Loop over local face indices and setup each field manager
-      for (std::map<unsigned,panzer::Workset>::const_iterator wkst =
-	     currentWkst->begin(); wkst != currentWkst->end();
-	   ++wkst) {
+      for (const auto& wkst : *currentWkst) {
 
-        PHX::FieldManager<panzer::Traits>& fm = field_managers[wkst->first];
+        PHX::FieldManager<panzer::Traits>& fm = field_managers[wkst.first];
 
         // register evaluators from strategy
-        const panzer::CellData side_cell_data(wkst->second.num_cells,
-	                                      wkst->first,volume_cell_topology);
+        const panzer::CellData side_cell_data(wkst.second.num_cells,
+	                                      wkst.first,volume_cell_topology);
 
 	// Copy the physics block for side integrations
 	Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
@@ -365,7 +363,7 @@ setupBCFieldManagers(const std::vector<panzer::BC> & bcs,
 	Traits::SD setupData;
 	Teuchos::RCP<std::vector<panzer::Workset> > worksets =
 	  Teuchos::rcp(new(std::vector<panzer::Workset>));
-	worksets->push_back(wkst->second);
+	worksets->push_back(wkst.second);
 	setupData.worksets_ = worksets;
         setupData.orientations_ = getWorksetContainer()->getOrientations();
 

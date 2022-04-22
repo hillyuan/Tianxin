@@ -304,23 +304,14 @@ evaluateBCs(const panzer::BCType bc_type,
   
     // Must do all neumann before all dirichlet so we need a double loop
     // here over all bcs
-    typedef typename std::map<panzer::BC, 
-      std::map<unsigned,PHX::FieldManager<panzer::Traits> >,
-      panzer::LessBC>::const_iterator bcfm_it_type;
-
-    // loop over bcs
-    for (bcfm_it_type bcfm_it = bc_field_managers.begin(); 
-         bcfm_it != bc_field_managers.end(); ++bcfm_it) {
-      
-      const panzer::BC& bc = bcfm_it->first;
-      const std::map<unsigned,PHX::FieldManager<panzer::Traits> > bc_fm = 
-        bcfm_it->second;
+    for (const auto& bcfm_it : bc_field_managers) {
+      const panzer::BC& bc = bcfm_it.first;
+      const std::map<unsigned,PHX::FieldManager<panzer::Traits> >& bc_fm = bcfm_it.second;
    
       panzer::WorksetDescriptor desc = panzer::bcDescriptor(bc);
       Teuchos::RCP<const std::map<unsigned,panzer::Workset> > bc_wkst_ptr = wkstContainer->getSideWorksets(desc);
       TEUCHOS_TEST_FOR_EXCEPTION(bc_wkst_ptr == Teuchos::null, std::logic_error,
                          "Failed to find corresponding bc workset!");
-      const std::map<unsigned,panzer::Workset>& bc_wkst = *bc_wkst_ptr;
 
       // Only process bcs of the appropriate type (neumann or dirichlet)
       if (bc.bcType() == bc_type) {
@@ -332,24 +323,24 @@ evaluateBCs(const panzer::BCType bc_type,
 #endif
 
         // Loop over local faces
-        for (std::map<unsigned,PHX::FieldManager<panzer::Traits> >::const_iterator side = bc_fm.begin(); side != bc_fm.end(); ++side) {
+        for (const auto& side : bc_fm) {
           std::ostringstream timerSideName;
-          timerSideName << "panzer::AssemblyEngine::evaluateBCs: " << bc.identifier() << ", side=" << side->first;
+          timerSideName << "panzer::AssemblyEngine::evaluateBCs: " << bc.identifier() << ", side=" << side.first;
 #ifdef PANZER_TEUCHOS_TIME_MONITOR
         auto timer2 = Teuchos::TimeMonitor::getNewTimer(timerSideName.str());
         Teuchos::TimeMonitor tm2(*timer2);
 #endif
 
           // extract field manager for this side  
-          unsigned local_side_index = side->first;
+          unsigned local_side_index = side.first;
           PHX::FieldManager<panzer::Traits>& local_side_fm = 
-            const_cast<PHX::FieldManager<panzer::Traits>& >(side->second);
+            const_cast<PHX::FieldManager<panzer::Traits>& >(side.second);
           
           // extract workset for this side: only one workset per face
           std::map<unsigned,panzer::Workset>::const_iterator wkst_it = 
-            bc_wkst.find(local_side_index);
+            bc_wkst_ptr->find(local_side_index);
           
-          TEUCHOS_TEST_FOR_EXCEPTION(wkst_it == bc_wkst.end(), std::logic_error,
+          TEUCHOS_TEST_FOR_EXCEPTION(wkst_it == bc_wkst_ptr->end(), std::logic_error,
                              "Failed to find corresponding bc workset side!");
           
           panzer::Workset& workset = 
