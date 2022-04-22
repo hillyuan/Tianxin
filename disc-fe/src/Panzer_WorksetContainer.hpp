@@ -138,10 +138,12 @@ public:
    const WorksetNeeds & lookupNeeds(const std::string & eBlock) const;
 
    //! Access to volume worksets
-   Teuchos::RCP<std::vector<Workset> > getWorksets(const WorksetDescriptor & wd);
+   Teuchos::RCP<std::vector<Workset> > getWorksets(const WorksetDescriptor& wd);
+   Teuchos::RCP<std::vector<Workset> > generateWorksets(const WorksetDescriptor& wd);
 
    //! Access, and construction of side worksets
    Teuchos::RCP<std::map<unsigned,Workset> > getSideWorksets(const WorksetDescriptor & desc);
+   Teuchos::RCP<std::map<unsigned,Workset> > generateSideWorksets(const WorksetDescriptor & desc);
 
    /** Set the global indexer. This is used solely for accessing the
      * orientations.

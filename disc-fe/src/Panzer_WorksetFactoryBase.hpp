@@ -78,12 +78,22 @@ public:
    getSideWorksets(const panzer::WorksetDescriptor & desc,
 		   const panzer::WorksetNeeds & needs) const = 0;
 
+   virtual
+   Teuchos::RCP<std::map<unsigned,panzer::Workset> > 
+   generateSideWorksets(const panzer::WorksetDescriptor & desc,
+		   const panzer::WorksetNeeds & needs) const = 0;
+
    /** Build workssets specified by the workset descriptor.
      */
    virtual
    Teuchos::RCP<std::vector<panzer::Workset> >
    getWorksets(const WorksetDescriptor & worksetDesc,
                const panzer::WorksetNeeds & needs) const = 0;
+
+   virtual void
+   generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
+              const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& ) const = 0;
+
 
    /**
     * \brief Used to apply orientations to any bases added to the worksets

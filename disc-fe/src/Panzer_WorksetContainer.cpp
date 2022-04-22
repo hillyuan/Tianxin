@@ -139,9 +139,75 @@ WorksetContainer::getWorksets(const WorksetDescriptor & wd)
    return worksetVector;
 }
 
+Teuchos::RCP<std::vector<Workset> >
+WorksetContainer::generateWorksets(const WorksetDescriptor & wd)
+{
+   Teuchos::RCP<std::vector<Workset> > worksetVector;
+   std::vector<Workset> worksets;
+   WorksetMap::iterator itr = worksets_.find(wd);
+   if(itr==worksets_.end()) {
+      // couldn't find workset, build it!
+      WorksetNeeds needs;
+      if(hasNeeds())
+        needs = lookupNeeds(wd.getElementBlock());
+      wkstFactory_->generateWorksets(wd,needs,*worksetVector);
+
+      // apply orientations to the just constructed worksets
+      if(!worksetVector->empty() && wd.applyOrientations()) {
+        applyOrientations(wd.getElementBlock(),*worksetVector);
+      }
+
+      if(!worksetVector->empty())
+        setIdentifiers(wd,*worksetVector);
+
+      // store vector for reuse in the future
+      worksets_[wd] = worksetVector;
+   }
+   else
+      worksetVector = itr->second;
+
+   return worksetVector;
+}
+
 //! Access, and construction of side worksets
 Teuchos::RCP<std::map<unsigned,Workset> >
 WorksetContainer::getSideWorksets(const WorksetDescriptor & desc)
+{
+   Teuchos::RCP<std::map<unsigned,Workset> > worksetMap;
+
+   // this is the key for the workset map
+   SideMap::iterator itr = sideWorksets_.find(desc);
+
+   if(itr==sideWorksets_.end()) {
+      // couldn't find workset, build it!
+      if (desc.connectsElementBlocks()) {
+        worksetMap = wkstFactory_->getSideWorksets(desc, lookupNeeds(desc.getElementBlock(0)),
+                                                         lookupNeeds(desc.getElementBlock(1)));
+      }
+      else {
+        worksetMap = wkstFactory_->getSideWorksets(desc,lookupNeeds(desc.getElementBlock(0)));
+      }
+
+      // apply orientations to the worksets for this side
+      if(worksetMap!=Teuchos::null)
+        applyOrientations(desc,*worksetMap);
+
+      if(worksetMap!=Teuchos::null)
+        setIdentifiers(desc,*worksetMap);
+
+      // store map for reuse in the future
+      sideWorksets_[desc] = worksetMap;
+   }
+   else {
+      worksetMap = itr->second;
+   }
+
+   return worksetMap;
+}
+
+//! Access, and construction of side worksets
+Teuchos::RCP<std::map<unsigned,Workset> >
+WorksetContainer::generateSideWorksets(const WorksetDescriptor & desc)
 {
    Teuchos::RCP<std::map<unsigned,Workset> > worksetMap;
 
