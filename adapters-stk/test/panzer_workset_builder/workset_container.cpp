@@ -112,8 +112,7 @@ namespace panzer {
     
     RCP<panzer_stk::WorksetFactory> wkstFactory 
        = rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
-    RCP<panzer::WorksetContainer> wkstContainer     // attach it to a workset container (uses lazy evaluation)
-       = rcp(new panzer::WorksetContainer);
+    panzer::WorksetContainer wkstContainer;
 
     // I'm surprised the needs are required
     { 
@@ -121,17 +120,17 @@ namespace panzer {
       WorksetNeeds needs;
       needs.cellData = CellData(workset_size,mesh->getCellTopology(element_block));
       needs.addBasis(basis_desc);
-      wkstContainer->setNeeds(element_block,needs);
+      wkstContainer.setNeeds(element_block,needs);
     }
 
-    wkstContainer->setFactory(wkstFactory);
-    wkstContainer->setGlobalIndexer(dof_manager);
-    wkstContainer->setWorksetSize(workset_size);
+    wkstContainer.setFactory(wkstFactory);
+    wkstContainer.setGlobalIndexer(dof_manager);
+    wkstContainer.setWorksetSize(workset_size);
 
     // check volume worksets, both for deviation from 0 (required) and number
     // of unique identifiers
     {
-      std::vector<Workset> & worksets = *wkstContainer->getWorksets(blockDescriptor(element_block));
+      std::vector<Workset> & worksets = *wkstContainer.generateWorksets(blockDescriptor(element_block));
 
       std::set<std::size_t> identifiers;
       for(auto wkst : worksets) {
@@ -149,7 +148,7 @@ namespace panzer {
     // of unique identifiers
     {
 
-      Teuchos::RCP<std::map<unsigned,Workset> > rcp_worksets = wkstContainer->getSideWorksets(sidesetDescriptor(element_block,sideset));
+      Teuchos::RCP<std::map<unsigned,Workset> > rcp_worksets = wkstContainer.getSideWorksets(sidesetDescriptor(element_block,sideset));
 
       // because this is a boundary workset, sometimes these things are not relevant
       if(rcp_worksets!=Teuchos::null) {
