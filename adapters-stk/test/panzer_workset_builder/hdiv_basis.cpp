@@ -122,18 +122,17 @@ namespace panzer {
 
     RCP<panzer_stk::WorksetFactory> wkstFactory
        = rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
-    RCP<panzer::WorksetContainer> wkstContainer     // attach it to a workset container (uses lazy evaluation)
-       = rcp(new panzer::WorksetContainer);
-    wkstContainer->setFactory(wkstFactory);
+    panzer::WorksetContainer wkstContainer;     // attach it to a workset container (uses lazy evaluation)
+    wkstContainer.setFactory(wkstFactory);
     {
       WorksetNeeds needs;
       needs.addBasis(hdiv_basis_desc);
       needs.addBasis(hcurl_basis_desc);
       needs.addPoint(hdiv_basis_desc.getPointDescriptor());
-      wkstContainer->setNeeds(element_block,needs);
+      wkstContainer.setNeeds(element_block,needs);
     }
-    wkstContainer->setGlobalIndexer(dof_manager);
-    wkstContainer->setWorksetSize(workset_size);
+    wkstContainer.setGlobalIndexer(dof_manager);
+    wkstContainer.setWorksetSize(workset_size);
 
     out << "workset container setup [complete]" << std::endl;
 
@@ -143,7 +142,10 @@ namespace panzer {
 
     //  this must use this descriptor!
     panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true,true);
-    std::vector<Workset> & worksets = *wkstContainer->getWorksets(workset_descriptor);
+    std::vector<Workset> & worksets = *wkstContainer.generateWorksets(workset_descriptor);
+	
+//	for( const auto& wk: worksets )
+//		std::cout << wk << std::endl;
 
     out << "getting worksets [complete]" << std::endl;
 

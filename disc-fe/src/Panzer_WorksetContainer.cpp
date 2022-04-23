@@ -143,24 +143,24 @@ Teuchos::RCP<std::vector<Workset> >
 WorksetContainer::generateWorksets(const WorksetDescriptor & wd)
 {
    Teuchos::RCP<std::vector<Workset> > worksetVector;
-   std::vector<Workset> worksets;
    WorksetMap::iterator itr = worksets_.find(wd);
    if(itr==worksets_.end()) {
       // couldn't find workset, build it!
       WorksetNeeds needs;
       if(hasNeeds())
         needs = lookupNeeds(wd.getElementBlock());
-      wkstFactory_->generateWorksets(wd,needs,*worksetVector);
+	 // std::vector<Workset> wksets;
+      worksetVector = wkstFactory_->generateWorksets(wd,needs);
 
       // apply orientations to the just constructed worksets
       if(!worksetVector->empty() && wd.applyOrientations()) {
         applyOrientations(wd.getElementBlock(),*worksetVector);
       }
 
-      if(!worksetVector->empty())
-        setIdentifiers(wd,*worksetVector);
+      if(!worksetVector->empty()) setIdentifiers(wd,*worksetVector);
 
       // store vector for reuse in the future
+	//  worksetVector = Teuchos::rcpFromRef( wksets );
       worksets_[wd] = worksetVector;
    }
    else
@@ -298,9 +298,9 @@ applyOrientations(const Teuchos::RCP<const panzer::GlobalIndexer> & ugi)
 }
 
 void WorksetContainer::
-setIdentifiers(const WorksetDescriptor & wd,std::vector<Workset> & worksets)
+setIdentifiers(const WorksetDescriptor& wd,std::vector<Workset> & worksets)
 {
-  std::size_t hash = std::hash<WorksetDescriptor>()(wd); // this is really ugly, is this really a C++ standard?
+  std::size_t hash = std::hash<WorksetDescriptor>()(wd); 
   for(std::size_t i=0;i<worksets.size();i++)
     worksets[i].setIdentifier(hash+i);
 }

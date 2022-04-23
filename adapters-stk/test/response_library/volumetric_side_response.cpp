@@ -137,7 +137,7 @@ namespace panzer_stk {
 
       TEST_ASSERT(!worksets.empty());
 	  std::vector<stk::mesh::Entity> elements;
-	  mesh->getAllElements("eblock-1_0", elements);
+	  mesh->getMyElements("eblock-1_0", elements);
 	  if( elements.size()%3>0 ) {
 		TEST_EQUALITY(worksets.size(),std::size_t(1.0+elements.size()/3.0));
 	  } else {

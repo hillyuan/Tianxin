@@ -416,7 +416,6 @@ getPointValues(const panzer::PointDescriptor & description) const
 {
   TEUCHOS_ASSERT(setup_);
 
-
   // Check if exists
   const auto itr = point_values_map_.find(description.getKey());
   if(itr != point_values_map_.end())
