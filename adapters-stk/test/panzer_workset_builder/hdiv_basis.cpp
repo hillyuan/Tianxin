@@ -143,9 +143,6 @@ namespace panzer {
     //  this must use this descriptor!
     panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true,true);
     std::vector<Workset> & worksets = *wkstContainer.generateWorksets(workset_descriptor);
-	
-//	for( const auto& wk: worksets )
-//		std::cout << wk << std::endl;
 
     out << "getting worksets [complete]" << std::endl;
 
@@ -270,22 +267,22 @@ namespace panzer {
 
     RCP<panzer_stk::WorksetFactory> wkstFactory
        = rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
-    RCP<panzer::WorksetContainer> wkstContainer     // attach it to a workset container (uses lazy evaluation)
-       = rcp(new panzer::WorksetContainer);
-    wkstContainer->setFactory(wkstFactory);
+    panzer::WorksetContainer wkstContainer; 
+    wkstContainer.setFactory(wkstFactory);
     {
       WorksetNeeds needs;
       needs.bases.push_back(Teuchos::rcp(new panzer::PureBasis(hdiv_basis_desc,mesh->getCellTopology(element_block),workset_size)));
       needs.bases.push_back(Teuchos::rcp(new panzer::PureBasis(hcurl_basis_desc,mesh->getCellTopology(element_block),workset_size)));
       needs.rep_field_name.push_back("B");
       needs.rep_field_name.push_back("E");
+	  needs.addIntegrator( quad_desc );
       needs.int_rules.push_back(Teuchos::rcp(new panzer::IntegrationRule(quad_desc,mesh->getCellTopology(element_block),workset_size)));
       needs.cellData = CellData(workset_size,mesh->getCellTopology(element_block));
 
-      wkstContainer->setNeeds(element_block,needs);
+      wkstContainer.setNeeds(element_block,needs);
     }
-    wkstContainer->setGlobalIndexer(dof_manager);
-    wkstContainer->setWorksetSize(workset_size);
+    wkstContainer.setGlobalIndexer(dof_manager);
+    wkstContainer.setWorksetSize(workset_size);
 
     out << "workset container setup [complete]" << std::endl;
 
@@ -296,7 +293,9 @@ namespace panzer {
     //  this must use this descriptor!
     // panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true,true);
     panzer::WorksetDescriptor workset_descriptor(element_block);
-    std::vector<Workset> & worksets = *wkstContainer->getWorksets(workset_descriptor);
+    std::vector<Workset> & worksets = *wkstContainer.getWorksets(workset_descriptor);
+	
+	//for( const auto& wk: worksets ) std::cout << wk << std::endl;
 
     out << "getting worksets [complete]" << std::endl;
 

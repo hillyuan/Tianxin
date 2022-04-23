@@ -367,6 +367,7 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 			++local_count;
 			if( local_count>=wksize ) {
 				worksets_ptr->at(wkset_count).num_cells = local_count;
+				worksets_ptr->at(wkset_count).setNumeberOwnedCells(local_count);
 				++wkset_count;
 				local_count = 0;
 			}
@@ -378,7 +379,7 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 			worksets_ptr->at(i).cell_vertex_coordinates = mdArrayFactory.buildStaticArray<double,panzer::Cell,panzer::NODE,panzer::Dim>(
 			     "cvc", n_ele, n_nodes, n_dim);		
 			worksets_ptr->at(i).block_id = element_block_name;
-			worksets_ptr->at(i).subcell_dim = n_dim-1;
+			worksets_ptr->at(i).subcell_dim = n_dim;
 			worksets_ptr->at(i).subcell_index = 0;
 			worksets_ptr->at(i).setTopology(topo);
 
@@ -403,7 +404,7 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 			
 			worksets_ptr->at(i).setSetup(true);
 			// Initialize IntegrationValues from integration descriptors
-			const auto& integs = needs.getIntegrators();
+			const auto& integs = needs.getIntegrators();std::cout << integs.size() <<  " aaaa\n";
 			for(const auto & id : integs)
 				worksets_ptr->at(i).getIntegrationValues(id);
 
