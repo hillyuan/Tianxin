@@ -296,6 +296,12 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	}
 }
 
+Teuchos::RCP<panzer::FaceConnectivity>
+WorksetFactory :: generateFaceConnectivity(std::vector<std::size_t>& local_cells) const
+{
+	Teuchos::RCP<panzer::FaceConnectivity> pFace = Teuchos::rcp(new panzer::FaceConnectivity);
+	return pFace;
+}
 
 Teuchos::RCP<std::vector<panzer::Workset> > WorksetFactory::
 WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
@@ -306,9 +312,9 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	
 	Teuchos::RCP<std::vector<panzer::Workset> > worksets_ptr = Teuchos::rcp(new std::vector<panzer::Workset>);
 	
-	std::vector<panzer::GlobalOrdinal> coords;
-	Teuchos::RCP<stk::mesh::MetaData> metaData = mesh_->getMetaData();
-    Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh_->getBulkData();
+//	std::vector<panzer::GlobalOrdinal> coords;
+//	Teuchos::RCP<stk::mesh::MetaData> metaData = mesh_->getMetaData();
+//    Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh_->getBulkData();
 	std::vector<std::size_t> local_cell_ids;
 	std::vector<stk::mesh::Entity> elements;
 	

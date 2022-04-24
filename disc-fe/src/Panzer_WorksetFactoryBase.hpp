@@ -50,6 +50,7 @@
 #include "Panzer_Workset.hpp"
 #include "Panzer_WorksetDescriptor.hpp"
 #include "Panzer_WorksetNeeds.hpp"
+#include "Panzer_SubcellConnectivity.hpp"
 
 namespace panzer {
 
@@ -98,6 +99,9 @@ public:
    virtual void
    generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
               const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& ) const = 0;
+			  
+   virtual Teuchos::RCP<panzer::FaceConnectivity>
+   generateFaceConnectivity(std::vector<std::size_t>& local_cells) const = 0;
 
 
    /**

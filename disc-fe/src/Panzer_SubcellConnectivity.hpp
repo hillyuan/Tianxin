@@ -162,7 +162,7 @@ public:
   inline
   int localSubcellForSubcellHost(const int subcell, const int local_cell_index) const;
 
-protected:
+public:
 
   /// Adjacency array for indexing into subcell_to_cells array
   PHX::View<int*> _subcell_to_cells_adj;
@@ -191,8 +191,7 @@ protected:
  *
  * \brief Generates a SubcellConnectivity associated with faces and cells given a partition of the local mesh
  */
-class FaceConnectivity:
-    public SubcellConnectivity
+class FaceConnectivity: public SubcellConnectivity
 {
 public:
 

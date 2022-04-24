@@ -109,6 +109,9 @@ public:
    virtual void
    generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
                const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& ) const;
+			   
+   virtual Teuchos::RCP<panzer::FaceConnectivity>
+   generateFaceConnectivity(std::vector<std::size_t>& local_cells) const;
 
 private:
 
