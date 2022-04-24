@@ -297,9 +297,17 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 }
 
 Teuchos::RCP<panzer::FaceConnectivity>
-WorksetFactory :: generateFaceConnectivity(std::vector<std::size_t>& local_cells) const
+WorksetFactory :: generateFaceConnectivity(const std::string& eblock, const std::vector<std::size_t>& mycells)
 {
+	if( elegid_by_face.data() == NULL )
+		mesh_->getSideToElementsMap(elegid_by_face,elelid_by_face);
 	Teuchos::RCP<panzer::FaceConnectivity> pFace = Teuchos::rcp(new panzer::FaceConnectivity);
+	
+	Teuchos::RCP<const shards::CellTopology> topo=mesh_->getCellTopology(eblock);
+	const int space_dim= topo->getDimension();
+	const int faces_per_cell = topo->getSubcellCount(space_dim-1);
+	const int n_mycells = mycells.size();
+	int n_myfaces = 0;
 	return pFace;
 }
 

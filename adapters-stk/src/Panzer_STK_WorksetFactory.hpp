@@ -111,7 +111,7 @@ public:
                const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& ) const;
 			   
    virtual Teuchos::RCP<panzer::FaceConnectivity>
-   generateFaceConnectivity(std::vector<std::size_t>& local_cells) const;
+   generateFaceConnectivity(const std::string&, const std::vector<std::size_t>& local_cells);
 
 private:
 
@@ -122,7 +122,10 @@ private:
    // workset descriptor requiers it
    /// Alternative form of mesh
    mutable Teuchos::RCP<const panzer::LocalMeshInfo> mesh_info_;
-
+   
+   // working temp : global and local face id neighboring an element
+   Kokkos::View<panzer::GlobalOrdinal*[2]> elegid_by_face;
+   Kokkos::View<panzer::LocalOrdinal*[2]> elelid_by_face;
 
 };
 

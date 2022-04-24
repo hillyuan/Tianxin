@@ -101,7 +101,7 @@ public:
               const panzer::WorksetNeeds& needs, std::vector<panzer::Workset>& ) const = 0;
 			  
    virtual Teuchos::RCP<panzer::FaceConnectivity>
-   generateFaceConnectivity(std::vector<std::size_t>& local_cells) const = 0;
+   generateFaceConnectivity(const std::string&, const std::vector<std::size_t>&) = 0;
 
 
    /**

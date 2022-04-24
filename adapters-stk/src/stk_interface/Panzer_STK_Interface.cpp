@@ -2132,6 +2132,64 @@ void STK_Interface::getSideToElementsMap(Kokkos::View<panzer::GlobalOrdinal*[2]>
 	}
 }
 
+void STK_Interface::getSideToElementsMap(std::vector<std::pair<panzer::GlobalOrdinal,panzer::GlobalOrdinal>>& f2e, 
+		std::vector<std::pair<panzer::LocalOrdinal,panzer::LocalOrdinal>>& f2e_l) const
+{
+	std::vector<stk::mesh::Entity> faces;
+	panzer::GlobalOrdinal fg[2],fl[2];
+	// setup local ownership
+    stk::mesh::Selector ownedPart = (metaData_->locally_owned_part() | metaData_->globally_shared_part());
+
+   // grab elements
+    stk::mesh::EntityRank sideRank = getSideRank();
+    stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(sideRank),faces);
+	std::size_t nfaces = faces.size();
+	for( std::size_t j=0; j<nfaces; ++j ) {
+		const auto& s = faces[j];
+		const auto& sid = bulkData_->identifier( s );
+		unsigned numElems = bulkData_->num_elements(s);
+		if( numElems<=0 ) continue;
+		if( numElems>2 ) {
+			std::cout << numElems << " elements attached to a side, it is impossible!";
+			continue;
+		}
+		const stk::mesh::Entity* elems = bulkData_->begin_elements(s);
+		fg[0] = -1; fg[1] = -1;
+		fl[0] = -1; fl[1] = -3;
+		for (unsigned i=0; i<numElems; ++i) {
+			stk::mesh::Entity elem = elems[i];
+			const auto& gid = bulkData_->identifier( elem );
+			fg[i] = gid-1;
+			unsigned numSides = bulkData_->num_sides(elem);
+			if( numSides<=0 ) continue;
+			const stk::mesh::Entity* sides = bulkData_->begin(elem, sideRank);
+			for (unsigned is=0; is<numSides; ++is) {
+				if( bulkData_->identifier( sides[is] ) == sid ) {
+					fl[i] = is; break;
+				}
+			}
+			f2e.emplace_back( std::make_pair(fg[0],fg[1]) );
+			f2e_l.emplace_back( std::make_pair(fl[0],fl[1]) );
+		//	std::cout << gid << ", " << this->elementLocalId(gid) << ", " << this->elementLocalId(elem) << std::endl;
+		}
+	//	if( f2e(j,1)>-1 && f2e(j,0)>f2e(j,1) )
+	//		std::swap(f2e(j,0),f2e(j,1));
+	}
+}
+
+void STK_Interface::getLocalSides( std::vector<panzer::GlobalOrdinal>& elements,
+ std::set<panzer::LocalOrdinal>& sides ) const
+{
+	stk::mesh::EntityRank siderank = metaData_->side_rank();
+	for( const auto ele: elements )
+	{
+		std::vector<stk::mesh::EntityId> subcellIds;
+		getSubcellIndices(siderank,ele,subcellIds);
+	    for( const auto& side: subcellIds )
+			sides.insert( side );
+	}
+}
+
 bool STK_Interface::isMeshCoordField(const std::string & eBlock,
                                 const std::string & fieldName,
                                 int & axis) const
