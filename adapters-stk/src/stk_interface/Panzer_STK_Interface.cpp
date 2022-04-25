@@ -1295,6 +1295,15 @@ void STK_Interface::getNeighborElements(const std::string & blockID,std::vector<
    stk::mesh::get_selected_entities(neighborBlock,bulkData_->buckets(elementRank),elements);
 }
 
+void STK_Interface::getMyNodes(std::vector<stk::mesh::Entity> & nodes) const
+{
+   // setup local ownership
+   stk::mesh::Selector ownedPart = metaData_->locally_owned_part();
+
+   // grab elements
+   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(getNodeRank()),nodes);
+}
+
 void STK_Interface::getMyEdges(std::vector<stk::mesh::Entity> & edges) const
 {
    // setup local ownership
@@ -2046,6 +2055,25 @@ void STK_Interface::applyElementLoadBalanceWeights()
       loadBal[0] = blockWeight;
     }
   }
+}
+
+void STK_Interface::buildLocalNodeIDs()
+{
+   std::size_t currentLocalId = 0;
+
+ //  orderedEdgeVector_ = Teuchos::null; // forces rebuild of ordered lists
+
+   // might be better (faster) to do this by buckets
+   std::vector<stk::mesh::Entity> nodes;
+   getMyNodes(nodes);
+
+   for( const auto& nd : nodes ) {
+      localNodeIDHash_[bulkData_->identifier(nd)] = currentLocalId;
+      ++currentLocalId;
+   }
+
+   // copy edges into the ordered edge vector
+   //orderedEdgeVector_ = Teuchos::rcp(new std::vector<stk::mesh::Entity>(edges));
 }
 
 void STK_Interface::buildLocalEdgeIDs()

@@ -460,7 +460,7 @@ public:
      * \param[in] blockName Name of block
      * \param[in,out] nodes Vector of entities containing the requested nodes.
      */
-
+   void getMyNodes(std::vector<stk::mesh::Entity> & edges) const;
    void getMyNodes(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const;
    
    void getMyNodeSet(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const;
@@ -1123,15 +1123,11 @@ public:
      */
    void initializeFromMetaData();
 
-   /** Setup local element IDs
+   /** Setup hash table of local IDs
      */
    void buildLocalElementIDs();
-
-   /** Setup local edge IDs
-     */
+   void buildLocalNodeIDs();
    void buildLocalEdgeIDs();
-
-   /** Setup local face IDs */
    void buildLocalFaceIDs();
    
    /** Find two elements attched to Face */
