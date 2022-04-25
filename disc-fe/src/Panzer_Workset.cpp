@@ -53,7 +53,6 @@
 #include "Panzer_PointGenerator.hpp"
 #include "Panzer_PointValues2.hpp"
 #include "Panzer_HashUtils.hpp"
-#include "Panzer_ConvertNormalToRotationMatrix.hpp"
 
 #include "Panzer_SubcellConnectivity.hpp"
 #include "Panzer_OrientationsInterface.hpp"
