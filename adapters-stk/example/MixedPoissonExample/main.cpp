@@ -72,7 +72,6 @@
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_STK_WorksetFactory.hpp"
 #include "Panzer_STKConnManager.hpp"
-#include "Panzer_STK_Version.hpp"
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_CubeHexMeshFactory.hpp"
 #include "Panzer_STK_CubeTetMeshFactory.hpp"

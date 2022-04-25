@@ -44,7 +44,6 @@
 #include "Teuchos_ConfigDefs.hpp"
 #include "Teuchos_UnitTestHarness.hpp"
 
-#include "Panzer_STK_Version.hpp"
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_ExodusReaderFactory.hpp"

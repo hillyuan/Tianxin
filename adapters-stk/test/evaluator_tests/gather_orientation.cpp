@@ -58,7 +58,6 @@ using Teuchos::rcp;
 #include "Panzer_Workset.hpp"
 #include "Panzer_GatherOrientation.hpp"
 
-#include "Panzer_STK_Version.hpp"
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_SquareQuadMeshFactory.hpp"

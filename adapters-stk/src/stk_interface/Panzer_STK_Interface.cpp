@@ -103,19 +103,19 @@ const std::string STK_Interface::edgeBlockString = "edge_block";
 const std::string STK_Interface::faceBlockString = "face_block";
 
 STK_Interface::STK_Interface()
-   : dimension_(0), initialized_(false), currentLocalId_(0), initialStateTime_(0.0), currentStateTime_(0.0), useFieldCoordinates_(false)
+   : dimension_(0), initialized_(false), initialStateTime_(0.0), currentStateTime_(0.0), useFieldCoordinates_(false)
 {
   metaData_ = rcp(new stk::mesh::MetaData());
 }
 
 STK_Interface::STK_Interface(Teuchos::RCP<stk::mesh::MetaData> metaData)
-  : dimension_(0), initialized_(false), currentLocalId_(0), initialStateTime_(0.0), currentStateTime_(0.0), useFieldCoordinates_(false)
+  : dimension_(0), initialized_(false), initialStateTime_(0.0), currentStateTime_(0.0), useFieldCoordinates_(false)
 {
   metaData_ = metaData;
 }
 
 STK_Interface::STK_Interface(unsigned dim)
-   : dimension_(dim), initialized_(false), currentLocalId_(0), useFieldCoordinates_(false)
+   : dimension_(dim), initialized_(false), useFieldCoordinates_(false)
 {
    std::vector<std::string> entity_rank_names = stk::mesh::entity_rank_names();
    entity_rank_names.push_back("FAMILY_TREE");
@@ -1921,7 +1921,7 @@ void STK_Interface::initializeFromMetaData()
 
 void STK_Interface::buildLocalElementIDs()
 {
-   currentLocalId_ = 0;
+   std::size_t currentLocalId = 0;
 
    orderedElementVector_ = Teuchos::null; // forces rebuild of ordered lists
 	
@@ -1939,9 +1939,9 @@ void STK_Interface::buildLocalElementIDs()
       ProcIdData * procId = stk::mesh::field_data(*processorIdField_,element);
       procId[0] = Teuchos::as<ProcIdData>(procRank_);
 
-      localIDHash_[bulkData_->identifier(element)] = currentLocalId_;
+      localIDHash_[bulkData_->identifier(element)] = currentLocalId;
 
-      currentLocalId_++;
+      ++currentLocalId;
    }
 
    // copy elements into the ordered element vector
@@ -1957,9 +1957,9 @@ void STK_Interface::buildLocalElementIDs()
       ProcIdData * procId = stk::mesh::field_data(*processorIdField_,element);
       procId[0] = Teuchos::as<ProcIdData>(procRank_);
 
-      localIDHash_[bulkData_->identifier(element)] = currentLocalId_;
+      localIDHash_[bulkData_->identifier(element)] = currentLocalId;
 
-      currentLocalId_++;
+      ++currentLocalId;
    }
 
    orderedElementVector_->insert(orderedElementVector_->end(),elements.begin(),elements.end());
@@ -1988,7 +1988,7 @@ void STK_Interface::applyElementLoadBalanceWeights()
 
 void STK_Interface::buildLocalEdgeIDs()
 {
-   currentLocalId_ = 0;
+   std::size_t currentLocalId = 0;
 
    orderedEdgeVector_ = Teuchos::null; // forces rebuild of ordered lists
 
@@ -1998,8 +1998,8 @@ void STK_Interface::buildLocalEdgeIDs()
 
    for(std::size_t index=0;index<edges.size();++index) {
       stk::mesh::Entity edge = edges[index];
-      localEdgeIDHash_[bulkData_->identifier(edge)] = currentLocalId_;
-      currentLocalId_++;
+      localEdgeIDHash_[bulkData_->identifier(edge)] = currentLocalId;
+      ++currentLocalId;
    }
 
    // copy edges into the ordered edge vector
@@ -2008,7 +2008,7 @@ void STK_Interface::buildLocalEdgeIDs()
 
 void STK_Interface::buildLocalFaceIDs()
 {
-   currentLocalId_ = 0;
+   std::size_t currentLocalId = 0;
 
    orderedFaceVector_ = Teuchos::null; // forces rebuild of ordered lists
 
@@ -2018,8 +2018,8 @@ void STK_Interface::buildLocalFaceIDs()
 
    for(std::size_t index=0;index<faces.size();++index) {
       stk::mesh::Entity face = faces[index];
-      localFaceIDHash_[bulkData_->identifier(face)] = currentLocalId_;
-      currentLocalId_++;
+      localFaceIDHash_[bulkData_->identifier(face)] = currentLocalId;
+      ++currentLocalId;
    }
 
    // copy faces into the ordered face vector
@@ -2263,7 +2263,6 @@ void STK_Interface::rebalance(const Teuchos::ParameterList & /* params */)
 
   out << "Load balance after: " << stk::rebalance::check_balance(*getBulkData(), loadBalField_, getElementRank(), &selector) << std::endl;
 
-  currentLocalId_ = 0;
   orderedElementVector_ = Teuchos::null; // forces rebuild of ordered lists
 #endif
 }

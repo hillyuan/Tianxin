@@ -66,7 +66,6 @@ using Teuchos::rcp;
 #include "Panzer_DOFManager.hpp"
 #include "Panzer_GlobalEvaluationDataContainer.hpp"
 
-#include "Panzer_STK_Version.hpp"
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_SquareQuadMeshFactory.hpp"

@@ -46,7 +46,6 @@
 #include "Teuchos_Tuple.hpp"
 #include "Teuchos_RCP.hpp"
 
-#include "Panzer_STK_Version.hpp"
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_STK_Interface.hpp"
 

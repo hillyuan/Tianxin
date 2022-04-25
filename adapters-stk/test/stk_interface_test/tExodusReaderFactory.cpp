@@ -49,7 +49,6 @@
 #include "Teuchos_ParameterList.hpp"
 #include "Teuchos_ParameterListExceptions.hpp"
 
-#include "Panzer_STK_Version.hpp"
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_ExodusReaderFactory.hpp"

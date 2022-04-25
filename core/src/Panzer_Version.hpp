@@ -44,11 +44,12 @@
 #define PANZER_VERSION_HPP
 
 #include <string>
-#include "PanzerCore_config.hpp"
 
 namespace panzer {
 
-  std::string version();
+  inline std::string version() { 
+    return("TianXin Version: development"); 
+  }
 
 }
 #endif

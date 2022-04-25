@@ -47,7 +47,6 @@
 #include "Teuchos_ParameterList.hpp"
 
 #include "Panzer_BlockedDOFManagerFactory.hpp"
-#include "Panzer_STK_Version.hpp"
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_IntrepidFieldPattern.hpp"
 #include "Panzer_GeometricAggFieldPattern.hpp"

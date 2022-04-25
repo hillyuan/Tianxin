@@ -10,7 +10,6 @@
 #include "Panzer_STK_Interface.hpp"
 
 #include "PanzerAdaptersSTK_config.hpp"
-#include "Panzer_STK_Version.hpp"
 #include "Panzer_STK_LineMeshFactory.hpp"
 #include "Panzer_STK_SquareTriMeshFactory.hpp"
 #include "Panzer_STK_SquareQuadMeshFactory.hpp"

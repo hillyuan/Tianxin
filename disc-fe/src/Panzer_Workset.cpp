@@ -269,7 +269,7 @@ getIntegrationValues(const panzer::IntegrationDescriptor & description,
     // This is an advanced feature that requires changes to the workset construction
     // Basically there needs to be a way to grab the side assembly for both "details" belonging to the same workset, which requires a refactor
     // Alternatively, we can do this using a face connectivity object, but the refactor is more important atm.
-    TEUCHOS_ASSERT(not (options_.side_assembly_ and options_.align_side_points_));
+    TEUCHOS_ASSERT(not options_.side_assembly_ );
 
   }
 
