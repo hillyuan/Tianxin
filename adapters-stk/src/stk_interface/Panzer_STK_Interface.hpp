@@ -769,7 +769,11 @@ public:
    void getElementsSharingNode(stk::mesh::EntityId nodeId,std::vector<stk::mesh::Entity> & elements) const;
 
    //! get a list of node ids for nodes connected to an element
-   void getNodeIdsForElement(stk::mesh::Entity element,std::vector<stk::mesh::EntityId> & nodeIds) const;
+   void getNodeIdsForElement(const stk::mesh::Entity& element,std::vector<stk::mesh::EntityId> & nodeIds) const;
+   void getNodeIdsForElement(const panzer::LocalOrdinal& elmtLid, std::vector<panzer::GlobalOrdinal>& nodeIds) const;
+
+   void getEdgeIdsForElement(const panzer::LocalOrdinal& elmtLid, std::vector<panzer::GlobalOrdinal>& nodeIds) const;
+   void getFaceIdsForElement(const panzer::LocalOrdinal& elmtLid, std::vector<panzer::GlobalOrdinal>& nodeIds) const;
 
    /** Get set of element sharing a single node and its local node id.
      */

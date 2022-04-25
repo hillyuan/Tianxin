@@ -129,13 +129,13 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, 2_blocks)
    // did we get the element block correct?
    /////////////////////////////////////////////////////////////
 
-   TEST_EQUALITY(connMngr.numElementBlocks(),2);
-   TEST_EQUALITY(connMngr.getBlockId(0),"eblock-0_0");
+   TEST_EQUALITY(mesh->getNumElementBlocks(),2);
+   TEST_EQUALITY(mesh->getBlockId(0),"eblock-0_0");
 
    // check that each element is correct size
    std::vector<std::string> elementBlockIds;
    connMngr.getElementBlockIds(elementBlockIds);
-   for(std::size_t blk=0;blk<connMngr.numElementBlocks();++blk) {
+   for(std::size_t blk=0;blk<mesh->getNumElementBlocks();++blk) {
       std::string blockId = elementBlockIds[blk];
       const std::vector<int> & elementBlock = connMngr.getElementBlock(blockId);
       for(std::size_t elmt=0;elmt<elementBlock.size();++elmt)
@@ -150,7 +150,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, 2_blocks)
        TEST_EQUALITY(connMngr.getNeighborElementBlock("eblock-0_0").size(),1);
        TEST_EQUALITY(connMngr.getNeighborElementBlock("eblock-1_0").size(),1);
 
-       for(std::size_t blk=0;blk<connMngr.numElementBlocks();++blk) {
+       for(std::size_t blk=0;blk<mesh->getNumElementBlocks();++blk) {
          const std::vector<int> & elementBlock = connMngr.getNeighborElementBlock(elementBlockIds[blk]);
          for(std::size_t elmt=0;elmt<elementBlock.size();++elmt)
            TEST_EQUALITY(connMngr.getConnectivitySize(elementBlock[elmt]),9); 
@@ -238,7 +238,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, single_block_2d)
    // did we get the element block correct?
    /////////////////////////////////////////////////////////////
 
-   TEST_EQUALITY(connMngr.numElementBlocks(),1);
+   TEST_EQUALITY(mesh->getNumElementBlocks(),1);
 
    const std::vector<int> & elementBlock = connMngr.getElementBlock("eblock-0_0");
    std::vector<int> nc_elementBlock = elementBlock;
@@ -254,7 +254,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, single_block_2d)
       check_local_blocks_passed &= (nc_elementBlock[i]==(int) i);
    TEST_ASSERT(check_local_blocks_passed);
 
-   TEST_EQUALITY(connMngr.getBlockId(9),"eblock-0_0");
+   TEST_EQUALITY(mesh->getBlockId(9),"eblock-0_0");
 
    // test connectivities
    /////////////////////////////////////////////////////////////
@@ -331,7 +331,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, noConnectivityClone)
       // did we get the element block correct?
       /////////////////////////////////////////////////////////////
    
-      TEST_EQUALITY(connMngr_const.numElementBlocks(),1);
+      TEST_EQUALITY(mesh->getNumElementBlocks(),1);
    
       const std::vector<int> & elementBlock = connMngr_const.getElementBlock("eblock-0_0");
       std::vector<int> nc_elementBlock = elementBlock;
@@ -347,7 +347,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, noConnectivityClone)
          check_local_blocks_passed &= (nc_elementBlock[i]==(int) i);
       TEST_ASSERT(check_local_blocks_passed);
    
-      TEST_EQUALITY(connMngr_const.getBlockId(9),"eblock-0_0");
+      TEST_EQUALITY(mesh->getBlockId(9),"eblock-0_0");
    
       // test connectivities
       /////////////////////////////////////////////////////////////
@@ -387,7 +387,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, noConnectivityClone)
       // did we get the element block correct?
       /////////////////////////////////////////////////////////////
    
-      TEST_EQUALITY(connMngr_hgrad->numElementBlocks(),1);
+      TEST_EQUALITY(mesh->getNumElementBlocks(),1);
    
       const std::vector<int> & elementBlock = connMngr_hgrad->getElementBlock("eblock-0_0");
       std::vector<int> nc_elementBlock = elementBlock;
@@ -403,7 +403,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, noConnectivityClone)
          check_local_blocks_passed &= (nc_elementBlock[i]==(int) i);
       TEST_ASSERT(check_local_blocks_passed);
    
-      TEST_EQUALITY(connMngr_hgrad->getBlockId(9),"eblock-0_0");
+      TEST_EQUALITY(mesh->getBlockId(9),"eblock-0_0");
    
       // test connectivities
       /////////////////////////////////////////////////////////////
@@ -470,11 +470,11 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, four_block_2d)
    // did we get the element block correct?
    /////////////////////////////////////////////////////////////
 
-   TEST_EQUALITY(connMngr.numElementBlocks(),4);
+   TEST_EQUALITY(mesh->getNumElementBlocks(),4);
 
    std::vector<std::string> elementBlockIds;
    connMngr.getElementBlockIds(elementBlockIds);
-   for(std::size_t blk=0;blk<connMngr.numElementBlocks();blk++) {
+   for(std::size_t blk=0;blk<mesh->getNumElementBlocks();blk++) {
       std::string blockId = elementBlockIds[blk];
       const std::vector<int> & elementBlock = connMngr.getElementBlock(blockId);
       std::vector<int> nc_elementBlock = elementBlock;
@@ -483,7 +483,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, four_block_2d)
    
       bool check_blockid_lookup = true;
       for(std::size_t i=0;i<elementBlock.size();i++)
-         check_blockid_lookup &= (connMngr.getBlockId(elementBlock[i])==blockId);
+         check_blockid_lookup &= (mesh->getBlockId(elementBlock[i])==blockId);
       TEST_ASSERT(check_blockid_lookup); 
    }
 

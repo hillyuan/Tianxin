@@ -44,12 +44,9 @@
 #include "Panzer_STK_LocalMeshUtilities.hpp"
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
-#include "Panzer_STKConnManager.hpp"
 
 #include "Panzer_LocalMeshInfo.hpp"
 #include "Panzer_LocalPartitioningUtilities.hpp"
-
-#include "Panzer_ConnManager.hpp"
 
 #include "Phalanx_KokkosDeviceTypes.hpp"
 
@@ -126,7 +123,6 @@ buildGhostedVertices(const Tpetra::Import<int,panzer::GlobalOrdinal,panzer::Tpet
 
 void
 setupLocalMeshBlockInfo(const panzer_stk::STK_Interface & mesh,
-                        panzer::ConnManager & conn,
                         const panzer::LocalMeshInfo & mesh_info,
                         const std::string & element_block_name,
                         panzer::LocalMeshBlockInfo & block_info)
@@ -143,7 +139,6 @@ setupLocalMeshBlockInfo(const panzer_stk::STK_Interface & mesh,
   for(int parent_owned_cell=0;parent_owned_cell<num_parent_owned_cells;++parent_owned_cell){
     const panzer::LocalOrdinal local_cell = local_cells_h(parent_owned_cell);
     const bool is_in_block = mesh.getBlockId(local_cell) == element_block_name;
-//std::cout << local_cell<< ","  << mesh.getBlockId(local_cell)  << "       " << conn.getBlockId(local_cell) <<std::endl;
     if(is_in_block){
       owned_block_cells.push_back(parent_owned_cell);
     }
@@ -164,7 +159,6 @@ setupLocalMeshBlockInfo(const panzer_stk::STK_Interface & mesh,
 
 void
 setupLocalMeshSidesetInfo(const panzer_stk::STK_Interface & mesh,
-                          panzer::ConnManager& /* conn */,
                           const panzer::LocalMeshInfo & mesh_info,
                           const std::string & element_block_name,
                           const std::string & sideset_name,
@@ -451,17 +445,8 @@ generateLocalMeshInfo(const panzer_stk::STK_Interface & mesh)
 
   TEUCHOS_FUNC_TIME_MONITOR_DIFF("panzer_stk::generateLocalMeshInfo",GenerateLocalMeshInfo);
 
-  // This horrible line of code is required since the connection manager only takes rcps of a mesh
-  RCP<const panzer_stk::STK_Interface> mesh_rcp = Teuchos::rcpFromRef(mesh);
-  // We're allowed to do this since the connection manager only exists in this scope... even though it is also an RCP...
-
-  // extract topology handle
-  RCP<panzer::ConnManager> conn_rcp = rcp(new panzer_stk::STKConnManager(mesh_rcp));
-  panzer::ConnManager & conn = *conn_rcp;
-
   Kokkos::View<panzer::GlobalOrdinal*> owned_cells, ghost_cells, virtual_cells;
   mesh.fillLocalCellIDs(owned_cells, ghost_cells, virtual_cells);
-//  panzer::fillLocalCellIDs(comm, conn_rcp, owned_cells, ghost_cells, virtual_cells);
 
   // build cell maps
   /////////////////////////////////////////////////////////////////////
@@ -712,7 +697,7 @@ generateLocalMeshInfo(const panzer_stk::STK_Interface & mesh)
   for(const std::string & element_block_name : element_block_names){
     PANZER_FUNC_TIME_MONITOR_DIFF("Set up setupLocalMeshBlockInfo",SetupLocalMeshBlockInfo);
     panzer::LocalMeshBlockInfo & block_info = mesh_info.element_blocks[element_block_name];
-    setupLocalMeshBlockInfo(mesh, conn, mesh_info, element_block_name, block_info);
+    setupLocalMeshBlockInfo(mesh, mesh_info, element_block_name, block_info);
     block_info.subcell_dimension = space_dim;
     block_info.subcell_index = -1;
     block_info.has_connectivity = true;
@@ -721,7 +706,7 @@ generateLocalMeshInfo(const panzer_stk::STK_Interface & mesh)
     for(const std::string & sideset_name : sideset_names){
       PANZER_FUNC_TIME_MONITOR_DIFF("Setup LocalMeshSidesetInfo",SetupLocalMeshSidesetInfo);
       panzer::LocalMeshSidesetInfo & sideset_info = mesh_info.sidesets[element_block_name][sideset_name];
-      setupLocalMeshSidesetInfo(mesh, conn, mesh_info, element_block_name, sideset_name, sideset_info);
+      setupLocalMeshSidesetInfo(mesh, mesh_info, element_block_name, sideset_name, sideset_info);
       sideset_info.subcell_dimension = space_dim;
       sideset_info.subcell_index = -1;
       sideset_info.has_connectivity = true;

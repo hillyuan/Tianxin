@@ -147,11 +147,6 @@ public:
     virtual LocalOrdinal getConnectivitySize(LocalOrdinal localElmtId) const
     { return connSize_[localElmtId]; }
 
-    /** Get the block ID for a particular element.
-      *
-      * \param[in] localElmtId Local element ID
-      */
-    virtual std::string getBlockId(LocalOrdinal localElmtId) const;
 
     /** How many element blocks in this mesh?
       */
