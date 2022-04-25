@@ -102,19 +102,19 @@ const std::string STK_Interface::edgeBlockString = "edge_block";
 const std::string STK_Interface::faceBlockString = "face_block";
 
 STK_Interface::STK_Interface()
-   : dimension_(0), initialized_(false), currentLocalId_(0), initialStateTime_(0.0), currentStateTime_(0.0), useFieldCoordinates_(false)
+   : dimension_(0), initialized_(false), initialStateTime_(0.0), currentStateTime_(0.0), useFieldCoordinates_(false)
 {
   metaData_ = rcp(new stk::mesh::MetaData());
 }
 
 STK_Interface::STK_Interface(Teuchos::RCP<stk::mesh::MetaData> metaData)
-  : dimension_(0), initialized_(false), currentLocalId_(0), initialStateTime_(0.0), currentStateTime_(0.0), useFieldCoordinates_(false)
+  : dimension_(0), initialized_(false), initialStateTime_(0.0), currentStateTime_(0.0), useFieldCoordinates_(false)
 {
   metaData_ = metaData;
 }
 
 STK_Interface::STK_Interface(unsigned dim)
-   : dimension_(dim), initialized_(false), currentLocalId_(0), useFieldCoordinates_(false)
+   : dimension_(dim), initialized_(false), useFieldCoordinates_(false)
 {
    std::vector<std::string> entity_rank_names = stk::mesh::entity_rank_names();
    entity_rank_names.push_back("FAMILY_TREE");
@@ -1983,7 +1983,7 @@ void STK_Interface::initializeFromMetaData()
 
 void STK_Interface::buildLocalElementIDs()
 {
-   currentLocalId_ = 0;
+   std::size_t currentLocalId_ = 0;
 
    orderedElementVector_ = Teuchos::null; // forces rebuild of ordered lists
 	
@@ -2050,7 +2050,7 @@ void STK_Interface::applyElementLoadBalanceWeights()
 
 void STK_Interface::buildLocalEdgeIDs()
 {
-   currentLocalId_ = 0;
+   std::size_t currentLocalId_ = 0;
 
    orderedEdgeVector_ = Teuchos::null; // forces rebuild of ordered lists
 
@@ -2070,7 +2070,7 @@ void STK_Interface::buildLocalEdgeIDs()
 
 void STK_Interface::buildLocalFaceIDs()
 {
-   currentLocalId_ = 0;
+   std::size_t currentLocalId_ = 0;
 
    orderedFaceVector_ = Teuchos::null; // forces rebuild of ordered lists
 
@@ -2177,14 +2177,15 @@ void STK_Interface::getSideToElementsMap(std::vector<std::pair<panzer::GlobalOrd
 	}
 }
 
-void STK_Interface::getLocalSides( std::vector<panzer::GlobalOrdinal>& elements,
+void STK_Interface::getLocalSides( std::vector<panzer::LocalOrdinal>& elements,
  std::set<panzer::LocalOrdinal>& sides ) const
 {
 	stk::mesh::EntityRank siderank = metaData_->side_rank();
 	for( const auto ele: elements )
 	{
 		std::vector<stk::mesh::EntityId> subcellIds;
-		getSubcellIndices(siderank,ele,subcellIds);
+		std::size_t gid = this->elementGlobalId( ele );
+		getSubcellIndices(siderank,gid,subcellIds);
 	    for( const auto& side: subcellIds )
 			sides.insert( side );
 	}
@@ -2383,7 +2384,6 @@ void STK_Interface::rebalance(const Teuchos::ParameterList & /* params */)
 
   out << "Load balance after: " << stk::rebalance::check_balance(*getBulkData(), loadBalField_, getElementRank(), &selector) << std::endl;
 
-  currentLocalId_ = 0;
   orderedElementVector_ = Teuchos::null; // forces rebuild of ordered lists
 #endif
 }

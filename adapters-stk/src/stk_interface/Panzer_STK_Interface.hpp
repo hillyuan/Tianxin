@@ -1140,7 +1140,7 @@ public:
 	     std::vector<std::pair<panzer::LocalOrdinal,panzer::LocalOrdinal>>&) const;
 		 
    /** Find all side ids from a given element list**/
-   void getLocalSides( std::vector<panzer::GlobalOrdinal>&, std::set<panzer::LocalOrdinal>& ) const;
+   void getLocalSides( std::vector<panzer::LocalOrdinal>&, std::set<panzer::LocalOrdinal>& ) const;
    
    std::size_t num_pbc_search() const
    { 
@@ -1250,13 +1250,6 @@ public:
    bool getUseFieldCoordinates() const
    { return useFieldCoordinates_; }
 
-   /** Use lower case (or not) for I/O */
-   void setUseLowerCaseForIO(bool useLowerCase)
-   { useLowerCase_ = useLowerCase; }
-
-   /** Use lower case (or not) for I/O */
-   bool getUseLowerCaseForIO() const
-   { return useLowerCase_; }
 
    /** Get vertices associated with a number of elements of the same geometry, note that a coordinate field
      * will be used (if not is available an exception will be thrown).
@@ -1434,7 +1427,6 @@ protected:
    std::vector<stk::mesh::EntityId> maxEntityId_;
 
    unsigned procRank_;
-   std::size_t currentLocalId_;
 
    Teuchos::RCP<Teuchos::MpiComm<int> > mpiComm_;
 
@@ -1495,6 +1487,7 @@ protected:
    std::map<std::string,double> blockWeights_;
 
    std::unordered_map<stk::mesh::EntityId,std::size_t> localIDHash_;
+   std::unordered_map<stk::mesh::EntityId,std::size_t> localNodeIDHash_;
    std::unordered_map<stk::mesh::EntityId,std::size_t> localEdgeIDHash_;
    std::unordered_map<stk::mesh::EntityId,std::size_t> localFaceIDHash_;
 
@@ -1505,8 +1498,6 @@ protected:
    std::map<std::string,std::vector<std::string> > meshDispFields_;  // displacement fields, output to exodus
 
    bool useFieldCoordinates_;
-
-   bool useLowerCase_;
 
    // Object describing how to sort a vector of elements using
    // local ID as the key, very short lived object

@@ -64,7 +64,7 @@ public:
   ~SubcellConnectivity() = default;
 
   /**
-   * \brief Gives number of subcells (e.g. faces) in connectivity
+   * \brief Get number of subcells (e.g. faces) in connectivity
    *
    * \return Number of subcells associated with the cells
    */
@@ -72,7 +72,7 @@ public:
   int numSubcells() const {return _subcell_to_cells_adj.extent(0)-1;}
 
   /**
-   * \brief Gives number of cells in connectivity
+   * \brief Get number of cells in connectivity
    *
    * \return Number of subcells associated with the cells
    */
@@ -80,7 +80,7 @@ public:
   int numCells() const {return _cell_to_subcells_adj.extent(0)-1;}
 
   /**
-   * \brief gives number of subcells (e.g. faces) found on a given cell
+   * \brief Get number of subcells (e.g. faces) found on a given cell
    *
    * \throw If cell is out of range
    *
