@@ -69,6 +69,23 @@ buildLocalMeshInfo(const std::vector<int> & N,   // Cells per dimension
 }
 
 
+TEUCHOS_UNIT_TEST(localMesh, localSides)
+{
+	Teuchos::RCP<panzer_stk::STK_Interface> mesh = buildMesh({3},{2},{2.});
+	std::vector<std::string>  names;
+	mesh->getElementBlockNames( names );
+	std::vector<stk::mesh::Entity>  elements;
+	mesh->getMyElements(names[1], elements);
+	std::vector<panzer::LocalOrdinal> elids;
+	for( const auto& ele : elements ) {
+		elids.emplace_back(mesh->elementLocalId(ele));
+	}
+	std::set<panzer::LocalOrdinal> sides;
+	mesh->getLocalSides( elids, sides);
+	TEST_EQUALITY(sides.size(), 4);
+}
+
+
 TEUCHOS_UNIT_TEST(localMeshUtilities, basic)
 {
 

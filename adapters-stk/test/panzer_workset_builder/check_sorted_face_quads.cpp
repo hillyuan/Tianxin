@@ -135,14 +135,13 @@ namespace panzer {
 
     RCP<panzer_stk::WorksetFactory> wkstFactory
        = rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
-    RCP<panzer::WorksetContainer> wkstContainer     // attach it to a workset container (uses lazy evaluation)
-       = rcp(new panzer::WorksetContainer(wkstFactory,wkstRequirements));
+    panzer::WorksetContainer wkstContainer(wkstFactory,wkstRequirements);
 
-    wkstContainer->setGlobalIndexer(dof_manager);
+    wkstContainer.setGlobalIndexer(dof_manager);
 
     panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true,false);
 
-    auto worksets = wkstContainer->getWorksets(workset_descriptor);
+    auto worksets = wkstContainer.getWorksets(workset_descriptor);
 
     TEST_ASSERT(worksets->size()==1);
 

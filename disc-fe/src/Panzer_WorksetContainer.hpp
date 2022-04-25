@@ -143,6 +143,7 @@ public:
 
    //! Access to volume worksets
    Teuchos::RCP<std::vector<Workset> > getWorksets(const WorksetDescriptor & wd);
+   Teuchos::RCP< std::vector<Workset> > generateWorksets(const WorksetDescriptor& wd);
 
    //! Access, and construction of side worksets
    Teuchos::RCP<std::map<unsigned,Workset> > getSideWorksets(const WorksetDescriptor & desc);

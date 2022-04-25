@@ -312,6 +312,11 @@ namespace panzer {
     void setNumberOfCells(const int owned_cells,
                           const int ghost_cells,
                           const int virtual_cells);
+	
+	void setSetup(bool tf) {setup_=tf;}
+	void setTopology( Teuchos::RCP<const shards::CellTopology> topo) 
+	{cell_topology_=topo;}
+	void setNumeberOwnedCells(int n) {num_owned_cells_=n;}
 
   protected:
 

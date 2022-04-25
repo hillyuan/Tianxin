@@ -2108,6 +2108,20 @@ void STK_Interface::getSideToElementsMap(Kokkos::View<panzer::GlobalOrdinal*[2]>
 	}
 }
 
+void STK_Interface::getLocalSides( std::vector<panzer::LocalOrdinal>& elements,
+ std::set<panzer::LocalOrdinal>& sides ) const
+{
+	stk::mesh::EntityRank siderank = metaData_->side_rank();
+	for( const auto ele: elements )
+	{
+		std::vector<stk::mesh::EntityId> subcellIds;
+		std::size_t gid = this->elementGlobalId( ele );
+		getSubcellIndices(siderank,gid,subcellIds);
+	    for( const auto& side: subcellIds )
+			sides.insert( side );
+	}
+}
+
 bool STK_Interface::isMeshCoordField(const std::string & eBlock,
                                 const std::string & fieldName,
                                 int & axis) const

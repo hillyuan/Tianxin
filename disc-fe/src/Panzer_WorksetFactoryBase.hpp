@@ -85,6 +85,11 @@ public:
    getWorksets(const WorksetDescriptor & worksetDesc,
                const panzer::WorksetNeeds & needs) const = 0;
 
+   virtual
+   Teuchos::RCP< std::vector<panzer::Workset> >
+   generateWorksets(const panzer::WorksetDescriptor & worksetDesc,
+               const panzer::WorksetNeeds & needs) const = 0;
+
    /**
     * \brief Used to apply orientations to any bases added to the worksets
     *

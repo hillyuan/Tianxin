@@ -125,24 +125,28 @@ namespace panzer_stk {
 
     Teuchos::RCP<panzer_stk::STK_Interface> mesh = buildMesh();
 
-    RCP<panzer::WorksetFactoryBase> wkstFactory
-       = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
+    panzer_stk::WorksetFactory wkstFactory(mesh); // build STK workset factory
 
     buildPhysicsBlocks(*mesh,physics_blocks,cm_factory,closure_models,user_data);
 
     {
       RCP<std::vector<panzer::Workset> > worksets
-        = wkstFactory->getWorksets(panzer::blockDescriptor("eblock-1_0"),
+       = wkstFactory.generateWorksets(panzer::blockDescriptor("eblock-1_0"),
                                    physics_blocks[0]->getWorksetNeeds());
 
-      TEST_ASSERT(worksets!=Teuchos::null);
-      TEST_EQUALITY(worksets->size(),std::size_t(1.0+(16.0/tcomm->getSize())/3.0)); // elements in block by number of processors
-                                                                            // divided by size of workset add one (round up)
+      TEST_ASSERT(!worksets->empty());
+	  std::vector<stk::mesh::Entity> elements;
+	  mesh->getMyElements("eblock-1_0", elements);
+	  if( elements.size()%3>0 ) {
+		TEST_EQUALITY(worksets->size(),std::size_t(1.0+elements.size()/3.0));
+	  } else {
+		  TEST_EQUALITY(worksets->size(),std::size_t(elements.size()/3.0));
+	  }
     }
 
     {
       RCP<std::vector<panzer::Workset> > worksets
-         = wkstFactory->getWorksets(panzer::sidesetVolumeDescriptor("eblock-0_0","left"),
+         = wkstFactory.getWorksets(panzer::sidesetVolumeDescriptor("eblock-0_0","left"),
                                     physics_blocks[0]->getWorksetNeeds());
 
 

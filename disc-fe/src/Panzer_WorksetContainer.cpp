@@ -139,6 +139,33 @@ WorksetContainer::getWorksets(const WorksetDescriptor & wd)
    return worksetVector;
 }
 
+Teuchos::RCP<std::vector<Workset> >
+WorksetContainer::generateWorksets(const WorksetDescriptor & wd)
+{
+   Teuchos::RCP<std::vector<Workset> > worksetVector;
+   WorksetMap::iterator itr = worksets_.find(wd);
+   if(itr==worksets_.end()) {  // couldn't find workset, build it!
+      WorksetNeeds needs;
+      if(hasNeeds())
+        needs = lookupNeeds(wd.getElementBlock());
+      worksetVector = wkstFactory_->generateWorksets(wd,needs);
+
+      // apply orientations to the just constructed worksets
+      if(!worksetVector->empty() && wd.applyOrientations()) {
+        applyOrientations(wd.getElementBlock(),*worksetVector);
+      }
+
+      if(!worksetVector->empty()) setIdentifiers(wd,*worksetVector);
+
+      // store vector for reuse in the future
+      worksets_[wd] = worksetVector;
+   }
+   else
+      worksetVector = itr->second;
+
+   return worksetVector;
+}
+
 //! Access, and construction of side worksets
 Teuchos::RCP<std::map<unsigned,Workset> >
 WorksetContainer::getSideWorksets(const WorksetDescriptor & desc)

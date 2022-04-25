@@ -94,6 +94,11 @@ public:
    getWorksets(const panzer::WorksetDescriptor & worksetDesc,
                const panzer::WorksetNeeds & needs) const;
 
+   virtual
+   Teuchos::RCP< std::vector<panzer::Workset> >
+   generateWorksets(const panzer::WorksetDescriptor & worksetDesc,
+               const panzer::WorksetNeeds & needs) const;
+
 private:
 
    /// Mesh
