@@ -57,7 +57,6 @@
 #include "Panzer_GlobalIndexer.hpp"
 #include "Panzer_DOFManager.hpp"
 #include "Panzer_NodeType.hpp"
-#include "Panzer_HashUtils.hpp"
 
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_DefaultMpiComm.hpp"
@@ -564,9 +563,6 @@ protected:
    std::map<std::pair<std::string,int>,int> blockGIDOffset_;
 
    //@}
-
-   // storage for fast lookups of GID ownership
-  //std::unordered_set<GlobalOrdinal,panzer::pair_hash> ownedGIDHashTable_;
 
    std::vector<std::vector<std::string> > fieldOrder_;
 

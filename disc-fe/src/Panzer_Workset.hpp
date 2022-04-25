@@ -333,7 +333,6 @@ namespace panzer {
     // Unifying the construction method for worksets will help reduce the clutter here, but point values will almost always be non-const
     mutable std::map<size_t,Teuchos::RCP<const panzer::PureBasis > > _pure_basis_map;
     mutable std::map<size_t,Teuchos::RCP<const panzer::IntegrationRule > > _integration_rule_map;
-    mutable std::map<size_t,Teuchos::RCP<const panzer::PointRule > > _point_rule_map;
 
     mutable std::map<size_t,Teuchos::RCP<const panzer::IntegrationValues2<double> > > integration_values_map_;
     mutable std::map<size_t,Teuchos::RCP<panzer::PointValues2<double> > > point_values_map_;

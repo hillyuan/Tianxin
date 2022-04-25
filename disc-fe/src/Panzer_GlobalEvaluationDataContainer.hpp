@@ -46,7 +46,6 @@
 #include "Teuchos_RCP.hpp"
 
 #include <unordered_map>
-#include "Panzer_HashUtils.hpp"
 #include "Panzer_GlobalEvaluationData.hpp"
 
 namespace panzer {

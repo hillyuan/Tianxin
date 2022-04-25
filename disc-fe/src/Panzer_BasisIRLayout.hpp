@@ -52,12 +52,10 @@
 
 #include "Panzer_Dimension.hpp"
 #include "Panzer_PureBasis.hpp"
-#include "Panzer_CellTopologyInfo.hpp"
 
 namespace panzer {
 
   class PointRule;
-  class CellTopologyInfo;
   class BasisIRLayout;
 
   //! Nonmember constructor
@@ -101,10 +99,6 @@ namespace panzer {
 
     void print(std::ostream & os) const;
 
-    Teuchos::RCP<const CellTopologyInfo> getCellTopologyInfo() const
-    { return cell_topo_info; }
-    
-
   public:
     
     //! <BASIS,IP>
@@ -134,8 +128,6 @@ namespace panzer {
     int dimension_;
     
     Teuchos::RCP<const PureBasis> basis_data_;
-    
-    Teuchos::RCP<const CellTopologyInfo> cell_topo_info;
   };
 
   typedef std::pair<std::string,Teuchos::RCP<panzer::BasisIRLayout> > StrBasisPair;

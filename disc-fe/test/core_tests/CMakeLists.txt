@@ -89,12 +89,6 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   )
 
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  cell_topology_info
-  SOURCES cell_topology_info.cpp ${UNIT_TEST_DRIVER}
-  NUM_MPI_PROCS 1
-  )
-
-TRIBITS_ADD_EXECUTABLE_AND_TEST(
   parameter_list_acceptance_test
   SOURCES parameter_list_acceptance_test.cpp ${UNIT_TEST_DRIVER}
   NUM_MPI_PROCS 1

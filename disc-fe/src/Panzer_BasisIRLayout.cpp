@@ -45,7 +45,6 @@
 #include "Panzer_IntrepidBasisFactory.hpp"
 #include "Teuchos_Assert.hpp"
 #include "Phalanx_DataLayout_MDALayout.hpp"
-#include "Panzer_CellTopologyInfo.hpp"
 
 
 // ***********************************************************************
@@ -127,10 +126,6 @@ setup(const panzer::PointRule & point_rule)
 							cardinality(),
 							dimension(),
 							dimension()));
-
-  const Teuchos::RCP<const shards::CellTopology>& topology = basis_data_->getCellTopology();
-  cell_topo_info = rcp(new panzer::CellTopologyInfo(numCells(), topology) );
-  
 }
 
 int panzer::BasisIRLayout::cardinality() const
