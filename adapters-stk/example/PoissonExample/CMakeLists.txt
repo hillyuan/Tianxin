@@ -47,7 +47,7 @@ FOREACH( ORDER 1 2 3 4 )
       PASS_REGULAR_EXPRESSION "ALL PASSED"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Quad-p${ORDER}-80
-    TEST_5 CMND python
+    TEST_5 CMND python3
       ARGS ${CMAKE_CURRENT_SOURCE_DIR}/convergence_rate.py
          ${ORDER}
          MPE-ConvTest-Quad-p${ORDER}-
@@ -91,7 +91,7 @@ FOREACH( ORDER 1 2 3 4 )
       PASS_REGULAR_EXPRESSION "ALL PASSED"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Tri-p${ORDER}-80
-    TEST_5 CMND python
+    TEST_5 CMND python3
       ARGS ${CMAKE_CURRENT_SOURCE_DIR}/convergence_rate.py
          ${ORDER}
          MPE-ConvTest-Tri-p${ORDER}-

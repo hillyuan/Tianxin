@@ -65,7 +65,6 @@
 #include "Panzer_Integrator_GradBasisDotVector.hpp"
 #include "Panzer_Sum.hpp"
 #include "Panzer_ScalarToVector.hpp"
-#include "Panzer_TestScatter.hpp"
 #include "Panzer_VectorToScalar.hpp"
 
 namespace panzer {
@@ -318,19 +317,6 @@ namespace panzer {
     
     panzer::Integrator_GradBasisDotVector<Residual,panzer::Traits> e_r(p);
     panzer::Integrator_GradBasisDotVector<Jacobian,panzer::Traits> e_J(p);
-  }
-
-  TEUCHOS_UNIT_TEST(evaluators, TestScatter)
-  {
-
-    ParameterList p("TestScatter Test");
-    p.set("Test Name", "TEMP");
-    p.set("Test Name Residual", "Residual_TEMP");
-    RCP<PHX::DataLayout> dl = rcp(new PHX::MDALayout<Cell,Point,Dim>(10,8,3));
-    p.set("Data Layout", dl);
-
-    panzer::TestScatter<panzer::Traits::Residual,panzer::Traits> e_r(p);
-    panzer::TestScatter<panzer::Traits::Jacobian,panzer::Traits> e_J(p);
   }
 
 }
