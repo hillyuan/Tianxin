@@ -270,8 +270,10 @@ namespace panzer {
     wkstContainer.setFactory(wkstFactory);
     {
       WorksetNeeds needs;
-      needs.bases.push_back(Teuchos::rcp(new panzer::PureBasis(hdiv_basis_desc,mesh->getCellTopology(element_block),workset_size)));
-      needs.bases.push_back(Teuchos::rcp(new panzer::PureBasis(hcurl_basis_desc,mesh->getCellTopology(element_block),workset_size)));
+    //  needs.bases.push_back(Teuchos::rcp(new panzer::PureBasis(hdiv_basis_desc,mesh->getCellTopology(element_block),workset_size)));
+    //  needs.bases.push_back(Teuchos::rcp(new panzer::PureBasis(hcurl_basis_desc,mesh->getCellTopology(element_block),workset_size)));
+	  needs.addBasis(hdiv_basis_desc);
+	  needs.addBasis(hcurl_basis_desc);
       needs.rep_field_name.push_back("B");
       needs.rep_field_name.push_back("E");
 	  needs.addIntegrator( quad_desc );
@@ -292,7 +294,7 @@ namespace panzer {
     //  this must use this descriptor!
     // panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true,true);
     panzer::WorksetDescriptor workset_descriptor(element_block);
-    std::vector<Workset> & worksets = *wkstContainer.getWorksets(workset_descriptor);
+    std::vector<Workset> & worksets = *wkstContainer.generateWorksets(workset_descriptor);
 
     out << "getting worksets [complete]" << std::endl;
 

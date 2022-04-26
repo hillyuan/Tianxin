@@ -151,7 +151,8 @@ testApplyOrientations(const bool by_container,
   }
 
   // Grab the one and only workset
-  auto worksets = workset_container->getWorksets(WorksetDescriptor(element_block, WorksetSizeType::ALL_ELEMENTS, true, by_container));
+  panzer::WorksetDescriptor workset_descriptor(element_block, WorksetSizeType::ALL_ELEMENTS, true, by_container);
+  auto worksets = workset_container->getWorksets(workset_descriptor);//std::cout << worksets->at(0) << std::endl;
   TEST_EQUALITY(worksets->size(), 1);
 
   const auto & workset = (*worksets)[0];

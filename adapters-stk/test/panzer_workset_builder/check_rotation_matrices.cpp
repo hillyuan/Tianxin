@@ -119,17 +119,17 @@ namespace panzer {
     //////////////////////////////////////////////////////////////
 
     panzer::IntegrationDescriptor sid(2*2, panzer::IntegrationDescriptor::SURFACE);
+	//std::map<std::string, WorksetNeeds> needs_map;
+    //needs_map[element_block].addBasis(panzer::BasisDescriptor(1, "HDiv"));
+    //needs_map[element_block].addIntegrator(sid);
 
     RCP<panzer_stk::WorksetFactory> wkstFactory
        = rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
-    RCP<panzer::WorksetContainer> wkstContainer     // attach it to a workset container (uses lazy evaluation)
-       = rcp(new panzer::WorksetContainer(wkstFactory));
+    panzer::WorksetContainer wkstContainer(wkstFactory);
 
-    wkstContainer->setGlobalIndexer(dof_manager);
-
+    wkstContainer.setGlobalIndexer(dof_manager);
     panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true,false);
-
-    auto worksets = wkstContainer->getWorksets(workset_descriptor);
+    auto worksets = wkstContainer.getWorksets(workset_descriptor);
 
     TEST_ASSERT(worksets->size()==1);
 

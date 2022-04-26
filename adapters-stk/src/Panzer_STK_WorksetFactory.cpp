@@ -272,7 +272,8 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 				worksets_ptr->at(i).getPointValues(pd);
 
 			// Initialize BasisValues
-			for(const auto & bd : needs.getBases()){
+			const auto& basis = needs.getBases();
+			for(const auto & bd : basis){
 
 				// Initialize BasisValues from integrators
 				for(const auto & id : needs.getIntegrators())
