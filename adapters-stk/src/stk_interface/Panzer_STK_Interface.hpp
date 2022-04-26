@@ -298,6 +298,8 @@ public:
      */
    void getSubcellIndices(unsigned entityRank,stk::mesh::EntityId elementId,
                           std::vector<stk::mesh::EntityId> & subcellIds) const;
+   void getSubcells(unsigned entityRank,stk::mesh::EntityId elementId,
+                          std::vector<stk::mesh::Entity> & entitys) const;
 
    /** Get a vector of elements owned by this processor
      */
@@ -410,6 +412,7 @@ public:
      * \param[in] sideName Name of side set
      * \param[in,out] sides Vector of entities containing the requested sides.
      */
+   void getMySides(std::vector<stk::mesh::Entity> & sides) const;
    void getMySides(const std::string & sideName,std::vector<stk::mesh::Entity> & sides) const;
 
    /** Get Entities corresponding to the locally owned part of the side set requested. This also limits
@@ -1128,19 +1131,21 @@ public:
    /** Setup local element IDs
      */
    void buildLocalElementIDs();
-
-   /** Setup local edge IDs
-     */
    void buildLocalEdgeIDs();
-
-   /** Setup local face IDs */
    void buildLocalFaceIDs();
+   void buildLocalSideIDs();
    
    /** Find two elements attched to Face */
    void getSideToElementsMap(Kokkos::View<panzer::GlobalOrdinal*[2]>&, Kokkos::View<panzer::LocalOrdinal*[2]>&) const;
    
-   /** Find all side ids from a given element list**/
-   void getLocalSides( std::vector<panzer::LocalOrdinal>&, std::set<panzer::LocalOrdinal>& ) const;
+   /** Find all side ids from a given element list
+     *
+     * \param[in] elements local index
+     * \param[out] neighboring element index of each sides = number of sides *2
+     * \param[out] neighboring sides of each element = number of element * sides/elements
+    **/
+   void getElementSideRelation( std::vector<panzer::LocalOrdinal>&, std::vector<panzer::LocalOrdinal>& ,
+		std::vector<panzer::LocalOrdinal>& );
    
    std::size_t num_pbc_search() const
    { 
@@ -1486,9 +1491,11 @@ protected:
    // for element block weights
    std::map<std::string,double> blockWeights_;
 
+   // global index -> local index
    std::unordered_map<stk::mesh::EntityId,std::size_t> localIDHash_;
    std::unordered_map<stk::mesh::EntityId,std::size_t> localEdgeIDHash_;
    std::unordered_map<stk::mesh::EntityId,std::size_t> localFaceIDHash_;
+   std::unordered_map<stk::mesh::EntityId,std::size_t> localSideIDHash_;
 
    // Store mesh displacement fields by element block. This map
    // goes like this meshCoordFields_[eBlock][axis_index] => coordinate FieldName

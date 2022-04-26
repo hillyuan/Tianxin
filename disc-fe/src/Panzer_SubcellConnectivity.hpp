@@ -162,7 +162,7 @@ public:
   inline
   int localSubcellForSubcellHost(const int subcell, const int local_cell_index) const;
 
-protected:
+public:
 
   /// Adjacency array for indexing into subcell_to_cells array
   PHX::View<int*> _subcell_to_cells_adj;

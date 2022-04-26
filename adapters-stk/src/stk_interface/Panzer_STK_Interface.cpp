@@ -1163,6 +1163,26 @@ const double * STK_Interface::getNodeCoordinates(stk::mesh::Entity node) const
    return stk::mesh::field_data(*coordinatesField_,node);
 }
 
+void STK_Interface::getSubcells(unsigned entityRank,stk::mesh::EntityId elementId,
+                                      std::vector<stk::mesh::Entity>& entitys) const
+{
+   stk::mesh::EntityRank elementRank = getElementRank();
+   stk::mesh::Entity cell = bulkData_->get_entity(elementRank,elementId);
+
+   TEUCHOS_TEST_FOR_EXCEPTION(!bulkData_->is_valid(cell),std::logic_error,
+                      "STK_Interface::getSubcellIndices: could not find element requested (GID = " << elementId << ")");
+
+   const size_t numSubcells = bulkData_->num_connectivity(cell, static_cast<stk::mesh::EntityRank>(entityRank));
+   stk::mesh::Entity const* subcells = bulkData_->begin(cell, static_cast<stk::mesh::EntityRank>(entityRank));
+   entitys.clear();
+   entitys.resize(numSubcells);
+
+   // loop over relations and fill subcell vector
+   for(size_t i = 0; i < numSubcells; ++i) {
+      entitys[i] = subcells[i];
+   }
+}
+
 void STK_Interface::getSubcellIndices(unsigned entityRank,stk::mesh::EntityId elementId,
                                       std::vector<stk::mesh::EntityId> & subcellIds) const
 {
@@ -1337,6 +1357,16 @@ void STK_Interface::getAllEdges(const std::string & edgeBlockName,const std::str
 
    // grab elements
    stk::mesh::get_selected_entities(element_edge_block,bulkData_->buckets(getEdgeRank()),edges);
+}
+
+void STK_Interface::getMySides(std::vector<stk::mesh::Entity> & sides) const
+{
+   // setup local ownership
+   stk::mesh::Selector ownedPart = metaData_->locally_owned_part();
+
+   // grab sides
+   stk::mesh::EntityRank sideRank = getSideRank();
+   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(sideRank),sides);
 }
 
 void STK_Interface::getMyFaces(std::vector<stk::mesh::Entity> & faces) const
@@ -2064,6 +2094,25 @@ void STK_Interface::buildLocalFaceIDs()
    orderedFaceVector_ = Teuchos::rcp(new std::vector<stk::mesh::Entity>(faces));
 }
 
+void STK_Interface::buildLocalSideIDs()
+{
+   std::size_t currentLocalId = 0;
+
+  // orderedFaceVector_ = Teuchos::null; // forces rebuild of ordered lists
+
+   // might be better (faster) to do this by buckets
+   std::vector<stk::mesh::Entity> sides;
+   getMySides(sides);
+
+   for( const auto& side: sides) {
+      localSideIDHash_[bulkData_->identifier(side)] = currentLocalId;
+      ++currentLocalId;
+   }
+
+   // copy faces into the ordered face vector
+  // orderedFaceVector_ = Teuchos::rcp(new std::vector<stk::mesh::Entity>(faces));
+}
+
 void STK_Interface::getSideToElementsMap(Kokkos::View<panzer::GlobalOrdinal*[2]>& f2e, 
 		Kokkos::View<panzer::LocalOrdinal*[2]>& f2e_l) const
 {
@@ -2108,17 +2157,56 @@ void STK_Interface::getSideToElementsMap(Kokkos::View<panzer::GlobalOrdinal*[2]>
 	}
 }
 
-void STK_Interface::getLocalSides( std::vector<panzer::LocalOrdinal>& elements,
- std::set<panzer::LocalOrdinal>& sides ) const
+void STK_Interface::getElementSideRelation( std::vector<panzer::LocalOrdinal>& elements,
+ std::vector<panzer::LocalOrdinal>& side2elements, std::vector<panzer::LocalOrdinal>& element2sides )
 {
+	if( localSideIDHash_.empty() ) this->buildLocalSideIDs();
+	if( localIDHash_.empty() ) this->buildLocalElementIDs();
+	
 	stk::mesh::EntityRank siderank = metaData_->side_rank();
+	stk::mesh::EntityRank elerank = getElementRank();  //siderank+1?
+	
+	/* find all sides of elements inputted */
+	std::set<panzer::GlobalOrdinal> sidegids;
 	for( const auto ele: elements )
 	{
-		std::vector<stk::mesh::EntityId> subcellIds;
+		std::vector<stk::mesh::EntityId> subcellgids;
 		std::size_t gid = this->elementGlobalId( ele );
-		getSubcellIndices(siderank,gid,subcellIds);
-	    for( const auto& side: subcellIds )
-			sides.insert( side );
+		getSubcellIndices(siderank,gid,subcellgids);
+	    for( const auto& side: subcellgids )
+			sidegids.insert( side );
+		
+		const stk::mesh::Entity& element = bulkData_->get_entity(elerank,gid);
+		unsigned numSides = bulkData_->num_elements(element);
+	    if( numSides<=0 ) continue;
+		const stk::mesh::Entity* sides = bulkData_->begin_elements(element);
+		for (unsigned i=0; i<numSides; ++i) {
+			const auto& gid = bulkData_->identifier( sides[i] );
+			element2sides.emplace_back(localSideIDHash_[gid]);
+		}
+	}
+
+	for( const auto sid: sidegids )
+	{
+	  const stk::mesh::Entity& side = bulkData_->get_entity(siderank,sid);
+	//  const auto& side = bulkData_->identifier( sid );
+      unsigned numElems = bulkData_->num_elements(side);
+	  if( numElems<=0 ) continue;
+	  if( numElems>2 ) {
+			std::cout << numElems << " elements attached to a side, it is impossible!";
+			continue;
+	  }
+	  const stk::mesh::Entity* elems = bulkData_->begin_elements(side);
+	  panzer::LocalOrdinal f2e_l[2];
+	//  f2e(j,0) = -1; f2e(j,1) = -1;
+	  f2e_l[0] = -1; f2e_l[1] = -3;
+	  for (unsigned i=0; i<numElems; ++i) {
+			stk::mesh::Entity elem = elems[i];
+			const auto& gid = bulkData_->identifier( elem );
+			f2e_l[i] = localIDHash_[gid];
+	  }
+	  side2elements.emplace_back(f2e_l[0]);
+	  side2elements.emplace_back(f2e_l[1]);
 	}
 }
 
