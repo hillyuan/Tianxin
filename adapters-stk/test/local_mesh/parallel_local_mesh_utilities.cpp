@@ -79,13 +79,6 @@ buildParallelLocalMeshInfo(const std::vector<int> & N,   // Cells per dimension
 
 }
 
-TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, no_mesh)
-{
-  // Make sure if fails when you pass in a null mesh
-  panzer_stk::STK_Interface mesh;
-  TEST_THROW((generateLocalMeshInfo(mesh)),std::logic_error);
-}
-
 TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 1D_mesh)
 {
 
@@ -102,124 +95,69 @@ TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 1D_mesh)
  // TEST_ASSERT(mesh_info->has_connectivity);
   std::vector<stk::mesh::Entity> elements;
   std::vector<stk::mesh::Entity> neighbors;
+  std::vector<stk::mesh::Entity> sides;
   if(myRank == 0){
+	  
+	  {
+		  mesh->getMyElements(elements);
+		  TEST_EQUALITY(elements.size(), 4);   // element 1,2,4,5
+		//  for( const auto& ele : elements )
+		//	  std::cout << mesh->EntityGlobalId(ele) << std::endl;
+		  mesh->getNeighborElements(neighbors);
+		  TEST_EQUALITY(neighbors.size(), 2);  // element 3,6
+		//  for( const auto& ele : neighbors )
+		//	  std::cout << mesh->EntityGlobalId(ele) << std::endl;
+	  }
 
     {
 		mesh->getMyElements("eblock-0",elements);
-		TEST_EQUALITY(elements.size(), 2);
-		TEST_EQUALITY(mesh->elementLocalId(elements[0]), 0);
-        TEST_EQUALITY(mesh->elementLocalId(elements[1]), 1);
-		mesh->getNeighborElements("eblock-0",neighbors);//std::cout << mesh->elementLocalId(neighbors[0]) << std::endl;
-		TEST_EQUALITY(neighbors.size(), 1);
-   /*   const auto & block = mesh_info->element_blocks.at("eblock-0");
-      auto global_cells_h00 = Kokkos::create_mirror_view(block.global_cells);
-      Kokkos::deep_copy(global_cells_h00, block.global_cells);
-
-      out << "Element Block eblock-0" << std::endl;
-
-      // Block should have some basic stuff working
-     
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      
-      TEST_EQUALITY((int) global_cells_h00(2), 2);
-      TEST_EQUALITY((int) global_cells_h00(3), 6);
-      TEST_ASSERT(block.has_connectivity);*/
+		TEST_EQUALITY(elements.size(), 2);   // element 1,2
+		TEST_EQUALITY(mesh->elementLocalId(elements[0]), 0);   
+        TEST_EQUALITY(mesh->elementLocalId(elements[1]), 1);   
+		mesh->getNeighborElements("eblock-0",neighbors);
+		TEST_EQUALITY(neighbors.size(), 1);  // element 3
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[0]), 3); 
     }
 
     {
 		mesh->getMyElements("eblock-1",elements);
-		TEST_EQUALITY(elements.size(), 2);
+		TEST_EQUALITY(elements.size(), 2);   // element 4,5
 		mesh->getNeighborElements("eblock-1",neighbors);
-		TEST_EQUALITY(neighbors.size(), 1);
-    /*  const auto & block = mesh_info->element_blocks.at("eblock-1");
-      auto global_cells_h01 = Kokkos::create_mirror_view(block.global_cells);
-      Kokkos::deep_copy(global_cells_h01, block.global_cells);
-
-      out << "Element Block eblock-1" << std::endl;
-
-      // Block should be empty
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 2);
-      TEST_EQUALITY(block.num_virtual_cells, 0);
-      TEST_EQUALITY((int) global_cells_h01(0), 3);
-      TEST_EQUALITY((int) global_cells_h01(1), 4);
-      TEST_EQUALITY((int) global_cells_h01(2), 5);
-      TEST_EQUALITY((int) global_cells_h01(3), 2);
-      TEST_ASSERT(block.has_connectivity);*/
+		TEST_EQUALITY(neighbors.size(), 1);  // element 6
     }
 
-  /*  {
-      const auto & block = mesh_info->sidesets.at("eblock-0").at("left");
-      auto global_cells_h = Kokkos::create_mirror_view(block.global_cells);
-      Kokkos::deep_copy(global_cells_h, block.global_cells);
-
-      out << "Sideset eblock-0 left" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_EQUALITY((int) global_cells_h(0), 0);
-      TEST_EQUALITY((int) global_cells_h(1), 6);
-      TEST_ASSERT(block.has_connectivity);
-    }*/
+    {
+		mesh->getMySides("left","eblock-0", sides);
+		TEST_EQUALITY(sides.size(), 1);      // node 1
+    }
 
   } else {
+	  {
+		  mesh->getMyElements(elements);
+		  TEST_EQUALITY(elements.size(), 2);   // element 3,6
+		  mesh->getNeighborElements(neighbors);
+		  TEST_EQUALITY(neighbors.size(), 3);  // element 2,4,5
+	  }
     {
-		mesh->getMyElements("eblock-0",elements);//std::cout << elements.size() << " a\n";
-		TEST_EQUALITY(elements.size(), 1);
-		mesh->getNeighborElements("eblock-0",neighbors);//std::cout << neighbors.size() << " ba\n";
-		TEST_EQUALITY(neighbors.size(), 1);
-    /*  const auto & block = mesh_info->element_blocks.at("eblock-0");
-      auto global_cells_h10 = Kokkos::create_mirror_view(block.global_cells);
-      Kokkos::deep_copy(global_cells_h10, block.global_cells);
-
-      out << "Element Block eblock-0" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 2);
-      TEST_EQUALITY(block.num_virtual_cells, 0);
-      TEST_EQUALITY((int) global_cells_h10(0), 2);
-      TEST_EQUALITY((int) global_cells_h10(1), 3);
-      TEST_EQUALITY((int) global_cells_h10(2), 1);
-      TEST_ASSERT(block.has_connectivity);*/
+		mesh->getMyElements("eblock-0",elements);
+		TEST_EQUALITY(elements.size(), 1);    // element 3
+		mesh->getNeighborElements("eblock-0",neighbors);
+		TEST_EQUALITY(neighbors.size(), 1);   // element 2
     }
 
- /*   {
-      const auto & block = mesh_info->element_blocks.at("eblock-1");
-      auto global_cells_h11 = Kokkos::create_mirror_view(block.global_cells);
-      Kokkos::deep_copy(global_cells_h11, block.global_cells);
-
-      out << "Element Block eblock-1" << std::endl;
-
-      // Block should be empty
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 1);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_EQUALITY((int) global_cells_h11(0), 5);
-      TEST_EQUALITY((int) global_cells_h11(1), 4);
-      //TEST_EQUALITY((int) global_cells_h11(2), 7);
-      TEST_ASSERT(block.has_connectivity);
+    {
+        mesh->getMyElements("eblock-1",elements);
+		TEST_EQUALITY(elements.size(), 1);    // element 6
+		mesh->getNeighborElements("eblock-1",neighbors);
+		TEST_EQUALITY(neighbors.size(), 2);   // element 4, 5
     }
 
-//    TEUCHOS_ASSERT(mesh_info->sidesets.find("eblock-0") == mesh_info->sidesets.end());
-
     {
-      const auto & block = mesh_info->sidesets.at("eblock-1").at("right");
-      auto global_cells_h = Kokkos::create_mirror_view(block.global_cells);
-      Kokkos::deep_copy(global_cells_h, block.global_cells);
-
-      out << "Sideset eblock-1 right" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_EQUALITY((int) global_cells_h(0), 5);
-      //TEST_EQUALITY((int) global_cells_h(1), 7);
-      TEST_ASSERT(block.has_connectivity);
-    }*/
+        mesh->getMySides("right","eblock-1", sides);
+		TEST_EQUALITY(sides.size(), 1);       // node 7
+	//	for( const auto& side : sides )
+	//		  std::cout << mesh->EntityGlobalId(side) << std::endl;
+    }
   }
 
 }
@@ -299,11 +237,6 @@ TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 2D_mesh)
       TEST_ASSERT(block.has_connectivity);
     }
 
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-0_0").find("right") == mesh_info->sidesets.at("eblock-0_0").end());
-
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-1_0").find("left") == mesh_info->sidesets.at("eblock-1_0").end());
-
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-1_0").find("right") == mesh_info->sidesets.at("eblock-1_0").end());
 
     {
       const auto & block = mesh_info->sidesets.at("eblock-1_0").at("top");

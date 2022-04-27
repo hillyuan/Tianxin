@@ -818,6 +818,9 @@ public:
      */
    inline stk::mesh::EntityId elementGlobalId(stk::mesh::Entity elmt) const
    { return bulkData_->identifier(elmt); }
+   
+   inline stk::mesh::EntityId EntityGlobalId(stk::mesh::Entity entity) const
+   { return bulkData_->identifier(entity); }
 
    /** Is an edge local to this processor?
      */
@@ -840,10 +843,6 @@ public:
    inline stk::mesh::EntityId edgeGlobalId(std::size_t lid) const
    { return bulkData_->identifier((*orderedEdgeVector_)[lid]); }
 
-   /** Get an edge's global index
-     */
-   inline stk::mesh::EntityId edgeGlobalId(stk::mesh::Entity edge) const
-   { return bulkData_->identifier(edge); }
 
    /** Is a face local to this processor?
      */
@@ -866,10 +865,6 @@ public:
    inline stk::mesh::EntityId faceGlobalId(std::size_t lid) const
    { return bulkData_->identifier((*orderedFaceVector_)[lid]); }
 
-   /** Get a face's global index
-     */
-   inline stk::mesh::EntityId faceGlobalId(stk::mesh::Entity face) const
-   { return bulkData_->identifier(face); }
 
   /** Get an Entity's parallel owner (process rank)
    */
