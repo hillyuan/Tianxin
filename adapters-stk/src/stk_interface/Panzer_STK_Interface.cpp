@@ -2165,9 +2165,17 @@ void STK_Interface::getElementSideRelation( std::vector<panzer::LocalOrdinal>& e
 	
 	stk::mesh::EntityRank siderank = metaData_->side_rank();
 	stk::mesh::EntityRank elerank = getElementRank();  //siderank+1?
-	
+/*const size_t num_rels = bulkData_->num_connectivity(src, tgt_rank);
+  stk::mesh::Entity const* relations = bulkData_->begin(src, tgt_rank);
+  stk::mesh::ConnectivityOrdinal const* ordinals = bulkData_->begin_ordinals(src, tgt_rank);
+  for (size_t i = 0; i < num_rels; ++i) {
+    if (ordinals[i] == static_cast<stk::mesh::ConnectivityOrdinal>(rel_id)) {
+      return relations[i];
+    }
+  }	*/
 	/* find all sides of elements inputted */
 	std::set<panzer::GlobalOrdinal> sidegids;
+	element2sides.clear();
 	for( const auto ele: elements )
 	{
 		std::vector<stk::mesh::EntityId> subcellgids;
@@ -2177,15 +2185,16 @@ void STK_Interface::getElementSideRelation( std::vector<panzer::LocalOrdinal>& e
 			sidegids.insert( side );
 		
 		const stk::mesh::Entity& element = bulkData_->get_entity(elerank,gid);
-		unsigned numSides = bulkData_->num_elements(element);
+		unsigned numSides = bulkData_->num_sides(element);
 	    if( numSides<=0 ) continue;
-		const stk::mesh::Entity* sides = bulkData_->begin_elements(element);
+		const stk::mesh::Entity* sides = bulkData_->begin(element,siderank);
 		for (unsigned i=0; i<numSides; ++i) {
 			const auto& gid = bulkData_->identifier( sides[i] );
 			element2sides.emplace_back(localSideIDHash_[gid]);
 		}
 	}
 
+	side2elements.clear();
 	for( const auto sid: sidegids )
 	{
 	  const stk::mesh::Entity& side = bulkData_->get_entity(siderank,sid);
