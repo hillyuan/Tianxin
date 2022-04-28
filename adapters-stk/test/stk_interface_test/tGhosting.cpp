@@ -53,15 +53,9 @@
 
 #include "Shards_BasicTopologies.hpp"
 
-#ifdef HAVE_MPI
-   #include "Epetra_MpiComm.h"
-#else
-   #include "Epetra_SerialComm.h"
-#endif
-
 #include "stk_mesh/base/GetEntities.hpp"
 #include "stk_mesh/base/Selector.hpp"
-//#include <stk_rebalance/ZoltanPartition.hpp>
+
 
 namespace panzer_stk {
 

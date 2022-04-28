@@ -40,7 +40,6 @@
 // ***********************************************************************
 // @HEADER
 
-#include <Teuchos_ConfigDefs.hpp>
 #include <Teuchos_UnitTestHarness.hpp>
 #include "Teuchos_DefaultComm.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
@@ -51,12 +50,6 @@
 #include "Panzer_STK_CubeTetMeshFactory.hpp"
 
 #include "Shards_BasicTopologies.hpp"
-
-#ifdef HAVE_MPI
-   #include "Epetra_MpiComm.h"
-#else
-   #include "Epetra_SerialComm.h"
-#endif
 
 #include "Ioss_DatabaseIO.h"
 #include "Ioss_IOFactory.h"

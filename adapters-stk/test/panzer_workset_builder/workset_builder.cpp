@@ -57,6 +57,7 @@ using Teuchos::rcp;
 #include "Panzer_STK_SquareTriMeshFactory.hpp"
 #include "Panzer_STK_CubeTetMeshFactory.hpp"
 #include "Panzer_Workset_Builder.hpp"
+#include "Panzer_STK_WorksetFactory.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "Panzer_PhysicsBlock.hpp"
 #include "Panzer_GlobalData.hpp"
@@ -93,6 +94,8 @@ namespace panzer {
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
     std::vector<panzer::BC> bcs;
     testInitialzation(ipb, bcs);
+	
+	panzer_stk::WorksetFactory wkstFactory(mesh);
 
     // build physics blocks
     //////////////////////////////////////////////////////////////
@@ -124,6 +127,7 @@ namespace panzer {
     }
 
     std::vector< Teuchos::RCP<std::vector<panzer::Workset> > > worksets;
+//	wkstFactory.buildWorksets(*mesh, pb->elementBlockID(), pb->getWorksetNeeds()) );
 
     for (std::vector<std::string>::size_type i=0; i < element_blocks.size(); ++i) {
 
@@ -137,9 +141,11 @@ namespace panzer {
          = Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Quadrilateral<4> >()));
 
       Teuchos::RCP<const panzer::PhysicsBlock> pb = panzer::findPhysicsBlock(element_blocks[i],physicsBlocks);
-      worksets.push_back(panzer::buildWorksets(pb->getWorksetNeeds(),pb->elementBlockID(),
-					       local_cell_ids,
-					       cell_vertex_coordinates));
+    //  worksets.push_back(panzer::buildWorksets(pb->getWorksetNeeds(),pb->elementBlockID(),
+	//				       local_cell_ids,
+	//				       cell_vertex_coordinates));
+	//  worksets.push_back( panzer_stk::buildWorksets(*mesh, pb->elementBlockID(), pb->getWorksetNeeds()) );
+	  worksets.push_back( wkstFactory.generateWorksets( *pb ) );
 
       auto& cur_workset = (*worksets[i])[0];
       auto workset_cell_vertex_coordinates_view = cur_workset.cell_vertex_coordinates.get_view();

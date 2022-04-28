@@ -52,12 +52,6 @@
 
 #include "Shards_BasicTopologies.hpp"
 
-#ifdef HAVE_MPI
-   #include "Epetra_MpiComm.h"
-#else
-   #include "Epetra_SerialComm.h"
-#endif
-
 namespace panzer_stk {
 
 TEUCHOS_UNIT_TEST(tLineMeshFactory, defaults)

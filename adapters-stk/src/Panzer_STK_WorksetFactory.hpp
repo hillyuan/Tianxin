@@ -97,7 +97,11 @@ public:
    virtual
    Teuchos::RCP< std::vector<panzer::Workset> >
    generateWorksets(const panzer::WorksetDescriptor & worksetDesc,
-               const panzer::WorksetNeeds & needs) const;
+               const panzer::WorksetNeeds& needs) const;
+			   
+   virtual
+   Teuchos::RCP< std::vector<panzer::Workset> >
+   generateWorksets(const panzer::PhysicsBlock& pb) const override;
 
 private:
 

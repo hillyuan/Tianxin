@@ -53,7 +53,7 @@
    Unit test for function STK_Interface::getMyElements, getNeighborElements, getMySides, getElementSideRelation
 */
 
-TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 1D_mesh)
+TEUCHOS_UNIT_TEST(parallelLocalMesh, 1D_mesh)
 {
 
   int myRank;

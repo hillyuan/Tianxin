@@ -50,6 +50,7 @@
 #include "Panzer_Workset.hpp"
 #include "Panzer_WorksetDescriptor.hpp"
 #include "Panzer_WorksetNeeds.hpp"
+#include "Panzer_PhysicsBlock.hpp"
 
 namespace panzer {
 
@@ -89,6 +90,10 @@ public:
    Teuchos::RCP< std::vector<panzer::Workset> >
    generateWorksets(const panzer::WorksetDescriptor & worksetDesc,
                const panzer::WorksetNeeds & needs) const = 0;
+			   
+   virtual
+   Teuchos::RCP< std::vector<panzer::Workset> >
+   generateWorksets(const panzer::PhysicsBlock& pb) const =0;
 
    /**
     * \brief Used to apply orientations to any bases added to the worksets
