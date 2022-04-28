@@ -557,7 +557,7 @@ void CubeTetMeshFactory::addSideSets(STK_Interface & mesh) const
    std::vector<stk::mesh::Entity>::const_iterator itr;
    for(itr=localElmts.begin();itr!=localElmts.end();++itr) {
       stk::mesh::Entity element = (*itr);
-      stk::mesh::EntityId gid = mesh.elementGlobalId(element);
+      stk::mesh::EntityId gid = mesh.EntityGlobalId(element);
 
       // get hex global id
       stk::mesh::EntityId h_gid = (gid-1)/12+1;

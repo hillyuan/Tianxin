@@ -814,11 +814,8 @@ public:
    inline stk::mesh::EntityId elementGlobalId(std::size_t lid) const
    { return bulkData_->identifier((*orderedElementVector_)[lid]); }
 
-   /** Get an elements global index
+   /** Get an global index of all entitities
      */
-   inline stk::mesh::EntityId elementGlobalId(stk::mesh::Entity elmt) const
-   { return bulkData_->identifier(elmt); }
-   
    inline stk::mesh::EntityId EntityGlobalId(stk::mesh::Entity entity) const
    { return bulkData_->identifier(entity); }
 
@@ -1144,11 +1141,11 @@ public:
    
    std::size_t num_pbc_search() const
    { 
-	  if(  pbc_search_ )
-		return pbc_search_->size(); 
-	  else
-		return 0;
+	  return  pbc_search_ ? pbc_search_->size() : 0;
    }
+   
+   void find_periodic_nodes()
+   { pbc_search_->find_periodic_nodes(bulkData_ -> parallel()); }
    
    /** Add a periodic boundary condition.
      *

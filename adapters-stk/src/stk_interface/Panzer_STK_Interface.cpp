@@ -618,7 +618,7 @@ void STK_Interface::addFaces()
   std::vector<stk::mesh::Entity>::const_iterator itr;
   for(itr=localElmts.begin();itr!=localElmts.end();++itr) {
     stk::mesh::Entity element = (*itr);
-    stk::mesh::EntityId gid = elementGlobalId(element);
+    stk::mesh::EntityId gid = EntityGlobalId(element);
     std::vector<stk::mesh::EntityId> subcellIds;
     getSubcellIndices(faceRank,gid,subcellIds);
 
@@ -1035,7 +1035,7 @@ void STK_Interface::getNodeIdsForElement(const stk::mesh::Entity& element,std::v
 
   nodeIds.clear();
   for(size_t i = 0; i < numNodes; ++i) {
-    nodeIds.emplace_back(elementGlobalId(nodeRel[i]));
+    nodeIds.emplace_back(EntityGlobalId(nodeRel[i]));
   }
 }
 
@@ -1047,7 +1047,7 @@ void STK_Interface::getNodeIdsForElement(const panzer::LocalOrdinal& elmtLid, st
 
   nodeIds.clear();
   for(size_t i = 0; i < numNodes; ++i) {
-    nodeIds.emplace_back(elementGlobalId(nodeRel[i]));
+    nodeIds.emplace_back(EntityGlobalId(nodeRel[i]));
   }
 }
 
@@ -2448,19 +2448,19 @@ void STK_Interface::addPeriodicBC(const std::tuple<std::string, std::string, std
 	stk::mesh::Part* set0;
     stk::mesh::Part* set1;
 	
-	//const int parallel_rank = bulkData_->parallel_rank();
-    //std::vector<stk::mesh::EntityProc> send_nodes;
-	
 	const std::string& settype = std::get<0>(periodicity);
 	if (settype==std::string("NodeSet")) {
 		  set0 = this->getNodeset( std::get<1>(periodicity) );
           set1 = this->getNodeset( std::get<2>(periodicity) ); 
 	} else if( settype==std::string("EdgeSet" ) ) {
-		  set0 = this->getSideset( std::get<1>(periodicity) );
-          set1 = this->getSideset( std::get<2>(periodicity) );
+		  set0 = this->getEdgeBlock( std::get<1>(periodicity) );
+          set1 = this->getEdgeBlock( std::get<2>(periodicity) );
 	} else if( settype==std::string("FaceSet" ) ) {
 		  set0 = this->getFaceBlock( std::get<1>(periodicity) );
           set1 = this->getFaceBlock( std::get<2>(periodicity) );
+	} else if( settype==std::string("SideSet" ) ) {
+		  set0 = this->getSideset( std::get<1>(periodicity) );
+          set1 = this->getSideset( std::get<2>(periodicity) );
 	} else
 		return;
 	
@@ -2470,7 +2470,7 @@ void STK_Interface::addPeriodicBC(const std::tuple<std::string, std::string, std
 	}
 	const stk::mesh::Selector selector0 = *set0 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
     const stk::mesh::Selector selector1 = *set1 & (metaData_->locally_owned_part() | metaData_->globally_shared_part());
-		
+//std::cout << set0->primary_entity_rank() << ","<< set1->primary_entity_rank() << "  sss\n";		
     pbc_search_->add_linear_periodic_pair(selector0, selector1);
 }
 
@@ -2484,11 +2484,14 @@ void STK_Interface::addPeriodicBC(const std::vector< std::tuple<std::string, std
 		  set0 = this->getNodeset( std::get<1>(atuple) );
           set1 = this->getNodeset( std::get<2>(atuple) ); 
 		} else if( settype==std::string("EdgeSet" ) ) {
-		  set0 = this->getSideset( std::get<1>(atuple) );
-          set1 = this->getSideset( std::get<2>(atuple) );
+		  set0 = this->getEdgeBlock( std::get<1>(atuple) );
+          set1 = this->getEdgeBlock( std::get<2>(atuple) );
 		} else if( settype==std::string("FaceSet" ) ) {
 		  set0 = this->getFaceBlock( std::get<1>(atuple) );
           set1 = this->getFaceBlock( std::get<2>(atuple) );
+		} else if( settype==std::string("SideSet" ) ) {
+		  set0 = this->getSideset( std::get<1>(atuple) );
+          set1 = this->getSideset( std::get<2>(atuple) );
 		} else
 			continue;
 	
@@ -2511,7 +2514,7 @@ void STK_Interface::PeriodicGhosting() {
     auto& search_results = pbc_search_->get_pairs();
 	const int parallel_rank = bulkData_->parallel_rank();
     std::vector<stk::mesh::EntityProc> send_nodes;
-	
+
 	for( unsigned j=0; j<search_results.size(); ++j) {
           stk::mesh::Entity domain_node = bulkData_->get_entity( search_results[j].first.id() );
           stk::mesh::Entity range_node = bulkData_->get_entity( search_results[j].second.id() );
@@ -2530,7 +2533,7 @@ void STK_Interface::PeriodicGhosting() {
 			 if (range_proc == parallel_rank) continue;        // if range in the same proc, do nothing
 			 
 			// stk::ThrowRequire(bulkData_->parallel_owner_rank(domain_node) == domain_proc);
-			 if( bulkData_->is_communicated_with_proc(domain_node, range_proc) ) continue;
+			 if( bulkData_->is_communicated_with_proc(domain_node, range_proc) ) continue;  // if domain in communication, do nothing
 			 
 			 unsigned numElems = bulkData_->num_elements(domain_node);
              if(numElems > 0)

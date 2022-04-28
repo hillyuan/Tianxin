@@ -349,7 +349,7 @@ namespace panzer_stk {
 
       for (const auto& elem : elements){
         local_ids.push_back(mesh.elementLocalId(elem));
-        const auto q = mesh.elementGlobalId(elem) - OffsetToGlobalElementIDs_;
+        const auto q = mesh.EntityGlobalId(elem) - OffsetToGlobalElementIDs_;
 
         for (std::size_t k=0;k<dim_1;++k) {
           const auto loc = q*dim_1 + k;

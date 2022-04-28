@@ -306,7 +306,7 @@ public:
    CompareID(Teuchos::RCP<STK_Interface> mesh, stk::mesh::EntityId id) : mesh_(mesh), id_(id) {}
 
    bool operator()(stk::mesh::Entity e)
-   { return mesh_->elementGlobalId(e)==id_; }
+   { return mesh_->EntityGlobalId(e)==id_; }
 
    Teuchos::RCP<STK_Interface> mesh_;
    stk::mesh::EntityId id_;
@@ -430,7 +430,7 @@ TEUCHOS_UNIT_TEST(tSTKInterface, local_ids)
       TEST_ASSERT(mesh->isValid(node));
 
       // based on first node check local id of element
-      switch(mesh->elementGlobalId(node)) {
+      switch(mesh->EntityGlobalId(node)) {
       case 1:
          TEST_EQUALITY(localId,0);
          break;

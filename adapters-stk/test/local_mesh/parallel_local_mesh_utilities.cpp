@@ -1,12 +1,8 @@
 // @HEADER
-// ***********************************************************************
+// *******************************************************************
 //
-//           Panzer: A partial differential equation assembly
+//           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2011) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -23,10 +19,10 @@
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// THIS SOFTWARE IS PROVIDED THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR THE
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -35,12 +31,10 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Questions? Contact Roger P. Pawlowski (rppawlo@sandia.gov) and
-// Eric C. Cyr (eccyr@sandia.gov)
-// ***********************************************************************
+//  Copyright (2022) YUAN Xi
+// ******************************************************************* 
 // @HEADER
 
-#include <Teuchos_ConfigDefs.hpp>
 #include <Teuchos_UnitTestHarness.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -48,36 +42,16 @@
 
 #include "Teuchos_DefaultComm.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
-#include "Teuchos_DefaultComm.hpp"
-#include "Tpetra_Core.hpp"
 
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_LocalMeshUtilities.hpp"
-
-#include "Panzer_LocalMeshInfo.hpp"
-#include "Panzer_STK_ExodusReaderFactory.hpp"
-
 #include "PanzerSTK_UnitTest_BuildMesh.hpp"
 
 #include <string>
 
-namespace panzer_stk {
-namespace {
-
-Teuchos::RCP<const panzer::LocalMeshInfo>
-buildParallelLocalMeshInfo(const std::vector<int> & N,   // Cells per dimension
-                           const std::vector<int> & B,   // Blocks per dimension
-                           const std::vector<int> & P,   // Processors per dimension
-                           const std::vector<double> &L) // Domain length per block
-{
-  std::vector<int> p;
-//  for(unsigned int i=0; i<N.size(); ++i)
-//    p.push_back(i);
-  Teuchos::RCP<panzer_stk::STK_Interface> mesh = buildParallelMesh(N,B,P,L,p);
-  return generateLocalMeshInfo(*mesh);
-}
-
-}
+/*
+   Unit test for function STK_Interface::getMyElements, getNeighborElements, getMySides, getElementSideRelation
+*/
 
 TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 1D_mesh)
 {
@@ -86,27 +60,32 @@ TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 1D_mesh)
   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
 
   std::vector<int> p;
-  Teuchos::RCP<panzer_stk::STK_Interface> mesh = buildParallelMesh({3},{2},{2},{2.}, p);
+  Teuchos::RCP<panzer_stk::STK_Interface> mesh = panzer_stk::buildParallelMesh({3},{2},{2},{2.}, p);
 
   // Make sure there are two blocks (eblock-0, and eblock-1)
   TEST_EQUALITY(mesh->getNumElementBlocks(), 2);
   TEST_EQUALITY(mesh->getNumSidesets(), 2);
 
- // TEST_ASSERT(mesh_info->has_connectivity);
   std::vector<stk::mesh::Entity> elements;
   std::vector<stk::mesh::Entity> neighbors;
   std::vector<stk::mesh::Entity> sides;
+  std::vector<panzer::LocalOrdinal> elids;
+  std::vector<panzer::LocalOrdinal> side2ele, ele2side;
   if(myRank == 0){
 	  
 	  {
 		  mesh->getMyElements(elements);
 		  TEST_EQUALITY(elements.size(), 4);   // element 1,2,4,5
-		//  for( const auto& ele : elements )
-		//	  std::cout << mesh->EntityGlobalId(ele) << std::endl;
 		  mesh->getNeighborElements(neighbors);
 		  TEST_EQUALITY(neighbors.size(), 2);  // element 3,6
-		//  for( const auto& ele : neighbors )
-		//	  std::cout << mesh->EntityGlobalId(ele) << std::endl;
+	      mesh->getMySides(sides);             // node 1,2,3,4,5,6
+		  TEST_EQUALITY(sides.size(), 6);
+		  for( const auto& ele : elements ) {
+			elids.emplace_back(mesh->elementLocalId(ele));
+		  }
+		  mesh->getElementSideRelation( elids, side2ele, ele2side);
+		  TEST_EQUALITY(side2ele.size(), 12);
+		  TEST_EQUALITY(ele2side.size(), 8);
 	  }
 
     {
@@ -127,6 +106,8 @@ TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 1D_mesh)
     }
 
     {
+		mesh->getMySides("left", sides);
+		TEST_EQUALITY(sides.size(), 1); 
 		mesh->getMySides("left","eblock-0", sides);
 		TEST_EQUALITY(sides.size(), 1);      // node 1
     }
@@ -137,6 +118,14 @@ TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 1D_mesh)
 		  TEST_EQUALITY(elements.size(), 2);   // element 3,6
 		  mesh->getNeighborElements(neighbors);
 		  TEST_EQUALITY(neighbors.size(), 3);  // element 2,4,5
+		  mesh->getMySides(sides);             // node 7
+		  TEST_EQUALITY(sides.size(), 1);
+		  for( const auto& ele : elements ) {
+			elids.emplace_back(mesh->elementLocalId(ele));
+		  }; 
+		  mesh->getElementSideRelation( elids, side2ele, ele2side);
+		  TEST_EQUALITY(side2ele.size(), 8);   // there four nodes (3,4,6,7) relates to element 3,6
+		  TEST_EQUALITY(ele2side.size(), 4);
 	  }
     {
 		mesh->getMyElements("eblock-0",elements);
@@ -165,193 +154,132 @@ TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 1D_mesh)
 TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 2D_mesh)
 {
 
-  int myRank=0;
+  int myRank;
   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
 
-  auto mesh_info = buildParallelLocalMeshInfo({2,2},{2,1},{2,1},{2.,2.});
+  std::vector<int> p;
+  Teuchos::RCP<panzer_stk::STK_Interface> mesh = panzer_stk::buildParallelMesh({2,2},{2,1},{2,1},{2.,2.},p);
 
-  // Make sure there are two blocks (eblock-0, and eblock-1)
-  TEST_EQUALITY(mesh_info->element_blocks.size(), 2);
-  TEST_EQUALITY(mesh_info->sidesets.size(), 2);
-  TEST_ASSERT(mesh_info->has_connectivity);
+  // Make sure there are two blocks (eblock-0_0, and eblock-1_0)
+  TEST_EQUALITY(mesh->getNumElementBlocks(), 2);
+  // There are four sideset "left, right, top, bottom, center"
+  TEST_EQUALITY(mesh->getNumSidesets(), 5);
 
+  std::vector<stk::mesh::Entity> elements;
+  std::vector<stk::mesh::Entity> neighbors;
+  std::vector<stk::mesh::Entity> sides;
+  std::vector<panzer::LocalOrdinal> elids;
+  std::vector<panzer::LocalOrdinal> side2ele, ele2side;
   if(myRank == 0){
+	  
+	  {
+		  mesh->getMyElements(elements);
+		  TEST_EQUALITY(elements.size(), 4);   // element 1,3,5,7
+		  mesh->getNeighborElements(neighbors);
+		  TEST_EQUALITY(neighbors.size(), 4);  // element 2,4,6,8
+	      mesh->getMySides(sides);             // side
+		//    for( const auto& ele : sides )
+		//	  std::cout << mesh->EntityGlobalId(ele) << std::endl;
+		//  TEST_EQUALITY(sides.size(), 6);
+		  for( const auto& ele : elements ) {
+			elids.emplace_back(mesh->elementLocalId(ele));
+		  }
+		  mesh->getElementSideRelation( elids, side2ele, ele2side);
+		//  TEST_EQUALITY(side2ele.size(), 12);
+		  TEST_EQUALITY(ele2side.size(), 16);
+	  }
 
     {
-      const auto & block = mesh_info->element_blocks.at("eblock-0_0");
-
-      out << "Element Block eblock-0_0" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 2);
-      TEST_EQUALITY(block.num_virtual_cells, 4);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMyElements("eblock-0_0",elements);
+		TEST_EQUALITY(elements.size(), 2);   // element 1,5
+		TEST_EQUALITY(mesh->EntityGlobalId(elements[0]), 1);   
+        TEST_EQUALITY(mesh->EntityGlobalId(elements[1]), 5);   
+		mesh->getNeighborElements("eblock-0_0",neighbors);
+		TEST_EQUALITY(neighbors.size(), 2);  // element 2,6
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[0]), 2);
     }
 
     {
-      const auto & block = mesh_info->element_blocks.at("eblock-1_0");
-
-      out << "Element Block eblock-1_0" << std::endl;
-
-      // Block should be empty
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 4);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMyElements("eblock-1_0",elements);
+		TEST_EQUALITY(elements.size(), 2);   // element 3,7
+		TEST_EQUALITY(mesh->EntityGlobalId(elements[0]), 3);   
+        TEST_EQUALITY(mesh->EntityGlobalId(elements[1]), 7);   
+		mesh->getNeighborElements("eblock-1_0",neighbors);
+		TEST_EQUALITY(neighbors.size(), 2);  // element 4,8
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[0]), 4);
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0").at("left");
-
-      out << "Sideset eblock-0_0 left" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("left","eblock-0_0", sides);
+		TEST_EQUALITY(sides.size(), 2);
+		mesh->getMySides("left", sides);
+		TEST_EQUALITY(sides.size(), 2);
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0").at("top");
-
-      out << "Sideset eblock-0_0 top" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("top","eblock-0_0", sides);
+		TEST_EQUALITY(sides.size(), 1);   // one side in eblock_0_0 in current cpu
+		mesh->getMySides("top", sides);
+		TEST_EQUALITY(sides.size(), 2);   // two sides in current cpu
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0").at("bottom");
-
-      out << "Sideset eblock-0_0 bottom" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0").at("top");
-
-      out << "Sideset eblock-1_0 top" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0").at("bottom");
-
-      out << "Sideset eblock-1_0 bottom" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_ASSERT(block.has_connectivity);
+        mesh->getMySides("bottom","eblock-1_0", sides);
+		TEST_EQUALITY(sides.size(), 1);   // one side in eblock_1_0 in current cpu
+		mesh->getMySides("bottom", sides);
+		TEST_EQUALITY(sides.size(), 2);   // two sides in current cpu
     }
 
   } else {
+	  
+	  {
+		mesh->getMyElements(elements);
+		TEST_EQUALITY(elements.size(), 4);   // element 2,4,6,8
+		mesh->getNeighborElements(neighbors);
+		TEST_EQUALITY(neighbors.size(), 4);  // element 1,3,5,7
+		//  for( const auto& ele : neighbors )
+		//	  std::cout << mesh->EntityGlobalId(ele) << std::endl;
+	  }
 
-    {
-      const auto & block = mesh_info->element_blocks.at("eblock-0_0");
-
-      out << "Element Block eblock-0_0" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 4);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+	{
+		mesh->getMyElements("eblock-0_0",elements);
+		TEST_EQUALITY(elements.size(), 2);   // element 2,6
+		TEST_EQUALITY(mesh->EntityGlobalId(elements[0]), 2);   
+        TEST_EQUALITY(mesh->EntityGlobalId(elements[1]), 6);   
+		mesh->getNeighborElements("eblock-0_0",neighbors);
+		TEST_EQUALITY(neighbors.size(), 2);  // element 1,5
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[0]), 1);
     }
 
     {
-      const auto & block = mesh_info->element_blocks.at("eblock-1_0");
-
-      out << "Element Block eblock-1_0" << std::endl;
-
-      // Block should be empty
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 2);
-      TEST_EQUALITY(block.num_virtual_cells, 4);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-0_0").find("left") == mesh_info->sidesets.at("eblock-0_0").end());
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0").at("top");
-
-      out << "Sideset eblock-0_0 top" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_ASSERT(block.has_connectivity);
+        mesh->getMyElements("eblock-1_0",elements);
+		TEST_EQUALITY(elements.size(), 2);   // element 4,8
+		TEST_EQUALITY(mesh->EntityGlobalId(elements[0]), 4);   
+        TEST_EQUALITY(mesh->EntityGlobalId(elements[1]), 8);   
+		mesh->getNeighborElements("eblock-1_0",neighbors);
+		TEST_EQUALITY(neighbors.size(), 2);  // element 3,7
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[0]), 3);
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0").at("bottom");
-
-      out << "Sideset eblock-0_0 bottom" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-0_0").find("right") == mesh_info->sidesets.at("eblock-0_0").end());
-
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-1_0").find("left") == mesh_info->sidesets.at("eblock-1_0").end());
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0").at("right");
-
-      out << "Sideset eblock-1_0 right" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("right","eblock-1_0", sides);
+		TEST_EQUALITY(sides.size(), 2);
+		mesh->getMySides("right", sides);
+		TEST_EQUALITY(sides.size(), 2);
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0").at("top");
-
-      out << "Sideset eblock-1_0 top" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("top","eblock-0_0", sides);
+		TEST_EQUALITY(sides.size(), 1);   // one side in eblock_0_0 in current cpu
+		mesh->getMySides("top", sides);
+		TEST_EQUALITY(sides.size(), 2);   // two sides in current cpu
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0").at("bottom");
-
-      out << "Sideset eblock-1_0 bottom" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 1);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 1);
-      TEST_ASSERT(block.has_connectivity);
+        mesh->getMySides("bottom","eblock-1_0", sides);
+		TEST_EQUALITY(sides.size(), 1);   // one side in eblock_1_0 in current cpu
+		mesh->getMySides("bottom", sides);
+		TEST_EQUALITY(sides.size(), 2);   // two sides in current cpu
     }
   }
 
@@ -361,297 +289,177 @@ TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 2D_mesh)
 TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 3D_mesh)
 {
 
-  int myRank=0;
+  int myRank;
   MPI_Comm_rank(MPI_COMM_WORLD, &myRank);
 
-  auto mesh_info = buildParallelLocalMeshInfo({2,2,2},{2,1,1},{2,1,1},{2.,2.,2.});
+  std::vector<int> p;
+  Teuchos::RCP<panzer_stk::STK_Interface> mesh= panzer_stk::buildParallelMesh({2,2,2},{2,1,1},{2,1,1},{2.,2.,2.},p);
 
-  // Make sure there are two blocks (eblock-0, and eblock-1)
-  TEST_EQUALITY(mesh_info->element_blocks.size(), 2);
-  TEST_EQUALITY(mesh_info->sidesets.size(), 2);
-  TEST_ASSERT(mesh_info->has_connectivity);
-
+  // Make sure there are two blocks (eblock-0_0_0, and eblock-1_0_0)
+  TEST_EQUALITY(mesh->getNumElementBlocks(), 2);
+  // There are six sideset "left, right, top, bottom, front, back"
+  TEST_EQUALITY(mesh->getNumSidesets(), 6);
+  
+  std::vector<stk::mesh::Entity> elements;
+  std::vector<stk::mesh::Entity> neighbors;
+  std::vector<stk::mesh::Entity> sides;
+  std::vector<panzer::LocalOrdinal> elids;
+  std::vector<panzer::LocalOrdinal> side2ele, ele2side;
   if(myRank == 0){
+	  
+	  {
+		  mesh->getMyElements(elements);
+		  TEST_EQUALITY(elements.size(), 8);   // element 1,3,5,7,9,11,13,15
+		  mesh->getNeighborElements(neighbors);
+		  TEST_EQUALITY(neighbors.size(), 8);  // element 2,4,6,8,10,12,14,16
+	      mesh->getMySides(sides);             // node 
+		//    for( const auto& ele : sides )
+		//	  std::cout << mesh->EntityGlobalId(ele) << std::endl;
+		//  TEST_EQUALITY(sides.size(), 6);
+		  for( const auto& ele : elements ) {
+			elids.emplace_back(mesh->elementLocalId(ele));
+		  }
+		  mesh->getElementSideRelation( elids, side2ele, ele2side);
+		//  TEST_EQUALITY(side2ele.size(), 12);
+		  TEST_EQUALITY(ele2side.size(), 48);
+	  }
 
     {
-      const auto & block = mesh_info->element_blocks.at("eblock-0_0_0");
-
-      out << "Element Block eblock-0_0_0" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 4);
-      TEST_EQUALITY(block.num_ghstd_cells, 4);
-      TEST_EQUALITY(block.num_virtual_cells, 12);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMyElements("eblock-0_0_0",elements);
+		TEST_EQUALITY(elements.size(), 4);   // element 1,5,9,13
+		TEST_EQUALITY(mesh->EntityGlobalId(elements[0]), 1);   
+        TEST_EQUALITY(mesh->EntityGlobalId(elements[1]), 5);   
+		mesh->getNeighborElements("eblock-0_0_0",neighbors);
+		TEST_EQUALITY(neighbors.size(), 4);  // element 2,6,10,14
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[0]), 2);
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[3]), 14);
     }
 
     {
-      const auto & block = mesh_info->element_blocks.at("eblock-1_0_0");
-
-      out << "Element Block eblock-1_0_0" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 4);
-      TEST_EQUALITY(block.num_ghstd_cells, 8);
-      TEST_EQUALITY(block.num_virtual_cells, 8);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMyElements("eblock-1_0_0",elements);
+		TEST_EQUALITY(elements.size(), 4);   // element 3,7,11,15
+		TEST_EQUALITY(mesh->EntityGlobalId(elements[0]), 3);   
+        TEST_EQUALITY(mesh->EntityGlobalId(elements[1]), 7);   
+		mesh->getNeighborElements("eblock-1_0_0",neighbors);
+		TEST_EQUALITY(neighbors.size(), 4);  // element 4,8,12,16
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[0]), 4);
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[3]), 16);
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0_0").at("left");
-
-      out << "Sideset eblock-0_0_0 left" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 4);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 4);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("left","eblock-0_0_0", sides);
+		TEST_EQUALITY(sides.size(), 4);
+		mesh->getMySides("left", sides);
+		TEST_EQUALITY(sides.size(), 4);
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0_0").at("top");
-
-      out << "Sideset eblock-0_0_0 top" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("top","eblock-0_0_0", sides);
+		TEST_EQUALITY(sides.size(), 2);
+		mesh->getMySides("top", sides);
+		TEST_EQUALITY(sides.size(), 4);
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0_0").at("bottom");
+		mesh->getMySides("front","eblock-0_0_0", sides);
+		TEST_EQUALITY(sides.size(), 2);
+		mesh->getMySides("front", sides);
+		TEST_EQUALITY(sides.size(), 4);
+    }
 
-      out << "Sideset eblock-0_0_0 bottom" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+   {
+		mesh->getMySides("top","eblock-1_0_0", sides);
+		TEST_EQUALITY(sides.size(), 2);
+		mesh->getMySides("top", sides);
+		TEST_EQUALITY(sides.size(), 4);
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0_0").at("front");
-
-      out << "Sideset eblock-0_0_0 front" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0_0").at("back");
-
-      out << "Sideset eblock-0_0_0 back" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-0_0_0").find("right") == mesh_info->sidesets.at("eblock-0_0_0").end());
-
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-1_0_0").find("left") == mesh_info->sidesets.at("eblock-1_0_0").end());
-
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-1_0_0").find("right") == mesh_info->sidesets.at("eblock-1_0_0").end());
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0_0").at("top");
-
-      out << "Sideset eblock-1_0_0 top" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0_0").at("bottom");
-
-      out << "Sideset eblock-1_0_0 bottom" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0_0").at("front");
-
-      out << "Sideset eblock-1_0_0 front" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0_0").at("back");
-
-      out << "Sideset eblock-1_0_0 back" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("back","eblock-1_0_0", sides);
+		TEST_EQUALITY(sides.size(), 2);
+		mesh->getMySides("back", sides);
+		TEST_EQUALITY(sides.size(), 4);
     }
 
   } else {
+	  
+	  {
+		  mesh->getMyElements(elements);
+		  TEST_EQUALITY(elements.size(), 8);   // element 2,4,6,8,10,12,14,16
+		  mesh->getNeighborElements(neighbors);
+		  TEST_EQUALITY(neighbors.size(), 8);  // element 1,3,5,7,9,11,13,15
+	      mesh->getMySides(sides);             // face 
+		//    for( const auto& ele : sides )
+		//	  std::cout << mesh->EntityGlobalId(ele) << std::endl;
+		//  TEST_EQUALITY(sides.size(), 6);
+		  for( const auto& ele : elements ) {
+			elids.emplace_back(mesh->elementLocalId(ele));
+		  }
+		  mesh->getElementSideRelation( elids, side2ele, ele2side);
+		//  TEST_EQUALITY(side2ele.size(), 12);
+		  TEST_EQUALITY(ele2side.size(), 48);
+	  }
 
     {
-      const auto & block = mesh_info->element_blocks.at("eblock-0_0_0");
-
-      out << "Element Block eblock-0_0_0" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 4);
-      TEST_EQUALITY(block.num_ghstd_cells, 8);
-      TEST_EQUALITY(block.num_virtual_cells, 8);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMyElements("eblock-0_0_0",elements);
+		TEST_EQUALITY(elements.size(), 4);   // element 2,6,10,14
+		TEST_EQUALITY(mesh->EntityGlobalId(elements[0]), 2);   
+        TEST_EQUALITY(mesh->EntityGlobalId(elements[1]), 6);   
+		mesh->getNeighborElements("eblock-0_0_0",neighbors);
+		TEST_EQUALITY(neighbors.size(), 4);  // element 1,5,9,13
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[0]), 1);
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[3]), 13);
     }
 
     {
-      const auto & block = mesh_info->element_blocks.at("eblock-1_0_0");
-
-      out << "Element Block eblock-1_0_0" << std::endl;
-
-      // Block should be empty
-      TEST_EQUALITY(block.num_owned_cells, 4);
-      TEST_EQUALITY(block.num_ghstd_cells, 4);
-      TEST_EQUALITY(block.num_virtual_cells, 12);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMyElements("eblock-1_0_0",elements);
+		TEST_EQUALITY(elements.size(), 4);   // element 4,8,12,16
+		TEST_EQUALITY(mesh->EntityGlobalId(elements[0]), 4);   
+        TEST_EQUALITY(mesh->EntityGlobalId(elements[1]), 8);   
+		mesh->getNeighborElements("eblock-1_0_0",neighbors);
+		TEST_EQUALITY(neighbors.size(), 4);  // element 3,7,11,15
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[0]), 3);
+		TEST_EQUALITY(mesh->EntityGlobalId(neighbors[3]), 15);
     }
 
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-0_0_0").find("left") == mesh_info->sidesets.at("eblock-0_0_0").end());
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0_0").at("top");
-
-      out << "Sideset eblock-0_0_0 top" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("right","eblock-1_0_0", sides);
+		TEST_EQUALITY(sides.size(), 4);
+		mesh->getMySides("right", sides);
+		TEST_EQUALITY(sides.size(), 4);
     }
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0_0").at("bottom");
-
-      out << "Sideset eblock-0_0_0 bottom" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("bottom","eblock-0_0_0", sides);
+		TEST_EQUALITY(sides.size(), 2);
+		mesh->getMySides("bottom", sides);
+		TEST_EQUALITY(sides.size(), 4);
     }
 
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-0_0_0").find("right") == mesh_info->sidesets.at("eblock-0_0_0").end());
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0_0").at("front");
-
-      out << "Sideset eblock-0_0_0 front" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("back","eblock-0_0_0", sides);
+		TEST_EQUALITY(sides.size(), 2);
+		mesh->getMySides("back", sides);
+		TEST_EQUALITY(sides.size(), 4);
+    }
+	
+	{
+		mesh->getMySides("top","eblock-1_0_0", sides);
+		TEST_EQUALITY(sides.size(), 2);
+		mesh->getMySides("top", sides);
+		TEST_EQUALITY(sides.size(), 4);
     }
 
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-0_0_0").at("back");
-
-      out << "Sideset eblock-0_0_0 back" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-//    TEUCHOS_ASSERT(mesh_info->sidesets.at("eblock-1_0_0").find("left") == mesh_info->sidesets.at("eblock-1_0_0").end());
 
     {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0_0").at("right");
-
-      out << "Sideset eblock-1_0_0 right" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 4);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 4);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0_0").at("top");
-
-      out << "Sideset eblock-1_0_0 top" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0_0").at("bottom");
-
-      out << "Sideset eblock-1_0_0 bottom" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0_0").at("front");
-
-      out << "Sideset eblock-1_0_0 front" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
-    }
-
-    {
-      const auto & block = mesh_info->sidesets.at("eblock-1_0_0").at("back");
-
-      out << "Sideset eblock-1_0_0 back" << std::endl;
-
-      // Block should have some basic stuff working
-      TEST_EQUALITY(block.num_owned_cells, 2);
-      TEST_EQUALITY(block.num_ghstd_cells, 0);
-      TEST_EQUALITY(block.num_virtual_cells, 2);
-      TEST_ASSERT(block.has_connectivity);
+		mesh->getMySides("front","eblock-1_0_0", sides);
+		TEST_EQUALITY(sides.size(), 2);
+		mesh->getMySides("front", sides);
+		TEST_EQUALITY(sides.size(), 4);
     }
   }
 
 }
 
-}

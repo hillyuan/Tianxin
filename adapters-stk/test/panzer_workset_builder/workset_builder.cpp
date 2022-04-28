@@ -707,9 +707,9 @@ namespace panzer {
 
         faceE.insert(5); faceE.insert(6);
 
-        bool nodes = true; for(int i= 0;i<18;i++) nodes &= (nodeE.find(mesh->elementGlobalId(elements[i]))!=nodeE.end()); TEST_ASSERT(nodes);
-        bool edges = true; for(int i=18;i<28;i++) edges &= (edgeE.find(mesh->elementGlobalId(elements[i]))!=edgeE.end()); TEST_ASSERT(edges);
-        bool faces = true; for(int i=28;i<30;i++) faces &= (faceE.find(mesh->elementGlobalId(elements[i]))!=faceE.end()); TEST_ASSERT(faces);
+        bool nodes = true; for(int i= 0;i<18;i++) nodes &= (nodeE.find(mesh->EntityGlobalId(elements[i]))!=nodeE.end()); TEST_ASSERT(nodes);
+        bool edges = true; for(int i=18;i<28;i++) edges &= (edgeE.find(mesh->EntityGlobalId(elements[i]))!=edgeE.end()); TEST_ASSERT(edges);
+        bool faces = true; for(int i=28;i<30;i++) faces &= (faceE.find(mesh->EntityGlobalId(elements[i]))!=faceE.end()); TEST_ASSERT(faces);
       }
     }
   }

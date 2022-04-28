@@ -428,7 +428,7 @@ void SquareTriMeshFactory::addSideSets(STK_Interface & mesh) const
    std::vector<stk::mesh::Entity>::const_iterator itr;
    for(itr=localElmts.begin();itr!=localElmts.end();++itr) {
       stk::mesh::Entity element = (*itr);
-      stk::mesh::EntityId gid = mesh.elementGlobalId(element);
+      stk::mesh::EntityId gid = mesh.EntityGlobalId(element);
 
       bool lower = (gid%2 != 0);
       std::size_t block = lower ? (gid+1)/2 : gid/2;
@@ -504,7 +504,7 @@ void SquareTriMeshFactory::addNodeSets(STK_Interface & mesh) const
    
    // loop over elements adding nodes to nodesets
    for(stk::mesh::Entity element : localElmts) {
-      stk::mesh::EntityId gid = mesh.elementGlobalId(element);
+      stk::mesh::EntityId gid = mesh.EntityGlobalId(element);
 
       bool lower = (gid%2 != 0);
       std::size_t block = lower ? (gid+1)/2 : gid/2;

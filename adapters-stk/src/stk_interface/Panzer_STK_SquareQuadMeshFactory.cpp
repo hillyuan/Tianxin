@@ -470,7 +470,7 @@ void SquareQuadMeshFactory::addSideSets(STK_Interface & mesh) const
    std::vector<stk::mesh::Entity>::const_iterator itr;
    for(itr=localElmts.begin();itr!=localElmts.end();++itr) {
       stk::mesh::Entity element = (*itr);
-      stk::mesh::EntityId gid = mesh.elementGlobalId(element);
+      stk::mesh::EntityId gid = mesh.EntityGlobalId(element);
 
       // reverse the offset for local gid numbering scheme
       gid -= offset_;
@@ -588,7 +588,7 @@ void SquareQuadMeshFactory::addNodeSets(STK_Interface & mesh) const
    
    // loop over elements adding nodes to nodesets
    for(stk::mesh::Entity element : localElmts) {
-      stk::mesh::EntityId gid = mesh.elementGlobalId(element);
+      stk::mesh::EntityId gid = mesh.EntityGlobalId(element);
 
       // reverse the offset for local gid numbering scheme
       gid -= offset_;

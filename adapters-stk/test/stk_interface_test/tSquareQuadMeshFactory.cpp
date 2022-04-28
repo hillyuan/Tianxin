@@ -504,13 +504,13 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshFactory, side_elmt_access)
 
       TEST_EQUALITY((int) myElements.size(),24/numprocs);
 
-      TEST_EQUALITY((int) mesh->elementGlobalId(myElements[0]),1+rank*3);
-      TEST_EQUALITY((int) mesh->elementGlobalId(myElements[1]),2+rank*3);
-      TEST_EQUALITY((int) mesh->elementGlobalId(myElements[2]),3+rank*3);
+      TEST_EQUALITY((int) mesh->EntityGlobalId(myElements[0]),1+rank*3);
+      TEST_EQUALITY((int) mesh->EntityGlobalId(myElements[1]),2+rank*3);
+      TEST_EQUALITY((int) mesh->EntityGlobalId(myElements[2]),3+rank*3);
 
-      TEST_EQUALITY((int) mesh->elementGlobalId(myElements[24/numprocs-3]),40-(numprocs-1)*(1-rank)*3);
-      TEST_EQUALITY((int) mesh->elementGlobalId(myElements[24/numprocs-2]),41-(numprocs-1)*(1-rank)*3);
-      TEST_EQUALITY((int) mesh->elementGlobalId(myElements[24/numprocs-1]),42-(numprocs-1)*(1-rank)*3);
+      TEST_EQUALITY((int) mesh->EntityGlobalId(myElements[24/numprocs-3]),40-(numprocs-1)*(1-rank)*3);
+      TEST_EQUALITY((int) mesh->EntityGlobalId(myElements[24/numprocs-2]),41-(numprocs-1)*(1-rank)*3);
+      TEST_EQUALITY((int) mesh->EntityGlobalId(myElements[24/numprocs-1]),42-(numprocs-1)*(1-rank)*3);
    }
 
    {
@@ -668,7 +668,7 @@ void entityVecToGIDVec(RCP<STK_Interface> mesh,
 {
    gidVec.resize(eVec.size());
    for(std::size_t i=0;i<eVec.size();i++)
-      gidVec[i] = mesh->elementGlobalId(eVec[i]);
+      gidVec[i] = mesh->EntityGlobalId(eVec[i]);
 
    std::sort(gidVec.begin(),gidVec.end());
 }
@@ -709,7 +709,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshFactory, sideset_nodeset)
 
          TEST_EQUALITY(localNodeIds.size(),8);
          TEST_EQUALITY(elements.size(),8);
-         TEST_EQUALITY(mesh->elementGlobalId(elements[0]),1);
+         TEST_EQUALITY(mesh->EntityGlobalId(elements[0]),1);
          TEST_EQUALITY(localNodeIds[0],0);
       }
       {
@@ -721,7 +721,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshFactory, sideset_nodeset)
 
          TEST_EQUALITY(localNodeIds.size(),1);
          TEST_EQUALITY(elements.size(),1);
-         TEST_EQUALITY(mesh->elementGlobalId(elements[0]),1);
+         TEST_EQUALITY(mesh->EntityGlobalId(elements[0]),1);
          TEST_EQUALITY(localNodeIds[0],0);
       }
    }

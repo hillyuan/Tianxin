@@ -19,10 +19,10 @@
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// THIS SOFTWARE IS PROVIDED THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR THE
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -48,8 +48,6 @@
    Unit test for function STK_Interface::getElementSideRelation
 */
 
-namespace panzer_stk {
-
 TEUCHOS_UNIT_TEST(localMesh, localSides)
 {
 	std::vector<std::string>  names;
@@ -57,7 +55,7 @@ TEUCHOS_UNIT_TEST(localMesh, localSides)
 	std::vector<panzer::LocalOrdinal> side2ele, ele2side;
 	// 1D mesh
 	{
-		Teuchos::RCP<panzer_stk::STK_Interface> mesh = buildMesh({3},{2},{2.});
+		Teuchos::RCP<panzer_stk::STK_Interface> mesh = panzer_stk::buildMesh({3},{2},{2.});
 		mesh->getElementBlockNames( names );
 		mesh->getMyElements(names[1], elements);
 		std::vector<panzer::LocalOrdinal> elids;
@@ -73,7 +71,7 @@ TEUCHOS_UNIT_TEST(localMesh, localSides)
 	
 	// 2D Mesh test
     {
-		Teuchos::RCP<panzer_stk::STK_Interface> mesh = buildMesh({3,5},{4,3},{2.,6.});
+		Teuchos::RCP<panzer_stk::STK_Interface> mesh = panzer_stk::buildMesh({3,5},{4,3},{2.,6.});
 		
 		mesh->getElementBlockNames( names );
         TEST_EQUALITY(names.size(), 4*3);
@@ -92,7 +90,7 @@ TEUCHOS_UNIT_TEST(localMesh, localSides)
 	
 	// 3D Mesh test
 	{
-		Teuchos::RCP<panzer_stk::STK_Interface> mesh = buildMesh({3,5,2},{4,3,5},{2.,6.,1.});
+		Teuchos::RCP<panzer_stk::STK_Interface> mesh = panzer_stk::buildMesh({3,5,2},{4,3,5},{2.,6.,1.});
 		
 		mesh->getElementBlockNames( names );
         TEST_EQUALITY(names.size(), 4*3*5);
@@ -108,6 +106,4 @@ TEUCHOS_UNIT_TEST(localMesh, localSides)
 		TEST_EQUALITY(side2ele.size(), 242);   // 15*3 + 10*4 + 6*6 faces
 		TEST_EQUALITY(ele2side.size(), 180);   // 30 elements with 6 faces per element
 	}
-}
-
 }

@@ -75,7 +75,7 @@ void entityVecToGIDVec(RCP<STK_Interface> mesh,
 {
    gidVec.resize(eVec.size());
    for(std::size_t i=0;i<eVec.size();i++)
-      gidVec[i] = mesh->elementGlobalId(eVec[i]);
+      gidVec[i] = mesh->EntityGlobalId(eVec[i]);
 
    std::sort(gidVec.begin(),gidVec.end());
 }

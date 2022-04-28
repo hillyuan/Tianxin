@@ -72,7 +72,7 @@ Teuchos::RCP<STK_Interface> LineMeshFactory::buildMesh(stk::ParallelMachine para
 
    // build bulk data
    completeMeshConstruction(*mesh,parallelMach);
-   mesh->PeriodicGhosting();
+   //mesh->PeriodicGhosting();
    return mesh;
 }
 
@@ -90,7 +90,7 @@ Teuchos::RCP<STK_Interface> LineMeshFactory::buildUncommitedMesh(stk::ParallelMa
    // build meta information: blocks and side set setups
    buildMetaData(parallelMach,*mesh);
 
-   mesh->addPeriodicBCs(periodicBCVec_);
+   //mesh->addPeriodicBCs(periodicBCVec_);
  
    return mesh;
 }
@@ -275,7 +275,7 @@ void LineMeshFactory::addSideSets(STK_Interface & mesh) const
    std::vector<stk::mesh::Entity>::const_iterator itr;
    for(itr=localElmts.begin();itr!=localElmts.end();++itr) {
       stk::mesh::Entity element = (*itr);
-      stk::mesh::EntityId gid = mesh.elementGlobalId(element);
+      stk::mesh::EntityId gid = mesh.EntityGlobalId(element);
 
       std::size_t nx = gid-1;
 

@@ -267,7 +267,7 @@ void MultiBlockMeshFactory::addSideSets(STK_Interface & mesh) const
    std::vector<stk::mesh::Entity>::const_iterator itr;
    for(itr=localElmts.begin();itr!=localElmts.end();++itr) {
       stk::mesh::Entity element = (*itr);
-      stk::mesh::EntityId gid = mesh.elementGlobalId(element);
+      stk::mesh::EntityId gid = mesh.EntityGlobalId(element);
 
       std::size_t nx,ny;
       ny = (gid-1) / totalXElems;
