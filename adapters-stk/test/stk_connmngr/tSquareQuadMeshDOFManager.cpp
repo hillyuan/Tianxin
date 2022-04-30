@@ -57,12 +57,6 @@
 #include "Intrepid2_HGRAD_QUAD_C2_FEM.hpp"
 #include "Intrepid2_HCURL_QUAD_I1_FEM.hpp"
 
-#ifdef HAVE_MPI
-   #include "Epetra_MpiComm.h"
-#else
-   #include "Epetra_SerialComm.h"
-#endif
-
 typedef Kokkos::DynRankView<double,PHX::Device> FieldContainer;
 
 using Teuchos::RCP;
@@ -82,7 +76,7 @@ Teuchos::RCP<panzer::ConnManager> buildQuadMesh(stk::ParallelMachine comm,int xe
 
    panzer_stk::SquareQuadMeshFactory meshFact;
    meshFact.setParameterList(Teuchos::rcpFromRef(pl));
-   
+
    Teuchos::RCP<panzer_stk::STK_Interface> mesh = meshFact.buildMesh(comm);
    return Teuchos::rcp(new panzer_stk::STKConnManager(mesh));
 }
@@ -112,7 +106,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_quad)
    TEUCHOS_ASSERT(numProcs==2);
 
    // build a geometric pattern from a single basis
-   RCP<const panzer::FieldPattern> patternC1 
+   RCP<const panzer::FieldPattern> patternC1
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C1_FEM<PHX::exec_space,double,double> >();
 
    RCP<panzer::ConnManager> connManager = buildQuadMesh(Comm,2,2,1,1);
@@ -159,11 +153,11 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_quad)
       TEST_EQUALITY(gids[9],6); TEST_EQUALITY(gids[10],7); TEST_EQUALITY(gids[11],8);
 
       for(std::size_t i=0;i<p_offsets.size();i++) {
-         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]); 
-         TEST_ASSERT(gids[p_offsets[i]]<gids[uy_offsets[i]]); 
-         TEST_ASSERT(gids[ux_offsets[i]]<gids[uy_offsets[i]]); 
+         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]);
+         TEST_ASSERT(gids[p_offsets[i]]<gids[uy_offsets[i]]);
+         TEST_ASSERT(gids[ux_offsets[i]]<gids[uy_offsets[i]]);
       }
-   
+
       dofManager->getElementGIDs(1,gids);
       TEST_EQUALITY(gids.size(),12);
       TEST_EQUALITY(gids[0],6); TEST_EQUALITY(gids[1],7); TEST_EQUALITY(gids[2],8);
@@ -172,9 +166,9 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_quad)
       TEST_EQUALITY(gids[9],12); TEST_EQUALITY(gids[10],13); TEST_EQUALITY(gids[11],14);
 
       for(std::size_t i=0;i<p_offsets.size();i++) {
-         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]); 
-         TEST_ASSERT(gids[p_offsets[i]]<gids[uy_offsets[i]]); 
-         TEST_ASSERT(gids[ux_offsets[i]]<gids[uy_offsets[i]]); 
+         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]);
+         TEST_ASSERT(gids[p_offsets[i]]<gids[uy_offsets[i]]);
+         TEST_ASSERT(gids[ux_offsets[i]]<gids[uy_offsets[i]]);
       }
    }
    else if(myRank==1) {
@@ -188,11 +182,11 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_quad)
       TEST_EQUALITY(gids[9],9); TEST_EQUALITY(gids[10],10); TEST_EQUALITY(gids[11],11);
 
       for(std::size_t i=0;i<p_offsets.size();i++) {
-         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]); 
-         TEST_ASSERT(gids[p_offsets[i]]<gids[uy_offsets[i]]); 
-         TEST_ASSERT(gids[ux_offsets[i]]<gids[uy_offsets[i]]); 
+         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]);
+         TEST_ASSERT(gids[p_offsets[i]]<gids[uy_offsets[i]]);
+         TEST_ASSERT(gids[ux_offsets[i]]<gids[uy_offsets[i]]);
       }
-   
+
       dofManager->getElementGIDs(1,gids);
       TEST_EQUALITY(gids.size(),12);
       TEST_EQUALITY(gids[0],9); TEST_EQUALITY(gids[1],10); TEST_EQUALITY(gids[2],11);
@@ -201,9 +195,9 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_quad)
       TEST_EQUALITY(gids[9],15); TEST_EQUALITY(gids[10],16); TEST_EQUALITY(gids[11],17);
 
       for(std::size_t i=0;i<p_offsets.size();i++) {
-         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]); 
-         TEST_ASSERT(gids[p_offsets[i]]<gids[uy_offsets[i]]); 
-         TEST_ASSERT(gids[ux_offsets[i]]<gids[uy_offsets[i]]); 
+         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]);
+         TEST_ASSERT(gids[p_offsets[i]]<gids[uy_offsets[i]]);
+         TEST_ASSERT(gids[ux_offsets[i]]<gids[uy_offsets[i]]);
       }
    }
 }
@@ -223,7 +217,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, field_order)
    TEUCHOS_ASSERT(numProcs==2);
 
    // build a geometric pattern from a single basis
-   RCP<const panzer::FieldPattern> patternC1 
+   RCP<const panzer::FieldPattern> patternC1
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C1_FEM<PHX::exec_space,double,double> >();
 
    RCP<panzer::ConnManager> connManager = buildQuadMesh(Comm,2,2,1,1);
@@ -264,17 +258,17 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, field_order)
       dofManager->getElementGIDs(0,gids);
       TEST_EQUALITY(gids.size(),12);
       for(std::size_t i=0;i<uy_offsets.size();i++) {
-         TEST_ASSERT(gids[uy_offsets[i]]<gids[p_offsets[i]]); 
-         TEST_ASSERT(gids[uy_offsets[i]]<gids[ux_offsets[i]]); 
-         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]); 
+         TEST_ASSERT(gids[uy_offsets[i]]<gids[p_offsets[i]]);
+         TEST_ASSERT(gids[uy_offsets[i]]<gids[ux_offsets[i]]);
+         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]);
       }
-   
+
       dofManager->getElementGIDs(1,gids);
       TEST_EQUALITY(gids.size(),12);
       for(std::size_t i=0;i<uy_offsets.size();i++) {
-         TEST_ASSERT(gids[uy_offsets[i]]<gids[p_offsets[i]]); 
-         TEST_ASSERT(gids[uy_offsets[i]]<gids[ux_offsets[i]]); 
-         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]); 
+         TEST_ASSERT(gids[uy_offsets[i]]<gids[p_offsets[i]]);
+         TEST_ASSERT(gids[uy_offsets[i]]<gids[ux_offsets[i]]);
+         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]);
       }
    }
    else if(myRank==1) {
@@ -283,17 +277,17 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, field_order)
       dofManager->getElementGIDs(0,gids);
       TEST_EQUALITY(gids.size(),12);
       for(std::size_t i=0;i<uy_offsets.size();i++) {
-         TEST_ASSERT(gids[uy_offsets[i]]<gids[p_offsets[i]]); 
-         TEST_ASSERT(gids[uy_offsets[i]]<gids[ux_offsets[i]]); 
-         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]); 
+         TEST_ASSERT(gids[uy_offsets[i]]<gids[p_offsets[i]]);
+         TEST_ASSERT(gids[uy_offsets[i]]<gids[ux_offsets[i]]);
+         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]);
       }
-   
+
       dofManager->getElementGIDs(1,gids);
       TEST_EQUALITY(gids.size(),12);
       for(std::size_t i=0;i<uy_offsets.size();i++) {
-         TEST_ASSERT(gids[uy_offsets[i]]<gids[p_offsets[i]]); 
-         TEST_ASSERT(gids[uy_offsets[i]]<gids[ux_offsets[i]]); 
-         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]); 
+         TEST_ASSERT(gids[uy_offsets[i]]<gids[p_offsets[i]]);
+         TEST_ASSERT(gids[uy_offsets[i]]<gids[ux_offsets[i]]);
+         TEST_ASSERT(gids[p_offsets[i]]<gids[ux_offsets[i]]);
       }
    }
 }
@@ -314,7 +308,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, ghosted_owned_indices)
    TEUCHOS_ASSERT(numProcs==2);
 
    // build a geometric pattern from a single basis
-   RCP<const panzer::FieldPattern> patternC1 
+   RCP<const panzer::FieldPattern> patternC1
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C1_FEM<PHX::exec_space,double,double> >();
 
    // build DOF manager
@@ -376,7 +370,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, ghosted_owned_indices)
       ownedAndGhostedCorrect &= (ownedAndGhosted[5] == (int) 8);
       TEST_ASSERT(ownedAndGhostedCorrect);
    }
-   else 
+   else
       TEUCHOS_ASSERT(false);
 }
 
@@ -396,9 +390,9 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, multiple_dof_managers)
    TEUCHOS_ASSERT(numProcs==2);
 
    // build a geometric pattern from a single basis
-   RCP<const panzer::FieldPattern> patternC1 
+   RCP<const panzer::FieldPattern> patternC1
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C1_FEM<PHX::exec_space,double,double> >();
-   RCP<const panzer::FieldPattern> patternC2 
+   RCP<const panzer::FieldPattern> patternC2
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C2_FEM<PHX::exec_space,double,double> >();
 
    // build DOF manager
@@ -420,15 +414,15 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, multiple_dof_managers)
 
       dofManager_temp->getElementGIDs(0,gids);
       TEST_EQUALITY(gids.size(),4);
-      TEST_EQUALITY(gids[0],0); 
-      TEST_EQUALITY(gids[1],1); 
+      TEST_EQUALITY(gids[0],0);
+      TEST_EQUALITY(gids[1],1);
       TEST_EQUALITY(gids[2],3);
-      TEST_EQUALITY(gids[3],2); 
-   
+      TEST_EQUALITY(gids[3],2);
+
       dofManager_temp->getElementGIDs(1,gids);
       TEST_EQUALITY(gids.size(),4);
-      TEST_EQUALITY(gids[0],2); 
-      TEST_EQUALITY(gids[1],3); 
+      TEST_EQUALITY(gids[0],2);
+      TEST_EQUALITY(gids[1],3);
       TEST_EQUALITY(gids[2],5);
       TEST_EQUALITY(gids[3],4);
    }
@@ -437,15 +431,15 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, multiple_dof_managers)
 
       dofManager_temp->getElementGIDs(0,gids);
       TEST_EQUALITY(gids.size(),4);
-      TEST_EQUALITY(gids[0],1); 
-      TEST_EQUALITY(gids[1],6); 
+      TEST_EQUALITY(gids[0],1);
+      TEST_EQUALITY(gids[1],6);
       TEST_EQUALITY(gids[2],7);
-      TEST_EQUALITY(gids[3],3); 
-   
+      TEST_EQUALITY(gids[3],3);
+
       dofManager_temp->getElementGIDs(1,gids);
       TEST_EQUALITY(gids.size(),4);
-      TEST_EQUALITY(gids[0],3); 
-      TEST_EQUALITY(gids[1],7); 
+      TEST_EQUALITY(gids[0],3);
+      TEST_EQUALITY(gids[1],7);
       TEST_EQUALITY(gids[2],8);
       TEST_EQUALITY(gids[3],5);
    }
@@ -475,7 +469,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager,getDofCoords)
    std::vector<stk::mesh::Entity> block00, block01;
    meshDB->getMyElements("eblock-0_0",block00);
    meshDB->getMyElements("eblock-1_0",block01);
-  
+
    std::vector<std::size_t> localIds_00, localIds_01;
    FieldContainer coords00, coords01;
    RCP<const panzer::Intrepid2FieldPattern> patternC1_00
@@ -484,8 +478,8 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager,getDofCoords)
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C2_FEM<PHX::exec_space,double,double> >();
 
    // get coordinates
-   stkManager->getDofCoords("eblock-0_0",*patternC1_00,localIds_00,coords00); 
-   stkManager->getDofCoords("eblock-1_0",*patternC1_01,localIds_01,coords01); 
+   stkManager->getDofCoords("eblock-0_0",*patternC1_00,localIds_00,coords00);
+   stkManager->getDofCoords("eblock-1_0",*patternC1_01,localIds_01,coords01);
 
    TEST_EQUALITY(localIds_00.size(),block00.size());
    TEST_EQUALITY(localIds_01.size(),block01.size());
@@ -498,9 +492,9 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager,getDofCoords)
    TEST_EQUALITY(coords00.extent(1),4); TEST_EQUALITY(coords00.extent(2),2);
    TEST_EQUALITY(coords01.extent(1),9); TEST_EQUALITY(coords01.extent(2),2);
 
-   for(std::size_t i=0;i<block00.size();i++) 
+   for(std::size_t i=0;i<block00.size();i++)
       TEST_EQUALITY(localIds_00[i],meshDB->elementLocalId(block00[i]));
-   for(std::size_t i=0;i<block01.size();i++) 
+   for(std::size_t i=0;i<block01.size();i++)
       TEST_EQUALITY(localIds_01[i],meshDB->elementLocalId(block01[i]));
 
    // for(std::size_t c=0;c<block00.size();c++) {
@@ -526,9 +520,9 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_quad_edge_orientations)
    TEUCHOS_ASSERT(numProcs==2);
 
    // build a geometric pattern from a single basis
-   RCP<const panzer::FieldPattern> patternC1 
+   RCP<const panzer::FieldPattern> patternC1
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C1_FEM<PHX::exec_space,double,double> >();
-   RCP<const panzer::FieldPattern> patternI1 
+   RCP<const panzer::FieldPattern> patternI1
          = buildFieldPattern<Intrepid2::Basis_HCURL_QUAD_I1_FEM<PHX::exec_space,double,double> >();
 
    RCP<panzer::ConnManager> connManager = buildQuadMesh(Comm,2,2,1,1);
@@ -653,7 +647,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_quad_edge_orientations2)
    TEUCHOS_ASSERT(numProcs==2);
 
    // build a geometric pattern from a single basis
-   RCP<const panzer::FieldPattern> patternI1 
+   RCP<const panzer::FieldPattern> patternI1
          = buildFieldPattern<Intrepid2::Basis_HCURL_QUAD_I1_FEM<PHX::exec_space,double,double> >();
 
    RCP<panzer::ConnManager> connManager = buildQuadMesh(Comm,2,2,1,1);
@@ -733,7 +727,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_quad_edge_orientations_fa
    TEUCHOS_ASSERT(numProcs==2);
 
    // build a geometric pattern from a single basis
-   RCP<const panzer::FieldPattern> patternI1 
+   RCP<const panzer::FieldPattern> patternI1
          = buildFieldPattern<Intrepid2::Basis_HCURL_QUAD_I1_FEM<PHX::exec_space,double,double> >();
 
    RCP<panzer::ConnManager> connManager = buildQuadMesh(Comm,2,2,1,1);
@@ -766,9 +760,9 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_q2q1)
    TEUCHOS_ASSERT(numProcs==2);
 
    // build a geometric pattern from a single basis
-   RCP<const panzer::FieldPattern> patternC1 
+   RCP<const panzer::FieldPattern> patternC1
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C1_FEM<PHX::exec_space,double,double> >();
-   RCP<const panzer::FieldPattern> patternC2 
+   RCP<const panzer::FieldPattern> patternC2
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C2_FEM<PHX::exec_space,double,double> >();
 
    RCP<panzer::ConnManager> connManager = buildQuadMesh(Comm,2,2,1,1);
@@ -909,7 +903,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_q2q1)
       TEST_EQUALITY(owned.size(),59-36);
       TEST_EQUALITY(ownedAndGhosted.size(),36);
    }
-   else 
+   else
       TEUCHOS_ASSERT(false);
 }
 
@@ -928,7 +922,7 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_nabors)
    TEUCHOS_ASSERT(numProcs==2);
 
    // build a geometric pattern from a single basis
-   RCP<const panzer::FieldPattern> patternC1 
+   RCP<const panzer::FieldPattern> patternC1
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C1_FEM<PHX::exec_space,double,double> >();
 
    RCP<panzer::ConnManager> connManager = buildQuadMesh(Comm,4,2,1,1);
@@ -1013,9 +1007,9 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_nabors)
      dofManager->getOwnedIndices(owned);
      dofManager_noNeighbors->getOwnedIndices(owned_noNeighbors);
      TEST_EQUALITY(owned.size(),owned_noNeighbors.size());
-  
+
      bool owned_result = true;
-     for(std::size_t j=0;j<owned.size();j++) 
+     for(std::size_t j=0;j<owned.size();j++)
        owned_result &= (owned[j]==owned_noNeighbors[j]);
      TEST_ASSERT(owned_result);
    }
@@ -1034,10 +1028,10 @@ TEUCHOS_UNIT_TEST(tSquareQuadMeshDOFManager, buildTest_nabors)
 
        dofManager->getElementGIDs(e,gids);
        bool allFound = true;
-       for(std::size_t i=0;i<gids.size();i++) 
+       for(std::size_t i=0;i<gids.size();i++)
          allFound &= (ghosted_set.find(gids[i])!=ghosted_set.end());
 
-       TEST_ASSERT(allFound); 
+       TEST_ASSERT(allFound);
      }
    }
 }

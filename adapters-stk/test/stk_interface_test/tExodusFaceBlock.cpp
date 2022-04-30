@@ -55,12 +55,6 @@
 
 #include "Kokkos_DynRankView.hpp"
 
-#ifdef HAVE_MPI
-   #include "Epetra_MpiComm.h"
-#else
-   #include "Epetra_SerialComm.h"
-#endif
-
 namespace panzer_stk {
 
 TEUCHOS_UNIT_TEST(tExodusFaceBlock, face_count)

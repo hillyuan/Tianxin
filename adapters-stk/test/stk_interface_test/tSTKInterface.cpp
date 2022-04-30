@@ -40,7 +40,6 @@
 // ***********************************************************************
 // @HEADER
 
-#include <Teuchos_ConfigDefs.hpp>
 #include <Teuchos_UnitTestHarness.hpp>
 #include "Teuchos_DefaultComm.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
@@ -50,12 +49,6 @@
 #include "Panzer_STK_Interface.hpp"
 
 #include "Shards_BasicTopologies.hpp"
-
-#ifdef HAVE_MPI
-   #include "Epetra_MpiComm.h"
-#else
-   #include "Epetra_SerialComm.h"
-#endif
 
 namespace panzer_stk {
 
@@ -79,26 +72,26 @@ Teuchos::RCP<STK_Interface> build2DMesh()
    mesh.beginModification();
       std::vector<double> coord(2);
       stk::mesh::Part * block = mesh.getElementBlockPart("quad_elements");
-      { 
+      {
          // Add four coordinates
          //
          //    4 ---- 3
          //    |      |
          //    |      |
-         //    1 ---- 2 
+         //    1 ---- 2
          //
-      
+
          coord[0] = 0.0; coord[1] = 0.0;
-         mesh.addNode(1,coord); 
+         mesh.addNode(1,coord);
 
          coord[0] = 1.0; coord[1] = 0.0;
-         mesh.addNode(2,coord); 
+         mesh.addNode(2,coord);
 
          coord[0] = 1.0; coord[1] = 1.0;
-         mesh.addNode(3,coord); 
+         mesh.addNode(3,coord);
 
          coord[0] = 0.0; coord[1] = 1.0;
-         mesh.addNode(4,coord); 
+         mesh.addNode(4,coord);
 
          // add an element
          std::vector<stk::mesh::EntityId> nodes;
@@ -109,20 +102,20 @@ Teuchos::RCP<STK_Interface> build2DMesh()
          mesh.addElement(ed,block);
       }
 
-      { 
+      {
          // Add four coordinates
          //
          //    3 ---- 6
          //    |      |
          //    |      |
-         //    2 ---- 5 
+         //    2 ---- 5
          //
-      
+
          coord[0] = 2.0; coord[1] = 0.5;
-         mesh.addNode(5,coord); 
+         mesh.addNode(5,coord);
 
          coord[0] = 2.1; coord[1] = 1.5;
-         mesh.addNode(6,coord); 
+         mesh.addNode(6,coord);
 
          // add an element
          std::vector<stk::mesh::EntityId> nodes(4);
@@ -135,20 +128,20 @@ Teuchos::RCP<STK_Interface> build2DMesh()
          mesh.addElement(ed,block);
       }
 
-      { 
+      {
          // Add four coordinates
          //
          //    8 ---- 7
          //    |      |
          //    |      |
-         //    4 ---- 3 
+         //    4 ---- 3
          //
-      
+
          coord[0] = 1.0; coord[1] = 2.5;
-         mesh.addNode(7,coord); 
+         mesh.addNode(7,coord);
 
          coord[0] = 0.1; coord[1] = 2.0;
-         mesh.addNode(8,coord); 
+         mesh.addNode(8,coord);
 
          // add an element
          std::vector<stk::mesh::EntityId> nodes(4);
@@ -178,12 +171,11 @@ TEUCHOS_UNIT_TEST(tSTKInterface, interface_test)
    const CellTopologyData * side_ctd = shards::CellTopology(ctd).getBaseCellTopologyData(1,0);
 
    // build global (or serial communicator)
-   #ifdef HAVE_MPI
-      Epetra_MpiComm Comm(MPI_COMM_WORLD);
-   #else
-      Epetra_SerialComm Comm;
-   #endif
-   RCP<Epetra_Comm> comm = rcpFromRef(Comm);
+     #ifdef HAVE_MPI
+     Teuchos::RCP<const Teuchos::MpiComm<int> > comm = Teuchos::rcp(new Teuchos::MpiComm<int>(MPI_COMM_WORLD));
+  #else
+      auto comm = Teuchos::rcp(Teuchos::DefaultComm<int>::getComm());
+  #endif
 
    STK_Interface mesh(2);
 
@@ -208,26 +200,26 @@ TEUCHOS_UNIT_TEST(tSTKInterface, interface_test)
 
       std::vector<double> coord(2);
       stk::mesh::Part * block = mesh.getElementBlockPart("0");
-      { 
+      {
          // Add four coordinates
          //
          //    4 ---- 3
          //    |      |
          //    |      |
-         //    1 ---- 2 
+         //    1 ---- 2
          //
-      
+
          coord[0] = 0.0; coord[1] = 0.0;
-         mesh.addNode(1,coord); 
+         mesh.addNode(1,coord);
 
          coord[0] = 1.0; coord[1] = 0.0;
-         mesh.addNode(2,coord); 
+         mesh.addNode(2,coord);
 
          coord[0] = 1.0; coord[1] = 1.0;
-         mesh.addNode(3,coord); 
+         mesh.addNode(3,coord);
 
          coord[0] = 0.0; coord[1] = 1.0;
-         mesh.addNode(4,coord); 
+         mesh.addNode(4,coord);
 
          // add an element
          std::vector<stk::mesh::EntityId> nodes;
@@ -238,20 +230,20 @@ TEUCHOS_UNIT_TEST(tSTKInterface, interface_test)
          mesh.addElement(ed,block);
       }
 
-      { 
+      {
          // Add four coordinates
          //
          //    3 ---- 6
          //    |      |
          //    |      |
-         //    2 ---- 5 
+         //    2 ---- 5
          //
-      
+
          coord[0] = 2.0; coord[1] = 0.5;
-         mesh.addNode(5,coord); 
+         mesh.addNode(5,coord);
 
          coord[0] = 2.1; coord[1] = 1.5;
-         mesh.addNode(6,coord); 
+         mesh.addNode(6,coord);
 
          // add an element
          std::vector<stk::mesh::EntityId> nodes(4);
@@ -281,7 +273,7 @@ TEUCHOS_UNIT_TEST(tSTKInterface, interface_test)
    #else
       TEST_ASSERT(not mesh.isWritable());
       TEST_THROW(mesh.writeToExodus("simplemesh.exo"),std::logic_error);
-   #endif 
+   #endif
 
    const double * coords = 0;
 
@@ -317,38 +309,38 @@ TEUCHOS_UNIT_TEST(tSTKInterface, node_sharing_test)
    using Teuchos::RCP;
    using Teuchos::rcp;
    using Teuchos::rcpFromRef;
- 
+
    RCP<STK_Interface> mesh = build2DMesh();
- 
+
    if(mesh->isWritable())
       mesh->writeToExodus("simplemesh.exo");
- 
+
    {
       std::vector<stk::mesh::Entity> elements;
       mesh->getElementsSharingNode(2,elements);
- 
-      TEST_EQUALITY(elements.size(),2); 
-      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 1))!=elements.end()); 
-      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 2))!=elements.end()); 
+
+      TEST_EQUALITY(elements.size(),2);
+      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 1))!=elements.end());
+      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 2))!=elements.end());
    }
- 
+
    {
       std::vector<stk::mesh::Entity> elements;
       mesh->getElementsSharingNode(4,elements);
- 
-      TEST_EQUALITY(elements.size(),2); 
-      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 1))!=elements.end()); 
-      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 3))!=elements.end()); 
+
+      TEST_EQUALITY(elements.size(),2);
+      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 1))!=elements.end());
+      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 3))!=elements.end());
    }
- 
+
    {
       std::vector<stk::mesh::Entity> elements;
       mesh->getElementsSharingNode(3,elements);
- 
-      TEST_EQUALITY(elements.size(),3); 
-      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 1))!=elements.end()); 
-      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 2))!=elements.end()); 
-      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 3))!=elements.end()); 
+
+      TEST_EQUALITY(elements.size(),3);
+      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 1))!=elements.end());
+      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 2))!=elements.end());
+      TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 3))!=elements.end());
    }
 
    {
@@ -359,11 +351,11 @@ TEUCHOS_UNIT_TEST(tSTKInterface, node_sharing_test)
      std::vector<stk::mesh::Entity> elements;
      mesh->getElementsSharingNodes(nodes,elements);
 
-     TEST_EQUALITY(elements.size(),2); 
-     TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 1))!=elements.end()); 
-     TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 3))!=elements.end()); 
+     TEST_EQUALITY(elements.size(),2);
+     TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 1))!=elements.end());
+     TEST_ASSERT(std::find_if(elements.begin(),elements.end(),CompareID(mesh, 3))!=elements.end());
    }
-    
+
    {
       std::vector<stk::mesh::EntityId> nodes;
       nodes.push_back(1);
@@ -372,7 +364,7 @@ TEUCHOS_UNIT_TEST(tSTKInterface, node_sharing_test)
       std::vector<stk::mesh::Entity> elements;
       mesh->getElementsSharingNodes(nodes,elements);
 
-      TEST_EQUALITY(elements.size(),0); 
+      TEST_EQUALITY(elements.size(),0);
    }
 }
 

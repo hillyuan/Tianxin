@@ -57,12 +57,6 @@
 #include "Intrepid2_HGRAD_QUAD_C1_FEM.hpp"
 #include "Intrepid2_HGRAD_QUAD_C2_FEM.hpp"
 
-#ifdef HAVE_MPI
-   #include "Epetra_MpiComm.h"
-#else
-   #include "Epetra_SerialComm.h"
-#endif
-
 using Teuchos::RCP;
 using Teuchos::rcp;
 
@@ -82,7 +76,7 @@ Teuchos::RCP<STK_Interface> build2DMesh(int xElements,int yElements,int xBlocks,
 
    SquareQuadMeshFactory factory;
    factory.setParameterList(pl);
-   
+
    Teuchos::RCP<STK_Interface> meshPtr = factory.buildMesh(MPI_COMM_WORLD);
 
    return meshPtr;
@@ -120,7 +114,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, 2_blocks)
    RCP<STK_Interface> mesh = build2DMesh(2,1,2,1);
    TEST_ASSERT(mesh!=Teuchos::null);
 
-   RCP<const panzer::FieldPattern> fp 
+   RCP<const panzer::FieldPattern> fp
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C2_FEM<PHX::exec_space,double,double> >();
 
    STKConnManager connMngr(mesh);
@@ -135,11 +129,11 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, 2_blocks)
    // check that each element is correct size
    std::vector<std::string> elementBlockIds;
    connMngr.getElementBlockIds(elementBlockIds);
-   for(std::size_t blk=0;blk<mesh->getNumElementBlocks();++blk) {
+   for(std::size_t blk=0;blk<connMngr.numElementBlocks();++blk) {
       std::string blockId = elementBlockIds[blk];
       const std::vector<int> & elementBlock = connMngr.getElementBlock(blockId);
       for(std::size_t elmt=0;elmt<elementBlock.size();++elmt)
-         TEST_EQUALITY(connMngr.getConnectivitySize(elementBlock[elmt]),9); 
+         TEST_EQUALITY(connMngr.getConnectivitySize(elementBlock[elmt]),9);
    }
 
    if(numProcs==1) {
@@ -150,10 +144,10 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, 2_blocks)
        TEST_EQUALITY(connMngr.getNeighborElementBlock("eblock-0_0").size(),1);
        TEST_EQUALITY(connMngr.getNeighborElementBlock("eblock-1_0").size(),1);
 
-       for(std::size_t blk=0;blk<mesh->getNumElementBlocks();++blk) {
+       for(std::size_t blk=0;blk<connMngr.numElementBlocks();++blk) {
          const std::vector<int> & elementBlock = connMngr.getNeighborElementBlock(elementBlockIds[blk]);
          for(std::size_t elmt=0;elmt<elementBlock.size();++elmt)
-           TEST_EQUALITY(connMngr.getConnectivitySize(elementBlock[elmt]),9); 
+           TEST_EQUALITY(connMngr.getConnectivitySize(elementBlock[elmt]),9);
        }
    }
 
@@ -163,18 +157,18 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, 2_blocks)
    if(numProcs==1) {
       const auto * conn1 = connMngr.getConnectivity(1);
       const auto * conn2 = connMngr.getConnectivity(2);
-      TEST_EQUALITY(conn1[0],1);  
-      TEST_EQUALITY(conn1[1],2);  
-      TEST_EQUALITY(conn1[2],7);  
-      TEST_EQUALITY(conn1[3],6);  
-   
-      TEST_EQUALITY(conn2[0],2);  
-      TEST_EQUALITY(conn2[1],3);  
-      TEST_EQUALITY(conn2[2],8);  
-      TEST_EQUALITY(conn2[3],7);  
-   
+      TEST_EQUALITY(conn1[0],1);
+      TEST_EQUALITY(conn1[1],2);
+      TEST_EQUALITY(conn1[2],7);
+      TEST_EQUALITY(conn1[3],6);
+
+      TEST_EQUALITY(conn2[0],2);
+      TEST_EQUALITY(conn2[1],3);
+      TEST_EQUALITY(conn2[2],8);
+      TEST_EQUALITY(conn2[3],7);
+
       TEST_EQUALITY(conn1[5],conn2[7]);
- 
+
       TEST_EQUALITY(conn1[8],nodeCount+(maxEdgeId+1)+2);
       TEST_EQUALITY(conn2[8],nodeCount+(maxEdgeId+1)+3);
 
@@ -183,15 +177,15 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, 2_blocks)
       const auto * conn0 = connMngr.getConnectivity(0);
       const auto * conn1 = connMngr.getConnectivity(1);
 
-      TEST_EQUALITY(conn0[0],0+myRank);  
-      TEST_EQUALITY(conn0[1],1+myRank);  
-      TEST_EQUALITY(conn0[2],6+myRank);  
-      TEST_EQUALITY(conn0[3],5+myRank);  
+      TEST_EQUALITY(conn0[0],0+myRank);
+      TEST_EQUALITY(conn0[1],1+myRank);
+      TEST_EQUALITY(conn0[2],6+myRank);
+      TEST_EQUALITY(conn0[3],5+myRank);
 
-      TEST_EQUALITY(conn1[0],2+myRank);  
-      TEST_EQUALITY(conn1[1],3+myRank);  
-      TEST_EQUALITY(conn1[2],8+myRank);  
-      TEST_EQUALITY(conn1[3],7+myRank);  
+      TEST_EQUALITY(conn1[0],2+myRank);
+      TEST_EQUALITY(conn1[1],3+myRank);
+      TEST_EQUALITY(conn1[2],8+myRank);
+      TEST_EQUALITY(conn1[3],7+myRank);
 
       TEST_EQUALITY(conn0[8],nodeCount+(maxEdgeId+1)+1+myRank);
       TEST_EQUALITY(conn1[8],nodeCount+(maxEdgeId+1)+3+myRank);
@@ -201,15 +195,15 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, 2_blocks)
 
       int otherRank = myRank==0 ? 1 : 0;
 
-      TEST_EQUALITY(conn2[0],0+otherRank);  
-      TEST_EQUALITY(conn2[1],1+otherRank);  
-      TEST_EQUALITY(conn2[2],6+otherRank);  
-      TEST_EQUALITY(conn2[3],5+otherRank);  
+      TEST_EQUALITY(conn2[0],0+otherRank);
+      TEST_EQUALITY(conn2[1],1+otherRank);
+      TEST_EQUALITY(conn2[2],6+otherRank);
+      TEST_EQUALITY(conn2[3],5+otherRank);
 
-      TEST_EQUALITY(conn3[0],2+otherRank);  
-      TEST_EQUALITY(conn3[1],3+otherRank);  
-      TEST_EQUALITY(conn3[2],8+otherRank);  
-      TEST_EQUALITY(conn3[3],7+otherRank);  
+      TEST_EQUALITY(conn3[0],2+otherRank);
+      TEST_EQUALITY(conn3[1],3+otherRank);
+      TEST_EQUALITY(conn3[2],8+otherRank);
+      TEST_EQUALITY(conn3[3],7+otherRank);
 
       TEST_EQUALITY(conn2[8],nodeCount+(maxEdgeId+1)+1+otherRank);
       TEST_EQUALITY(conn3[8],nodeCount+(maxEdgeId+1)+3+otherRank);
@@ -229,7 +223,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, single_block_2d)
    RCP<STK_Interface> mesh = build2DMesh(5,5,1,1);
    TEST_ASSERT(mesh!=Teuchos::null);
 
-   RCP<const panzer::FieldPattern> fp 
+   RCP<const panzer::FieldPattern> fp
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C1_FEM<PHX::exec_space,double,double> >();
 
    STKConnManager connMngr(mesh);
@@ -238,7 +232,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, single_block_2d)
    // did we get the element block correct?
    /////////////////////////////////////////////////////////////
 
-   TEST_EQUALITY(mesh->getNumElementBlocks(),1);
+   TEST_EQUALITY(connMngr.numElementBlocks(),1);
 
    const std::vector<int> & elementBlock = connMngr.getElementBlock("eblock-0_0");
    std::vector<int> nc_elementBlock = elementBlock;
@@ -258,18 +252,18 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, single_block_2d)
 
    // test connectivities
    /////////////////////////////////////////////////////////////
-   TEST_EQUALITY(connMngr.getConnectivitySize(9),4); 
-   TEST_EQUALITY(connMngr.getConnectivitySize(8),4); 
+   TEST_EQUALITY(connMngr.getConnectivitySize(9),4);
+   TEST_EQUALITY(connMngr.getConnectivitySize(8),4);
 
-  
+
    std::size_t localId;
    if(myRank==0)
       localId = mesh->elementLocalId(17);
    else
       localId = mesh->elementLocalId(20);
-   
+
    {
-      int conn_true[4]; 
+      int conn_true[4];
       if(numProcs==1) {
          conn_true[0] = 20;
          conn_true[1] = 21;
@@ -289,7 +283,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, single_block_2d)
          conn_true[3] = 29;
       }
       else {
-         TEST_ASSERT(false); 
+         TEST_ASSERT(false);
       }
 
       const auto * conn = connMngr.getConnectivity(localId);
@@ -316,7 +310,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, noConnectivityClone)
 
    RCP<const panzer::FieldPattern> fp_hgrad
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C1_FEM<PHX::exec_space,double,double> >();
-   RCP<const panzer::FieldPattern> fp_const 
+   RCP<const panzer::FieldPattern> fp_const
          = buildConstantFieldPattern(*ct);
 
    STKConnManager connMngr_const(mesh);
@@ -330,39 +324,39 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, noConnectivityClone)
    {
       // did we get the element block correct?
       /////////////////////////////////////////////////////////////
-   
-      TEST_EQUALITY(mesh->getNumElementBlocks(),1);
-   
+
+      TEST_EQUALITY(connMngr_const.numElementBlocks(),1);
+
       const std::vector<int> & elementBlock = connMngr_const.getElementBlock("eblock-0_0");
       std::vector<int> nc_elementBlock = elementBlock;
       if(numProcs==1)                   { TEST_EQUALITY(elementBlock.size(),25); }
       else if(numProcs==2 && myRank==0) { TEST_EQUALITY(elementBlock.size(),15); }
       else if(numProcs==2 && myRank==1) { TEST_EQUALITY(elementBlock.size(),10); }
       else                              { TEST_ASSERT(false); }
-   
+
       // check that the local elements are correctly numbered
       std::sort(nc_elementBlock.begin(),nc_elementBlock.end());
       bool check_local_blocks_passed = true;
       for(std::size_t i=0;i<elementBlock.size();i++)
          check_local_blocks_passed &= (nc_elementBlock[i]==(int) i);
       TEST_ASSERT(check_local_blocks_passed);
-   
+
       TEST_EQUALITY(mesh->getBlockId(9),"eblock-0_0");
-   
+
       // test connectivities
       /////////////////////////////////////////////////////////////
-      TEST_EQUALITY(connMngr_const.getConnectivitySize(9),1); 
-      TEST_EQUALITY(connMngr_const.getConnectivitySize(8),1); 
-   
-     
+      TEST_EQUALITY(connMngr_const.getConnectivitySize(9),1);
+      TEST_EQUALITY(connMngr_const.getConnectivitySize(8),1);
+
+
       std::size_t localId;
       if(myRank==0)
          localId = mesh->elementLocalId(17);
       else
          localId = mesh->elementLocalId(20);
-      
+
       {
-         int conn_true[1]; 
+         int conn_true[1];
          if(numProcs==1) {
             conn_true[0] = 16;
          }
@@ -373,52 +367,52 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, noConnectivityClone)
             conn_true[0] = 19;
          }
          else {
-            TEST_ASSERT(false); 
+            TEST_ASSERT(false);
          }
-   
+
          const auto * conn = connMngr_const.getConnectivity(localId);
          for(std::size_t i=0;(int) i<connMngr_const.getConnectivitySize(localId);i++)
             TEST_EQUALITY(conn[i],conn_true[i]);
       }
    }
-  
+
    // test hgrad conn manager
    {
       // did we get the element block correct?
       /////////////////////////////////////////////////////////////
-   
-      TEST_EQUALITY(mesh->getNumElementBlocks(),1);
-   
+
+      TEST_EQUALITY(connMngr_hgrad->numElementBlocks(),1);
+
       const std::vector<int> & elementBlock = connMngr_hgrad->getElementBlock("eblock-0_0");
       std::vector<int> nc_elementBlock = elementBlock;
       if(numProcs==1)                   { TEST_EQUALITY(elementBlock.size(),25); }
       else if(numProcs==2 && myRank==0) { TEST_EQUALITY(elementBlock.size(),15); }
       else if(numProcs==2 && myRank==1) { TEST_EQUALITY(elementBlock.size(),10); }
       else                              { TEST_ASSERT(false); }
-   
+
       // check that the local elements are correctly numbered
       std::sort(nc_elementBlock.begin(),nc_elementBlock.end());
       bool check_local_blocks_passed = true;
       for(std::size_t i=0;i<elementBlock.size();i++)
          check_local_blocks_passed &= (nc_elementBlock[i]==(int) i);
       TEST_ASSERT(check_local_blocks_passed);
-   
+
       TEST_EQUALITY(mesh->getBlockId(9),"eblock-0_0");
-   
+
       // test connectivities
       /////////////////////////////////////////////////////////////
-      TEST_EQUALITY(connMngr_hgrad->getConnectivitySize(9),4); 
-      TEST_EQUALITY(connMngr_hgrad->getConnectivitySize(8),4); 
-   
-     
+      TEST_EQUALITY(connMngr_hgrad->getConnectivitySize(9),4);
+      TEST_EQUALITY(connMngr_hgrad->getConnectivitySize(8),4);
+
+
       std::size_t localId;
       if(myRank==0)
          localId = mesh->elementLocalId(17);
       else
          localId = mesh->elementLocalId(20);
-      
+
       {
-         int conn_true[4]; 
+         int conn_true[4];
          if(numProcs==1) {
             conn_true[0] = 20;
             conn_true[1] = 21;
@@ -438,9 +432,9 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, noConnectivityClone)
             conn_true[3] = 29;
          }
          else {
-            TEST_ASSERT(false); 
+            TEST_ASSERT(false);
          }
-   
+
          const auto * conn = connMngr_hgrad->getConnectivity(localId);
          for(std::size_t i=0;(int) i<connMngr_hgrad->getConnectivitySize(localId);i++)
             TEST_EQUALITY(conn[i],conn_true[i]-1);
@@ -459,7 +453,7 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, four_block_2d)
    RCP<STK_Interface> mesh = build2DMesh(2,2,2,2); // 4x4 elements
    TEST_ASSERT(mesh!=Teuchos::null);
 
-   RCP<const panzer::FieldPattern> fp 
+   RCP<const panzer::FieldPattern> fp
          = buildFieldPattern<Intrepid2::Basis_HGRAD_QUAD_C1_FEM<PHX::exec_space,double,double> >();
 
    STKConnManager connMngr(mesh);
@@ -470,24 +464,24 @@ TEUCHOS_UNIT_TEST(tSTKConnManager, four_block_2d)
    // did we get the element block correct?
    /////////////////////////////////////////////////////////////
 
-   TEST_EQUALITY(mesh->getNumElementBlocks(),4);
+   TEST_EQUALITY(connMngr.numElementBlocks(),4);
 
    std::vector<std::string> elementBlockIds;
    connMngr.getElementBlockIds(elementBlockIds);
-   for(std::size_t blk=0;blk<mesh->getNumElementBlocks();blk++) {
+   for(std::size_t blk=0;blk<connMngr.numElementBlocks();blk++) {
       std::string blockId = elementBlockIds[blk];
       const std::vector<int> & elementBlock = connMngr.getElementBlock(blockId);
       std::vector<int> nc_elementBlock = elementBlock;
       if(numProcs==1)      { TEST_EQUALITY(elementBlock.size(),4); }
       else if(numProcs==2) { TEST_EQUALITY(elementBlock.size(),2); }
-   
+
       bool check_blockid_lookup = true;
       for(std::size_t i=0;i<elementBlock.size();i++)
          check_blockid_lookup &= (mesh->getBlockId(elementBlock[i])==blockId);
-      TEST_ASSERT(check_blockid_lookup); 
+      TEST_ASSERT(check_blockid_lookup);
    }
 
-   // 
+   //
    /////////////////////////////////////////////////////////////
 }
 
@@ -501,7 +495,7 @@ void testAssociatedNeighbors(const STKConnManager& connMngr,
     const int sz(connMngr.getAssociatedNeighbors(vals[i][0]).size());
     TEST_EQUALITY(sz, vals[i][1]);
     if (sz)
-      TEST_EQUALITY(connMngr.getAssociatedNeighbors(vals[i][0])[0], vals[i][2]);  
+      TEST_EQUALITY(connMngr.getAssociatedNeighbors(vals[i][0])[0], vals[i][2]);
   }
 }
 }

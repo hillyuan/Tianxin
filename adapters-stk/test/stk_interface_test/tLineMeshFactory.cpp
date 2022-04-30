@@ -59,13 +59,13 @@ TEUCHOS_UNIT_TEST(tLineMeshFactory, defaults)
    using Teuchos::RCP;
    using Teuchos::rcp;
    using Teuchos::rcpFromRef;
-   
-   LineMeshFactory factory; 
+
+   LineMeshFactory factory;
    RCP<STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
    TEST_ASSERT(mesh!=Teuchos::null);
 
    TEST_EQUALITY(mesh->getPeriodicBCVector().size(),0);
- 
+
    if(mesh->isWritable())
       mesh->writeToExodus("Line.exo");
 
@@ -89,12 +89,12 @@ TEUCHOS_UNIT_TEST(tLineMeshFactory, element_counts)
    RCP<Teuchos::ParameterList> pl = rcp(new Teuchos::ParameterList);
    pl->set("X Blocks",1);
    pl->set("X Elements",2);
-   
-   LineMeshFactory factory; 
+
+   LineMeshFactory factory;
    factory.setParameterList(pl);
    RCP<STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
    TEST_ASSERT(mesh!=Teuchos::null);
- 
+
    if(mesh->isWritable())
       mesh->writeToExodus("Line_oddelmt.exo");
 
@@ -123,12 +123,12 @@ TEUCHOS_UNIT_TEST(tLineMeshFactory, allblock)
    pl->set("X Elements",xe);
 
    xe *= bx;
-   
-   LineMeshFactory factory; 
+
+   LineMeshFactory factory;
    factory.setParameterList(pl);
    RCP<STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
    TEST_ASSERT(mesh!=Teuchos::null);
- 
+
    if(mesh->isWritable())
       mesh->writeToExodus("Line_allblock.exo");
 
@@ -138,7 +138,6 @@ TEUCHOS_UNIT_TEST(tLineMeshFactory, allblock)
    TEST_EQUALITY(mesh->getDimension(),1);
    TEST_EQUALITY(mesh->getNumElementBlocks(),(std::size_t) bx);
    TEST_EQUALITY(mesh->getNumSidesets(),2);
-   TEST_EQUALITY(mesh->getNumNodesets(),2);
    TEST_EQUALITY(mesh->getEntityCounts(mesh->getElementRank()),(std::size_t) xe);
    TEST_EQUALITY(mesh->getEntityCounts(mesh->getSideRank()),(std::size_t) xe+1);
    TEST_EQUALITY(mesh->getEntityCounts(mesh->getNodeRank()),(std::size_t) xe+1);
@@ -153,12 +152,12 @@ TEUCHOS_UNIT_TEST(tLineMeshFactory, two_block)
    RCP<Teuchos::ParameterList> pl = rcp(new Teuchos::ParameterList);
    pl->set("X Blocks",2);
    pl->set("X Elements",5);
-   
-   LineMeshFactory factory; 
+
+   LineMeshFactory factory;
    factory.setParameterList(pl);
    RCP<STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
    TEST_ASSERT(mesh!=Teuchos::null);
- 
+
    if(mesh->isWritable())
       mesh->writeToExodus("Line_2block.exo");
 
