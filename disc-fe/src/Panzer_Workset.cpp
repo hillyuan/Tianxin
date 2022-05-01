@@ -191,6 +191,15 @@ setup(const panzer::LocalMeshPartition & partition,
 
 }
 
+void WorksetDetails::
+setupFaceConnectivity(std::vector<panzer::LocalOrdinal>& side2ele,const int num_faces_per_cell, 
+	std::vector<panzer::LocalOrdinal>& ele2side)
+{
+	auto face_connectivity = Teuchos::rcp(new FaceConnectivity);
+	face_connectivity->setup(side2ele,num_faces_per_cell,ele2side);
+	face_connectivity_ = face_connectivity;
+}
+
 bool
 WorksetDetails::
 hasSubcellConnectivity(const unsigned int subcell_dimension) const
@@ -217,6 +226,7 @@ WorksetDetails::getFaceConnectivity() const
   TEUCHOS_ASSERT(face_connectivity_ != Teuchos::null);
   return *face_connectivity_;
 }
+
 
 const panzer::IntegrationValues2<double> &
 WorksetDetails::

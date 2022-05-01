@@ -240,6 +240,7 @@ void SculptMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::Paral
    mesh.buildLocalElementIDs();
    mesh.buildLocalEdgeIDs();
    mesh.buildLocalFaceIDs();
+   mesh.buildLocalSideIDs();
 
    addSideSets(mesh);
    addNodeSets(mesh);

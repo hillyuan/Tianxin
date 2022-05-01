@@ -163,11 +163,12 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	panzer::MDFieldArrayFactory mdArrayFactory("",true);
 	
 	Teuchos::RCP<std::vector<panzer::Workset> > worksets_ptr = Teuchos::rcp(new std::vector<panzer::Workset>);
+	int myrank = mesh_->getComm()->getRank();
 	
 //	std::vector<panzer::GlobalOrdinal> coords;
 //	Teuchos::RCP<stk::mesh::MetaData> metaData = mesh_->getMetaData();
 //    Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh_->getBulkData();
-	std::vector<std::size_t> local_cell_ids;
+	std::vector<panzer::LocalOrdinal> local_cell_ids;
 	std::vector<stk::mesh::Entity> elements;
 	
 	const std::string& element_block_name = worksetDesc.getElementBlock();
@@ -175,6 +176,8 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	const int n_dim = topo->getDimension();
 	const int n_nodes = topo->getNodeCount();
 	const int n_celldata = needs.cellData.numCells();
+	const int n_sides = topo->getSideCount();
+	
 /*	if(worksetDesc.useSideset()){
 		std::vector<stk::mesh::Entity> sideEntities;
 		mesh_->getMySides(worksetDesc.getSideset(),element_block_name,sideEntities);
@@ -205,6 +208,8 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 			local_cell_ids.emplace_back( lid );
 		}		 
 		int numElements = local_cell_ids.size();
+		if( worksetDesc.getWorksetSize() == panzer::WorksetSizeType::ALL_ELEMENTS ) 
+			worksetSize = -1;
 
 		const int wksize = (worksetSize<=0) ?  numElements : std::min( worksetSize, numElements );
 		//if(worksetDesc.getWorksetSize() == panzer::WorksetSizeType::ALL_ELEMENTS)
@@ -231,13 +236,15 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 			}
 		}
 
+		std::vector<panzer::LocalOrdinal> side2ele, ele2side;
 		for( LO i=0; i<numWorksets; i++ )
 		{
 			std::size_t n_ele = worksets_ptr->at(i).num_cells;
 			worksets_ptr->at(i).cell_vertex_coordinates = mdArrayFactory.buildStaticArray<double,panzer::Cell,panzer::NODE,panzer::Dim>(
 			     "cvc", n_ele, n_nodes, n_dim);		
 			worksets_ptr->at(i).block_id = element_block_name;
-			worksets_ptr->at(i).subcell_dim = n_dim;
+			worksets_ptr->at(i).set_dimension( n_dim );
+			worksets_ptr->at(i).subcell_dim = n_dim-1;
 			worksets_ptr->at(i).subcell_index = 0;
 			worksets_ptr->at(i).setTopology(topo);
 
@@ -261,6 +268,8 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 			});
 			
 			worksets_ptr->at(i).setSetup(true);
+			mesh_->getElementSideRelation( worksets_ptr->at(i).cell_local_ids,side2ele, ele2side);
+			worksets_ptr->at(i).setupFaceConnectivity(side2ele, n_sides, ele2side);
 			// Initialize IntegrationValues from integration descriptors
 			const auto& integs = needs.getIntegrators();
 			for(const auto & id : integs)
@@ -286,7 +295,6 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 		//	std::cout <<  worksets_ptr->at(i) ;
 		}
 	}
-	
 	return worksets_ptr;
 }
 
@@ -297,7 +305,7 @@ WorksetFactory :: generateWorksets(const panzer::PhysicsBlock& pb ) const
 	panzer::MDFieldArrayFactory mdArrayFactory("",true);
 	
 	Teuchos::RCP<std::vector<panzer::Workset> > pwksets = Teuchos::rcp(new std::vector<panzer::Workset>);
-	std::vector<std::size_t> local_cell_ids;
+	std::vector<panzer::LocalOrdinal> local_cell_ids;
 	std::vector<stk::mesh::Entity> elements;
 	
 	const auto& eb = pb.elementBlockID();
@@ -308,6 +316,7 @@ WorksetFactory :: generateWorksets(const panzer::PhysicsBlock& pb ) const
 	const int n_dim = topo->getDimension();
 	const int n_nodes = topo->getNodeCount();
 	const int n_celldata = needs.cellData.numCells();
+	const int n_sides = topo->getSideCount();
 	
 	mesh_->getMyElements(eb,elements);
 	if( elements.empty() ) return pwksets;     // no entity in current cpu
@@ -338,14 +347,16 @@ WorksetFactory :: generateWorksets(const panzer::PhysicsBlock& pb ) const
 			local_count = 0;
 		}
 	}
-	
+
+    std::vector<panzer::LocalOrdinal> side2ele, ele2side;
 	for( LO i=0; i<numWorksets; i++ )
 	{
 		std::size_t n_ele = pwksets->at(i).num_cells;
 		pwksets->at(i).cell_vertex_coordinates = mdArrayFactory.buildStaticArray<double,panzer::Cell,panzer::NODE,panzer::Dim>(
 			     "cvc", n_ele, n_nodes, n_dim);		
 		pwksets->at(i).block_id = eb;
-		pwksets->at(i).subcell_dim = n_dim;
+		pwksets->at(i).set_dimension( n_dim );
+		pwksets->at(i).subcell_dim = n_dim-1;
 		pwksets->at(i).subcell_index = 0;
 		pwksets->at(i).setTopology(topo);
 
@@ -369,6 +380,8 @@ WorksetFactory :: generateWorksets(const panzer::PhysicsBlock& pb ) const
 		});
 			
 		pwksets->at(i).setSetup(true);
+		mesh_->getElementSideRelation( pwksets->at(i).cell_local_ids,side2ele, ele2side);
+		pwksets->at(i).setupFaceConnectivity(side2ele, n_sides, ele2side);
 		// Initialize IntegrationValues from integration descriptors
 		const auto& integs = needs.getIntegrators();
 		for(const auto & id : integs)

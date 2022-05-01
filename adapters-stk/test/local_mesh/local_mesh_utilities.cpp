@@ -58,7 +58,7 @@ TEUCHOS_UNIT_TEST(localMesh, localSides)
 		Teuchos::RCP<panzer_stk::STK_Interface> mesh = panzer_stk::buildMesh({3},{2},{2.});
 		mesh->getElementBlockNames( names );
 		mesh->getMyElements(names[1], elements);
-		std::vector<panzer::LocalOrdinal> elids;
+		std::vector<std::size_t> elids;
 		for( const auto& ele : elements ) {
 			elids.emplace_back(mesh->elementLocalId(ele));
 		}
@@ -79,7 +79,7 @@ TEUCHOS_UNIT_TEST(localMesh, localSides)
 		mesh->getMyElements(names[0], elements); 
 		TEST_EQUALITY(elements.size(), 3*5);
 		
-		std::vector<panzer::LocalOrdinal> elids;
+		std::vector<std::size_t> elids;
 		for( const auto& ele : elements ) {
 			elids.emplace_back(mesh->elementLocalId(ele));
 		}
@@ -98,7 +98,7 @@ TEUCHOS_UNIT_TEST(localMesh, localSides)
 		mesh->getMyElements(names[0], elements); 
 		TEST_EQUALITY(elements.size(), 3*5*2);
 		
-		std::vector<panzer::LocalOrdinal> elids;
+		std::vector<std::size_t> elids;
 		for( const auto& ele : elements ) {
 			elids.emplace_back(mesh->elementLocalId(ele));
 		}

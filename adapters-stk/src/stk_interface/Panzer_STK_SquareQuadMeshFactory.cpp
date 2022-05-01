@@ -163,6 +163,7 @@ void SquareQuadMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::P
    if(createEdgeBlocks_) {
       mesh.buildLocalEdgeIDs();
    }
+   mesh.buildLocalSideIDs();
 
    // now that edges are built, sidsets can be added
 #ifndef ENABLE_UNIFORM

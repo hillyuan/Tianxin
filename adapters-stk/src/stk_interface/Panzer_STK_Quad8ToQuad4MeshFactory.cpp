@@ -138,6 +138,7 @@ void Quad8ToQuad4MeshFactory::completeMeshConstruction(STK_Interface & mesh,stk:
    if(createEdgeBlocks_) {
       mesh.buildLocalEdgeIDs();
    }
+   mesh.buildLocalSideIDs();
 
    // now that edges are built, sidsets can be added
 #ifndef ENABLE_UNIFORM

@@ -432,6 +432,7 @@ public:
      * \param[in] sideName Name of side set
      * \param[in,out] sides Vector of entities containing the requested sides.
      */
+   void getAllSides(std::vector<stk::mesh::Entity> & sides) const;
    void getAllSides(const std::string & sideName,std::vector<stk::mesh::Entity> & sides) const;
 
    /** Get Entities corresponding to the side set requested. This also limits the entities
@@ -1136,8 +1137,8 @@ public:
      * \param[out] neighboring element index of each sides = number of sides *2
      * \param[out] neighboring sides of each element = number of element * sides/elements
     **/
-   void getElementSideRelation( std::vector<panzer::LocalOrdinal>&, std::vector<panzer::LocalOrdinal>& ,
-		std::vector<panzer::LocalOrdinal>& );
+   void getElementSideRelation( std::vector<std::size_t>&, std::vector<panzer::LocalOrdinal>& ,
+		std::vector<panzer::LocalOrdinal>& ) const;
    
    std::size_t num_pbc_search() const
    { 

@@ -163,8 +163,7 @@ namespace panzer {
     {return sideset_;}
 
     /// Get the cell dimension for the mesh
-    unsigned int
-    numDimensions() const
+    unsigned int numDimensions() const
     {return num_dimensions_;}
 
     /// Get the subcell index (returns -1 if not a subcell)
@@ -317,6 +316,10 @@ namespace panzer {
 	void setTopology( Teuchos::RCP<const shards::CellTopology> topo) 
 	{cell_topology_=topo;}
 	void setNumeberOwnedCells(int n) {num_owned_cells_=n;}
+	void set_dimension(int d) { num_dimensions_ = d;}
+	
+	void setupFaceConnectivity(std::vector<panzer::LocalOrdinal>& ,const int num_faces_per_cell, 
+		std::vector<panzer::LocalOrdinal>& );
 
   protected:
 

@@ -69,7 +69,7 @@ TEUCHOS_UNIT_TEST(parallelLocalMesh, 1D_mesh)
   std::vector<stk::mesh::Entity> elements;
   std::vector<stk::mesh::Entity> neighbors;
   std::vector<stk::mesh::Entity> sides;
-  std::vector<panzer::LocalOrdinal> elids;
+  std::vector<std::size_t> elids;
   std::vector<panzer::LocalOrdinal> side2ele, ele2side;
   if(myRank == 0){
 	  
@@ -168,7 +168,7 @@ TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 2D_mesh)
   std::vector<stk::mesh::Entity> elements;
   std::vector<stk::mesh::Entity> neighbors;
   std::vector<stk::mesh::Entity> sides;
-  std::vector<panzer::LocalOrdinal> elids;
+  std::vector<std::size_t> elids;
   std::vector<panzer::LocalOrdinal> side2ele, ele2side;
   if(myRank == 0){
 	  
@@ -303,7 +303,7 @@ TEUCHOS_UNIT_TEST(parallelLocalMeshUtilities, 3D_mesh)
   std::vector<stk::mesh::Entity> elements;
   std::vector<stk::mesh::Entity> neighbors;
   std::vector<stk::mesh::Entity> sides;
-  std::vector<panzer::LocalOrdinal> elids;
+  std::vector<std::size_t> elids;
   std::vector<panzer::LocalOrdinal> side2ele, ele2side;
   if(myRank == 0){
 	  

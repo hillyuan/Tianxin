@@ -177,6 +177,7 @@ void CubeHexMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::Para
    if(createFaceBlocks_) {
       mesh.buildLocalFaceIDs();
    }
+   mesh.buildLocalSideIDs();
 
    mesh.beginModification();
 

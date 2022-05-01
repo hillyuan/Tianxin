@@ -1369,6 +1369,16 @@ void STK_Interface::getMySides(std::vector<stk::mesh::Entity> & sides) const
    stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(sideRank),sides);
 }
 
+void STK_Interface::getAllSides(std::vector<stk::mesh::Entity> & sides) const
+{
+   // setup local ownership
+   stk::mesh::Selector ownedPart = (metaData_->locally_owned_part() | metaData_->globally_shared_part());
+
+   // grab sides
+   stk::mesh::EntityRank sideRank = getSideRank();
+   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(sideRank),sides);
+}
+
 void STK_Interface::getMyFaces(std::vector<stk::mesh::Entity> & faces) const
 {
    // setup local ownership
@@ -2102,7 +2112,7 @@ void STK_Interface::buildLocalSideIDs()
 
    // might be better (faster) to do this by buckets
    std::vector<stk::mesh::Entity> sides;
-   getMySides(sides);
+   getAllSides(sides);
 
    for( const auto& side: sides) {
       localSideIDHash_[bulkData_->identifier(side)] = currentLocalId;
@@ -2157,12 +2167,14 @@ void STK_Interface::getSideToElementsMap(Kokkos::View<panzer::GlobalOrdinal*[2]>
 	}
 }
 
-void STK_Interface::getElementSideRelation( std::vector<panzer::LocalOrdinal>& elements,
- std::vector<panzer::LocalOrdinal>& side2elements, std::vector<panzer::LocalOrdinal>& element2sides )
+void STK_Interface::getElementSideRelation( std::vector<std::size_t>& elements,
+ std::vector<panzer::LocalOrdinal>& side2elements, std::vector<panzer::LocalOrdinal>& element2sides ) const
 {
-	if( localSideIDHash_.empty() ) this->buildLocalSideIDs();
-	if( localIDHash_.empty() ) this->buildLocalElementIDs();
-	
+//	if( localSideIDHash_.empty() ) this->buildLocalSideIDs();
+//	if( localIDHash_.empty() ) this->buildLocalElementIDs();
+    TEUCHOS_ASSERT( !localSideIDHash_.empty() );
+	TEUCHOS_ASSERT( !localIDHash_.empty() );
+
 	stk::mesh::EntityRank siderank = metaData_->side_rank();
 	stk::mesh::EntityRank elerank = getElementRank();  //siderank+1?
 /*const size_t num_rels = bulkData_->num_connectivity(src, tgt_rank);
@@ -2176,21 +2188,23 @@ void STK_Interface::getElementSideRelation( std::vector<panzer::LocalOrdinal>& e
 	/* find all sides of elements inputted */
 	std::set<panzer::GlobalOrdinal> sidegids;
 	element2sides.clear();
+//	if( getComm()->getRank()==1 )
+//std::cout << getComm()->getRank() << "< " << siderank << "," << elerank <<"   aaa\n";	
 	for( const auto ele: elements )
 	{
 		std::vector<stk::mesh::EntityId> subcellgids;
-		std::size_t gid = this->elementGlobalId( ele );
+		std::size_t gid = this->elementGlobalId( ele );//std::cout << gid << " ok\n";
 		getSubcellIndices(siderank,gid,subcellgids);
 	    for( const auto& side: subcellgids )
 			sidegids.insert( side );
-		
+	
 		const stk::mesh::Entity& element = bulkData_->get_entity(elerank,gid);
 		unsigned numSides = bulkData_->num_sides(element);
 	    if( numSides<=0 ) continue;
-		const stk::mesh::Entity* sides = bulkData_->begin(element,siderank);
+		const stk::mesh::Entity* sides = bulkData_->begin(element,siderank);//if( getComm()->getRank()==1 ) std::cout << " ok\n";
 		for (unsigned i=0; i<numSides; ++i) {
-			const auto& gid = bulkData_->identifier( sides[i] );
-			element2sides.emplace_back(localSideIDHash_[gid]);
+			const auto& gid = bulkData_->identifier( sides[i] );//if( getComm()->getRank()==1 ) std::cout << gid << " gid\n";	
+			element2sides.emplace_back(localSideIDHash_.at(gid));
 		}
 	}
 
@@ -2212,7 +2226,7 @@ void STK_Interface::getElementSideRelation( std::vector<panzer::LocalOrdinal>& e
 	  for (unsigned i=0; i<numElems; ++i) {
 			stk::mesh::Entity elem = elems[i];
 			const auto& gid = bulkData_->identifier( elem );
-			f2e_l[i] = localIDHash_[gid];
+			f2e_l[i] = localIDHash_.at(gid);
 	  }
 	  side2elements.emplace_back(f2e_l[0]);
 	  side2elements.emplace_back(f2e_l[1]);

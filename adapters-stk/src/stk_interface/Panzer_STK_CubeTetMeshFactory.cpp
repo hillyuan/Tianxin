@@ -162,6 +162,7 @@ void CubeTetMeshFactory::completeMeshConstruction(STK_Interface & mesh,stk::Para
    if(createFaceBlocks_) {
       mesh.buildLocalFaceIDs();
    }
+   mesh.buildLocalSideIDs();
 
    // now that edges are built, sidets can be added
    addSideSets(mesh);

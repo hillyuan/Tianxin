@@ -162,7 +162,7 @@ public:
   inline
   int localSubcellForSubcellHost(const int subcell, const int local_cell_index) const;
 
-public:
+protected:
 
   /// Adjacency array for indexing into subcell_to_cells array
   PHX::View<int*> _subcell_to_cells_adj;
@@ -208,6 +208,7 @@ public:
    * \param[in] partition Partition of mesh
    */
   void setup(const panzer::LocalMeshPartition & partition);
+  void setup(const std::vector<panzer::LocalOrdinal>& , const int, const std::vector<panzer::LocalOrdinal>& );
 
 };
 

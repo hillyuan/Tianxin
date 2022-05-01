@@ -110,7 +110,7 @@ namespace panzer_stk {
     // build edges and faces; fyi: addSides(mesh) builds only edges
     mesh.buildSubcells();
     mesh.buildLocalElementIDs();
-
+    mesh.buildLocalSideIDs();
 
 
     // now that edges are built, side and node sets can be added
