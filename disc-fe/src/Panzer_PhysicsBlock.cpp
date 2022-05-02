@@ -739,18 +739,16 @@ panzer::WorksetNeeds panzer::PhysicsBlock::getWorksetNeedsNew() const
 
   needs.cellData = this->cellData();
   const std::map<int,Teuchos::RCP<panzer::IntegrationRule> >& int_rules = this->getIntegrationRules();
-  for (std::map<int,Teuchos::RCP<panzer::IntegrationRule> >::const_iterator ir_itr = int_rules.begin();
-       ir_itr != int_rules.end(); ++ir_itr) 
+  for ( const auto& ir : int_rules ) 
   {
-	 panzer::IntegrationDescriptor id(ir_itr->second->order(),ir_itr->second->getType());
+	 panzer::IntegrationDescriptor id(ir.second->order(),ir.second->getType());
      needs.addIntegrator(id);
   }
 
   const std::map<std::string,Teuchos::RCP<panzer::PureBasis> >& bases= this->getBases();
  // const std::vector<StrPureBasisPair>& fieldToBasis = getProvidedDOFs();
-  for(std::map<std::string,Teuchos::RCP<panzer::PureBasis> >::const_iterator b_itr = bases.begin();
-      b_itr != bases.end(); ++b_itr) {
-    panzer::BasisDescriptor bd(b_itr->second->order(),b_itr->second->type());
+  for( const auto& br : bases ) {
+    panzer::BasisDescriptor bd(br.second->order(),br.second->type());
     needs.addBasis(bd);
 
   /*  bool found = false;

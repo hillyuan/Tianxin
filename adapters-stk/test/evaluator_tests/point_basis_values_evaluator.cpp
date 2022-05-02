@@ -394,7 +394,7 @@ namespace panzer {
       Teuchos::rcp(new PhysicsBlock(ipb,eBlockID,integration_order,cellData,eqset_factory,gd,false));
 
     std::map<std::string,WorksetNeeds> needs;
-    needs[physicsBlock->elementBlockID()] = physicsBlock->getWorksetNeeds();
+    needs[physicsBlock->elementBlockID()] = physicsBlock->getWorksetNeedsNew();
 
     // build DOF Manager (with a single HDiv basis)
     /////////////////////////////////////////////////////////////
@@ -427,7 +427,7 @@ namespace panzer {
     wkstContainer->setGlobalIndexer(dof_manager);
     wkstContainer->setWorksetSize(workset_size);
 
-    Teuchos::RCP<std::vector<panzer::Workset> > work_sets = wkstContainer->getWorksets(blockDescriptor(physicsBlock->elementBlockID()));
+    Teuchos::RCP<std::vector<panzer::Workset> > work_sets = wkstContainer->generateWorksets(blockDescriptor(physicsBlock->elementBlockID()));
     panzer::Workset & workset = (*work_sets)[0];
     TEST_EQUALITY(work_sets->size(),1);
 
@@ -567,7 +567,7 @@ namespace panzer {
       Teuchos::rcp(new PhysicsBlock(ipb,eBlockID,default_int_order,cellData,eqset_factory,gd,false));
 
     std::map<std::string,WorksetNeeds> needs;
-    needs[physicsBlock->elementBlockID()] = physicsBlock->getWorksetNeeds();
+    needs[physicsBlock->elementBlockID()] = physicsBlock->getWorksetNeedsNew();
 
     // build DOF Manager (with a single HDiv basis)
     /////////////////////////////////////////////////////////////
@@ -600,14 +600,13 @@ namespace panzer {
 
     RCP<panzer_stk::WorksetFactory> wkstFactory
        = rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
-    RCP<panzer::WorksetContainer> wkstContainer     // attach it to a workset container (uses lazy evaluation)
-       = rcp(new panzer::WorksetContainer(wkstFactory,needs));
-    wkstContainer->setGlobalIndexer(dof_manager);
-    wkstContainer->setWorksetSize(workset_size);
+    panzer::WorksetContainer wkstContainer(wkstFactory,needs);
+    wkstContainer.setGlobalIndexer(dof_manager);
+    wkstContainer.setWorksetSize(workset_size);
 
     // Teuchos::RCP<std::vector<panzer::Workset> > work_sets = panzer_stk::buildWorksets(*mesh,physicsBlock->elementBlockID(),
     //                                                                                         physicsBlock->getWorksetNeeds());
-    Teuchos::RCP<std::vector<panzer::Workset> > work_sets = wkstContainer->getWorksets(blockDescriptor(physicsBlock->elementBlockID()));
+    Teuchos::RCP<std::vector<panzer::Workset> > work_sets = wkstContainer.generateWorksets(blockDescriptor(physicsBlock->elementBlockID()));
     panzer::Workset & workset = (*work_sets)[0];
 
     TEST_EQUALITY(work_sets->size(),1);
@@ -668,7 +667,7 @@ namespace panzer {
     fm.setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
 
     panzer::Traits::SD sd;
-    sd.orientations_ = wkstContainer->getOrientations();
+    sd.orientations_ = wkstContainer.getOrientations();
     sd.worksets_ = work_sets;
     fm.postRegistrationSetup(sd);
     fm.print(out);

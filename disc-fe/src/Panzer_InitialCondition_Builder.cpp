@@ -97,7 +97,7 @@ setupInitialConditionFieldManagers(WorksetContainer & wkstContainer,
     // build the setup data using passed in information
     Traits::SD setupData;
     const WorksetDescriptor wd = blockDescriptor(blockId);
-    setupData.worksets_ = wkstContainer.getWorksets(wd);
+    setupData.worksets_ = wkstContainer.generateWorksets(wd);
     setupData.orientations_ = wkstContainer.getOrientations();
 
     int i=0;
@@ -162,7 +162,7 @@ setupInitialConditionFieldManagers(WorksetContainer & wkstContainer,
     // build the setup data using passed in information
     Traits::SD setupData;
     const WorksetDescriptor wd = blockDescriptor(blockId);
-    setupData.worksets_ = wkstContainer.getWorksets(wd);
+    setupData.worksets_ = wkstContainer.generateWorksets(wd);
     setupData.orientations_ = wkstContainer.getOrientations();
 
     int i=0;
@@ -213,7 +213,7 @@ evaluateInitialCondition(WorksetContainer & wkstContainer,
 
     // Loop over worksets in this element block
     const WorksetDescriptor wd = blockDescriptor(blockId);
-    std::vector<panzer::Workset>& w = *wkstContainer.getWorksets(wd);
+    std::vector<panzer::Workset>& w = *wkstContainer.generateWorksets(wd);
     for (std::size_t i = 0; i < w.size(); ++i) {
       panzer::Workset& workset = w[i];
       

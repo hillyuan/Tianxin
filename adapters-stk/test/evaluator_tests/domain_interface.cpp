@@ -121,7 +121,7 @@ TEUCHOS_UNIT_TEST(domain_interface, base)
 
   WorksetFactory worksetFactory(mesh);
 
-  auto worksets = worksetFactory.getWorksets(worksetDescriptor,
+  auto worksets = worksetFactory.generateWorksets(worksetDescriptor,
                                              worksetNeeds);
 
   TEST_EQUALITY(worksets->size(),1);
