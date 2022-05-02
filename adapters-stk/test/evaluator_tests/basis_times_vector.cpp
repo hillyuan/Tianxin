@@ -153,12 +153,12 @@ namespace panzer {
 
     wkstContainer.setFactory(Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)));
     for(size_t i=0;i<physicsBlocks.size();i++) 
-      wkstContainer.setNeeds(physicsBlocks[i]->elementBlockID(),physicsBlocks[i]->getWorksetNeeds());
+      wkstContainer.setNeeds(physicsBlocks[i]->elementBlockID(),physicsBlocks[i]->getWorksetNeedsNew());
     wkstContainer.setGlobalIndexer(dofManager);
     wkstContainer.setWorksetSize(workset_size);
 
     const panzer::WorksetDescriptor wd = panzer::blockDescriptor(eBlockID);
-    Teuchos::RCP<std::vector<panzer::Workset> > work_sets = wkstContainer.getWorksets(wd);
+    Teuchos::RCP<std::vector<panzer::Workset> > work_sets = wkstContainer.generateWorksets(wd);
     TEST_EQUALITY(work_sets->size(),1);
 
     // setup field manager, add evaluator under test

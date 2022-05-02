@@ -146,8 +146,7 @@ WorksetContainer::generateWorksets(const WorksetDescriptor & wd)
    WorksetMap::iterator itr = worksets_.find(wd);
    if(itr==worksets_.end()) {  // couldn't find workset, build it!
       WorksetNeeds needs;
-      if(hasNeeds())
-        needs = lookupNeeds(wd.getElementBlock());
+      if(hasNeeds()) needs = lookupNeeds(wd.getElementBlock());
       worksetVector = wkstFactory_->generateWorksets(wd,needs);
 
       // apply orientations to the just constructed worksets

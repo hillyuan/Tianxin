@@ -141,7 +141,7 @@ namespace panzer {
 
     panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true,false);
 
-    auto worksets = wkstContainer.getWorksets(workset_descriptor);
+    auto worksets = wkstContainer.generateWorksets(workset_descriptor);
 
     TEST_ASSERT(worksets->size()==1);
 
@@ -156,7 +156,7 @@ namespace panzer {
     const int num_points = normals.extent(1);
     const int num_faces = face_connectivity.numSubcells();
     const int num_faces_per_cell = face_connectivity.numSubcellsOnCellHost(0);
-    const int num_points_per_face = num_points / num_faces_per_cell;
+  //  const int num_points_per_face = num_points / num_faces_per_cell;
 
     //TEST_EQUALITY(num_faces,8); // 3*2-2 vertical edges (2 removed by periodicity)
                                 // 3*2-2 horizontal edges (2 removed by periodicty)

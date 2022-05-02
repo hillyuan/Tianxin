@@ -733,6 +733,45 @@ panzer::WorksetNeeds panzer::PhysicsBlock::getWorksetNeeds() const
 }
 
 // *******************************************************************
+panzer::WorksetNeeds panzer::PhysicsBlock::getWorksetNeedsNew() const
+{
+  panzer::WorksetNeeds needs;
+
+  needs.cellData = this->cellData();
+  const std::map<int,Teuchos::RCP<panzer::IntegrationRule> >& int_rules = this->getIntegrationRules();
+  for (std::map<int,Teuchos::RCP<panzer::IntegrationRule> >::const_iterator ir_itr = int_rules.begin();
+       ir_itr != int_rules.end(); ++ir_itr) 
+  {
+	 panzer::IntegrationDescriptor id(ir_itr->second->order(),ir_itr->second->getType());
+     needs.addIntegrator(id);
+  }
+
+  const std::map<std::string,Teuchos::RCP<panzer::PureBasis> >& bases= this->getBases();
+ // const std::vector<StrPureBasisPair>& fieldToBasis = getProvidedDOFs();
+  for(std::map<std::string,Teuchos::RCP<panzer::PureBasis> >::const_iterator b_itr = bases.begin();
+      b_itr != bases.end(); ++b_itr) {
+    panzer::BasisDescriptor bd(b_itr->second->order(),b_itr->second->type());
+    needs.addBasis(bd);
+
+  /*  bool found = false;
+    for(std::size_t d=0;d<fieldToBasis.size();d++) {
+      if(fieldToBasis[d].second->name()==b_itr->second->name()) {
+        // add representative basis for this field
+        needs.rep_field_name.push_back(fieldToBasis[d].first);
+        found = true;
+
+        break;
+      }
+    }
+
+    // this should always work if physics blocks are correctly constructed
+    TEUCHOS_ASSERT(found);*/
+  }
+
+  return needs;
+}
+
+// *******************************************************************
 const std::map<std::string,Teuchos::RCP<panzer::PureBasis> >&
 panzer::PhysicsBlock::getBases() const
 {

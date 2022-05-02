@@ -270,6 +270,7 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 			worksets_ptr->at(i).setSetup(true);
 			mesh_->getElementSideRelation( worksets_ptr->at(i).cell_local_ids,side2ele, ele2side);
 			worksets_ptr->at(i).setupFaceConnectivity(side2ele, n_sides, ele2side);
+
 			// Initialize IntegrationValues from integration descriptors
 			const auto& integs = needs.getIntegrators();
 			for(const auto & id : integs)
@@ -282,16 +283,24 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 
 			// Initialize BasisValues
 			const auto& basis = needs.getBases();
-			for(const auto & bd : basis){
+			if( basis.size()>0 ) {
+				TEUCHOS_ASSERT( needs.bases.size()==0 );  // no legacy definition
+				for(const auto & bd : basis){
 
-				// Initialize BasisValues from integrators
-				for(const auto & id : needs.getIntegrators())
-					worksets_ptr->at(i).getBasisValues(bd,id);
+					// Initialize BasisValues from integrators
+					for(const auto & id : needs.getIntegrators())
+						worksets_ptr->at(i).getBasisValues(bd,id);
 
-				// Initialize BasisValues from points
-				for(const auto & pd : needs.getPoints())
-				worksets_ptr->at(i).getBasisValues(bd,pd);
+					// Initialize BasisValues from points
+					for(const auto & pd : needs.getPoints())
+					worksets_ptr->at(i).getBasisValues(bd,pd);
+				} 
 			}
+		//	else if (needs.bases.size()>0) {
+		//		for( const auto& nds : needs.bases) {
+		//			panzer::BasisDescriptor bd(nds->order(),nds->type());
+		//		}
+		//	}
 		//	std::cout <<  worksets_ptr->at(i) ;
 		}
 	}

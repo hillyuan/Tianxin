@@ -319,7 +319,7 @@ TEUCHOS_UNIT_TEST(L2Projection, ToNodal)
     for (const auto& block : elementBlockNames) {
 
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true,true);
-      const auto worksets = worksetContainer->getWorksets(wd);
+      const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
 
 
@@ -606,7 +606,7 @@ TEUCHOS_UNIT_TEST(L2Projection, ToNodal)
     for (const auto& block : elementBlockNames) {
 
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true,true);
-      const auto worksets = worksetContainer->getWorksets(wd);
+      const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
         PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
                                                 targetGlobalIndexer->getElementBlockGIDCount(block));
@@ -721,7 +721,7 @@ TEUCHOS_UNIT_TEST(L2Projection, ToNodal)
     for (const auto& block : elementBlockNames) {
 
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true,true);
-      const auto worksets = worksetContainer->getWorksets(wd);
+      const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
         PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
                                                 targetGlobalIndexer->getElementBlockGIDCount(block));
@@ -1088,7 +1088,7 @@ TEUCHOS_UNIT_TEST(L2Projection, HighOrderTri)
     for (const auto& block : elementBlockNames) {
 
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true,true);
-      const auto worksets = worksetContainer->getWorksets(wd);
+      const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
 
         PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
@@ -1217,7 +1217,7 @@ TEUCHOS_UNIT_TEST(L2Projection, HighOrderTri)
     for (const auto& block : elementBlockNames) {
 
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true,true);
-      const auto worksets = worksetContainer->getWorksets(wd);
+      const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
         PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
                                                 targetGlobalIndexer->getElementBlockGIDCount(block));
@@ -1315,7 +1315,7 @@ TEUCHOS_UNIT_TEST(L2Projection, HighOrderTri)
     for (const auto& block : elementBlockNames) {
 
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true,true);
-      const auto worksets = worksetContainer->getWorksets(wd);
+      const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
         PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
                                                 targetGlobalIndexer->getElementBlockGIDCount(block));

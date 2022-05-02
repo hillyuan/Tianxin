@@ -248,6 +248,7 @@ namespace panzer {
     /** Build a workset needs object for this physics block.
       */
     WorksetNeeds getWorksetNeeds() const;
+	WorksetNeeds getWorksetNeedsNew() const;
 
     //! Returns the unique set of bases, key is the unique panzer::PureBasis::name() of the basis
     const std::map<std::string,Teuchos::RCP<panzer::PureBasis> >& getBases() const;
