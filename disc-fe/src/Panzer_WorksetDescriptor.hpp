@@ -312,21 +312,6 @@ inline bool operator==(const WorksetDescriptor & a,const WorksetDescriptor & b)
         && a.useSideset()==b.useSideset();
 }
 
-//! Hash function that satisifies the stl hash interface
-inline std::size_t hash_value(const WorksetDescriptor & wd)
-{
-  std::size_t seed = 0;
-
-  panzer::hash_combine(seed,wd.getElementBlock());
-  if(wd.useSideset()) {
-    // optionally hash on side set and side assembly
-    panzer::hash_combine(seed,wd.getSideset());
-    panzer::hash_combine(seed,wd.sideAssembly());
-  }
-
-  return seed;
-}
-
 //! I/O utility
 inline std::ostream & operator<<(std::ostream & os,const WorksetDescriptor & wd)
 {
