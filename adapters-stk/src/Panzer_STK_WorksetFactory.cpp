@@ -176,7 +176,7 @@ WorksetFactory :: generateWorksets(const panzer::WorksetDescriptor& worksetDesc,
 	const int n_dim = topo->getDimension();
 	const int n_nodes = topo->getNodeCount();
 	const int n_celldata = needs.cellData.numCells();
-	const int n_sides = topo->getSideCount();
+	const int n_sides = topo->getSubcellCount(n_dim-1);
 	
 /*	if(worksetDesc.useSideset()){
 		std::vector<stk::mesh::Entity> sideEntities;
@@ -325,7 +325,7 @@ WorksetFactory :: generateWorksets(const panzer::PhysicsBlock& pb ) const
 	const int n_dim = topo->getDimension();
 	const int n_nodes = topo->getNodeCount();
 	const int n_celldata = needs.cellData.numCells();
-	const int n_sides = topo->getSideCount();
+	const int n_sides = topo->getSubcellCount(n_dim-1);
 	
 	mesh_->getMyElements(eb,elements);
 	if( elements.empty() ) return pwksets;     // no entity in current cpu
