@@ -363,6 +363,7 @@ struct hash<panzer::WorksetDescriptor>
     if(wd.useSideset()) {
       // optionally hash on side set and side assembly
       panzer::hash_combine(seed,wd.getSideset());
+      panzer::hash_combine(seed,wd.sideAssembly());
     }
 
     return seed;
