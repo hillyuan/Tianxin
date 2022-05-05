@@ -1671,11 +1671,6 @@ void STK_Interface::setFaceFieldData(const std::string & fieldName,const std::st
 template <typename ArrayT>
 void STK_Interface::getElementVertices(const std::vector<std::size_t> & localElementIds, ArrayT & vertices) const
 {
-   if(!useFieldCoordinates_) {
-     //
-     // gather from the intrinsic mesh coordinates (non-lagrangian)
-     //
-
      const std::vector<stk::mesh::Entity> & elements = *(this->getElementsOrderedByLID());
 
      // convert to a vector of entity objects
@@ -1684,12 +1679,6 @@ void STK_Interface::getElementVertices(const std::vector<std::size_t> & localEle
        selected_elements.push_back(elements[localElementIds[cell]]);
 
      getElementVertices_FromCoords(selected_elements,vertices);
-   }
-   else {
-     TEUCHOS_TEST_FOR_EXCEPTION(true,std::invalid_argument,
-                                "STK_Interface::getElementVertices: Cannot call this method when field coordinates are used "
-                                "without specifying an element block.");
-   }
 }
 
 template <typename ArrayT>

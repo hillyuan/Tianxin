@@ -601,7 +601,7 @@ namespace panzer_stk {
     std::size_t max_wksets = 0;
     for(std::size_t pb=0;pb<physicsBlocks.size();pb++) {
       const panzer::WorksetDescriptor wd = panzer::blockDescriptor(physicsBlocks[pb]->elementBlockID());
-      Teuchos::RCP< std::vector<panzer::Workset> >works = wkstContainer->getWorksets(wd);
+      Teuchos::RCP< std::vector<panzer::Workset> >works = wkstContainer->generateWorksets(wd);
       max_wksets = std::max(max_wksets,works->size());
     }
     user_data_params.set<std::size_t>("Max Worksets",max_wksets);
