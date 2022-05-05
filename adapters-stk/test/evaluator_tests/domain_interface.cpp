@@ -117,7 +117,7 @@ TEUCHOS_UNIT_TEST(domain_interface, base)
   worksetNeeds.addBasis(basisDescriptor);
   worksetNeeds.addIntegrator(integrationDescriptor);
 
-  WorksetDescriptor worksetDescriptor("eblock-0_0", WorksetSizeType::ALL_ELEMENTS,true,false);
+  WorksetDescriptor worksetDescriptor("eblock-0_0", WorksetSizeType::ALL_ELEMENTS,false);
 
   WorksetFactory worksetFactory(mesh);
 

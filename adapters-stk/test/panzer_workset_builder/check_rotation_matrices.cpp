@@ -128,7 +128,7 @@ namespace panzer {
     panzer::WorksetContainer wkstContainer(wkstFactory);
 
     wkstContainer.setGlobalIndexer(dof_manager);
-    panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true,false);
+    panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, false);
     auto worksets = wkstContainer.generateWorksets(workset_descriptor);
 
     TEST_ASSERT(worksets->size()==1);

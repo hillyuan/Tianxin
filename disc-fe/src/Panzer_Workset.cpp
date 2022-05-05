@@ -49,7 +49,7 @@
 #include "Panzer_Workset_Builder.hpp"
 #include "Panzer_WorksetNeeds.hpp"
 #include "Panzer_Dimension.hpp"
-#include "Panzer_LocalMeshInfo.hpp"
+//#include "Panzer_LocalMeshInfo.hpp"
 #include "Panzer_PointGenerator.hpp"
 #include "Panzer_PointValues2.hpp"
 #include "Panzer_HashUtils.hpp"
@@ -110,86 +110,6 @@ WorksetDetails()
   , num_dimensions_(-1)
 { }
 
-void
-WorksetDetails::
-setup(const panzer::LocalMeshPartition & partition,
-      const WorksetOptions & options)
-{
-
-  num_cells = partition.local_cells.extent(0);
-  num_owned_cells_ = partition.num_owned_cells;
-  num_ghost_cells_ = partition.num_ghstd_cells;
-  num_virtual_cells_ = partition.num_virtual_cells;
-  options_ = options;
-
-  TEUCHOS_ASSERT(num_cells == num_owned_cells_ + num_ghost_cells_ + num_virtual_cells_);
-
-  TEUCHOS_ASSERT(partition.cell_topology != Teuchos::null);
-  cell_topology_ = partition.cell_topology;
-
-  num_dimensions_ = cell_topology_->getDimension();
-  subcell_dim = partition.subcell_dimension;
-  subcell_index = partition.subcell_index;
-  block_id = partition.element_block_name;
-  sideset_ = partition.sideset_name;
-
-
-  // Allocate and fill the local cell indexes for this workset
-  {
-    Kokkos::View<LocalOrdinal*, PHX::Device> cell_ids = Kokkos::View<LocalOrdinal*, PHX::Device>("cell_ids",num_cells);
-    Kokkos::deep_copy(cell_ids, partition.local_cells);
-    cell_local_ids_k = cell_ids;
-
-    // DEPRECATED - only retain for backward compatability
-    auto local_cells_h = Kokkos::create_mirror_view(partition.local_cells);
-    Kokkos::deep_copy(local_cells_h, partition.local_cells);
-    cell_local_ids.resize(num_cells,-1);
-    for(int cell=0;cell<num_cells;++cell){
-      const int local_cell = local_cells_h(cell);
-      cell_local_ids[cell] = local_cell;
-    }
-  }
-
-  // Allocate and fill the cell vertices
-  {
-    // Double check this
-    TEUCHOS_ASSERT(partition.cell_vertices.Rank == 3);
-
-    // Grab the size of the cell vertices array
-    const int num_partition_cells = partition.cell_vertices.extent(0);
-    const int num_vertices_per_cell = partition.cell_vertices.extent(1);
-    const int num_dims_per_vertex = partition.cell_vertices.extent(2);
-
-    // Make sure there isn't some strange problem going on
-    TEUCHOS_ASSERT(num_partition_cells == num_cells);
-    TEUCHOS_ASSERT(num_vertices_per_cell > 0);
-    TEUCHOS_ASSERT(num_dims_per_vertex > 0);
-
-    // Allocate the worksets copy of the cell vertices
-    MDFieldArrayFactory af("",true);
-    cell_vertex_coordinates = af.buildStaticArray<double, Cell, NODE, Dim>("cell vertices", num_partition_cells, num_vertices_per_cell, num_dims_per_vertex);
-
-    // Copy vertices over
-    const auto partition_vertices = partition.cell_vertices;
-    auto cvc = cell_vertex_coordinates.get_view();
-    Kokkos::parallel_for(num_cells, KOKKOS_LAMBDA (int i) {
-      for(int j=0;j<num_vertices_per_cell;++j)
-        for(int k=0;k<num_dims_per_vertex;++k)
-          cvc(i,j,k) = partition_vertices(i,j,k);
-      });
-    Kokkos::fence();
-  }
-
-  // Add the subcell connectivity
-  if(partition.has_connectivity){
-    auto face_connectivity = Teuchos::rcp(new FaceConnectivity);
-    face_connectivity->setup(partition);
-    face_connectivity_ = face_connectivity;
-  }
-  // We have enough information to construct Basis/Point/Integration Values on the fly
-  setup_ = true;
-
-}
 
 void WorksetDetails::
 setupFaceConnectivity(std::vector<panzer::LocalOrdinal>& side2ele,const int num_faces_per_cell, 

@@ -44,7 +44,6 @@
 #include "Teuchos_GlobalMPISession.hpp"
 
 #include "Panzer_STK_Interface.hpp"
-#include "Panzer_STK_LocalMeshUtilities.hpp"
 #include "PanzerSTK_UnitTest_BuildMesh.hpp"
 
 #include <string>

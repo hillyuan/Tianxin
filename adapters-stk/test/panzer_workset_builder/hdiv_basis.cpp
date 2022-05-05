@@ -140,7 +140,7 @@ namespace panzer {
     out << "getting worksets [start]" << std::endl;
 
     //  this must use this descriptor!
-    panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true,true);
+    panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true);
     std::vector<Workset> & worksets = *wkstContainer.generateWorksets(workset_descriptor);
 
     out << "getting worksets [complete]" << std::endl;

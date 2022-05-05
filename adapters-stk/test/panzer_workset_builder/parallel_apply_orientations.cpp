@@ -157,7 +157,7 @@ testApplyOrientations(const bool by_container,
   }
 
   // Grab the one and only workset
-  auto worksets = workset_container->generateWorksets(WorksetDescriptor(element_block, WorksetSizeType::ALL_ELEMENTS, true, by_container));
+  auto worksets = workset_container->generateWorksets(WorksetDescriptor(element_block, WorksetSizeType::ALL_ELEMENTS, by_container));
   TEST_EQUALITY(worksets->size(), 1);
 
   const auto & workset = (*worksets)[0];

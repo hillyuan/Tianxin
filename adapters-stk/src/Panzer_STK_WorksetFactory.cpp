@@ -45,7 +45,6 @@
 #include "Panzer_WorksetFactoryBase.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "Panzer_STK_Interface.hpp"
-#include "Panzer_STK_LocalMeshUtilities.hpp"
 #include "Panzer_CommonArrayFactories.hpp"
 
 #include <algorithm>

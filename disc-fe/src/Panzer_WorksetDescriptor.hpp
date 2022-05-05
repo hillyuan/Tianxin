@@ -91,11 +91,9 @@ public:
    */
   WorksetDescriptor(const std::string & elementBlock,
                     const int worksetSize=WorksetSizeType::CLASSIC_MODE,
-                    const bool requiresPartitioning=false,
                     const bool applyOrientations=true)
   : elementBlock_(elementBlock),
     worksetSize_(worksetSize),
-    requiresPartitioning_(requiresPartitioning),
     applyOrientations_(applyOrientations),
     sideAssembly_(false)
   {
@@ -118,7 +116,6 @@ public:
   : elementBlock_(elementBlock),
     sideset_(sideset),
     worksetSize_(CLASSIC_MODE),
-    requiresPartitioning_(false),
     applyOrientations_(true),
     sideAssembly_(sideAssembly)
   {
@@ -146,12 +143,10 @@ public:
   WorksetDescriptor(const std::string & elementBlock,
                     const std::string & sideset,
                     const int worksetSize=WorksetSizeType::CLASSIC_MODE,
-                    const bool requiresPartitioning=false,
                     const bool applyOrientations=true)
   : elementBlock_(elementBlock),
     sideset_(sideset),
     worksetSize_(worksetSize),
-    requiresPartitioning_(requiresPartitioning),
     applyOrientations_(applyOrientations),
     sideAssembly_(false)
   {
@@ -184,14 +179,12 @@ public:
                     const std::string & sideset_0,
                     const std::string & sideset_1,
                     const int worksetSize=WorksetSizeType::CLASSIC_MODE,
-                    const bool requiresPartitioning=false,
                     const bool applyOrientations=true)
   : elementBlock_(elementBlock_0),
     elementBlock_2_(elementBlock_1),
     sideset_(sideset_0),
     sideset_2_(sideset_1),
     worksetSize_(worksetSize),
-    requiresPartitioning_(requiresPartitioning),
     applyOrientations_(applyOrientations),
     sideAssembly_(false)
   {
@@ -243,17 +236,6 @@ public:
     return useSideset() and elementBlock_2_ != "";
   }
 
-  /** \brief Do we need to partition the local mesh prior to generating worksets.
-   *
-   * Note that this is required if running surface integrals on a discontinuous discretization.
-   *
-   * \return True if partitioning is required
-   */
-  bool requiresPartitioning() const
-  {
-    return requiresPartitioning_;
-  }
-
   //! This descriptor is for a side set.
   bool useSideset() const
   //{ return useSideset_; }
@@ -281,9 +263,6 @@ private:
 
   //! Requested workset size
   int worksetSize_;
-
-  //! Marks if the mesh require partitioning before generating worksets
-  bool requiresPartitioning_;
 
   //! Apply orientations - used for continuous discretizations with edge/face elements
   bool applyOrientations_;
@@ -358,7 +337,6 @@ struct hash<panzer::WorksetDescriptor>
     std::size_t seed = 0;
 
     panzer::hash_combine(seed,wd.getElementBlock());
-    panzer::hash_combine(seed,wd.requiresPartitioning());
     panzer::hash_combine(seed,wd.getWorksetSize());
     if(wd.useSideset()) {
       // optionally hash on side set and side assembly

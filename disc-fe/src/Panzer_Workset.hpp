@@ -64,7 +64,7 @@ namespace panzer {
 
   struct WorksetNeeds;
 
-  struct LocalMeshPartition;
+ // struct LocalMeshPartition;
 
   class SubcellConnectivity;
 
@@ -99,11 +99,6 @@ namespace panzer {
 
     //! Default constructor
     WorksetDetails();
-
-    //! Constructs the workset details from a given chunk of the mesh
-    void
-    setup(const LocalMeshPartition & partition,
-          const WorksetOptions & options);
 
     /// DEPRECATED - use: numCells()
     int num_cells;
@@ -153,13 +148,11 @@ namespace panzer {
     const panzer::PureBasis & getBasis(const panzer::BasisDescriptor & description) const;
 
     /// Get the element block id
-    const std::string &
-    getElementBlock() const
+    const std::string& getElementBlock() const
     {return block_id;}
 
     /// Get the sideset id (returns "" if not a sideset)
-    const std::string &
-    getSideset() const
+    const std::string& getSideset() const
     {return sideset_;}
 
     /// Get the cell dimension for the mesh
@@ -167,13 +160,11 @@ namespace panzer {
     {return num_dimensions_;}
 
     /// Get the subcell index (returns -1 if not a subcell)
-    int
-    getSubcellIndex() const
+    int getSubcellIndex() const
     {return subcell_index;}
 
     /// Get the subcell dimension
-    int
-    getSubcellDimension() const
+    int getSubcellDimension() const
     {return subcell_dim;}
 
     /// Get the vertices for the cells

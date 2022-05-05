@@ -41,11 +41,11 @@
 // @HEADER
 
 #include "Panzer_SubcellConnectivity.hpp"
-#include "Panzer_LocalMeshInfo.hpp"
+//#include "Panzer_LocalMeshInfo.hpp"
 
 namespace panzer
 {
-
+/*
 void
 FaceConnectivity::
 setup(const panzer::LocalMeshPartition & partition)
@@ -110,7 +110,7 @@ setup(const panzer::LocalMeshPartition & partition)
   Kokkos::deep_copy(_cell_to_subcells_adj_host,_cell_to_subcells_adj);
   Kokkos::deep_copy(_cell_to_subcells_host,_cell_to_subcells);
 }
-
+*/
 void
 FaceConnectivity::
 setup(const std::vector<panzer::LocalOrdinal>& side2ele, const int num_faces_per_cell, 

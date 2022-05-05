@@ -139,7 +139,7 @@ namespace panzer {
 
     wkstContainer.setGlobalIndexer(dof_manager);
 
-    panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, true,false);
+    panzer::WorksetDescriptor workset_descriptor(element_block, panzer::WorksetSizeType::ALL_ELEMENTS, false);
 
     auto worksets = wkstContainer.generateWorksets(workset_descriptor);
 

@@ -108,7 +108,7 @@ namespace panzer {
           ebMultiplier = elementBlockMultipliers->find(block)->second;
 
         // Based on descriptor, currently assumes there should only be one workset
-        panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true,true);
+        panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true);
         const auto worksets = worksetContainer_->generateWorksets(wd);
 
         for (const auto& workset : *worksets) {
@@ -212,7 +212,7 @@ namespace panzer {
           ebMultiplier = elementBlockMultipliers->find(block)->second;
 
         // Based on descriptor, currently assumes there should only be one workset
-        panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true,true);
+        panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true);
         const auto& worksets = worksetContainer_->generateWorksets(wd);
 
         for (const auto& workset : *worksets) {
@@ -419,7 +419,7 @@ namespace panzer {
     // *******************
     for (const auto& block : elementBlockNames_) {
 
-      panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true,true);
+      panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true);
       const auto& worksets = worksetContainer_->generateWorksets(wd);
       for (const auto& workset : *worksets) {
 
