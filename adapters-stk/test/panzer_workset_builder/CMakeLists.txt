@@ -28,6 +28,13 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   )
   
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
+  mixelement_builder
+  SOURCES mixelement_builder.cpp ${UNIT_TEST_DRIVER}
+  COMM serial mpi
+  NUM_MPI_PROCS 1
+  )
+  
+TRIBITS_ADD_EXECUTABLE_AND_TEST(
   cascade 
   SOURCES cascade.cpp ${UNIT_TEST_DRIVER}
   COMM serial mpi

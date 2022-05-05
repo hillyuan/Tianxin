@@ -427,8 +427,7 @@ void SquareTriMeshFactory::addSideSets(STK_Interface & mesh) const
 
    // loop over elements adding edges to sidesets
    std::vector<stk::mesh::Entity>::const_iterator itr;
-   for(itr=localElmts.begin();itr!=localElmts.end();++itr) {
-      stk::mesh::Entity element = (*itr);
+   for(const auto& element : localElmts) {
       stk::mesh::EntityId gid = mesh.EntityGlobalId(element);
 
       bool lower = (gid%2 != 0);
