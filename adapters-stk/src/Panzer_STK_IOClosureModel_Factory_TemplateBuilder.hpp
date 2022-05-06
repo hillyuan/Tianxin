@@ -46,7 +46,6 @@
 #include <string>
 #include "Sacado_mpl_apply.hpp"
 #include "Teuchos_RCP.hpp"
-#include "Panzer_Base.hpp"
 #include "Panzer_STK_IOClosureModel_Factory.hpp"
 #include "Panzer_ClosureModel_Factory_TemplateManager.hpp"
 

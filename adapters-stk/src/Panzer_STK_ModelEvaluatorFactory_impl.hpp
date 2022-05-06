@@ -171,7 +171,6 @@ namespace panzer_stk {
         p.set<int>("Default Integration Order",-1);
         p.set<std::string>("Field Order","");
         p.set<std::string>("Auxiliary Field Order","");
-        p.set<bool>("Use DOFManager FEI",false);
         p.set<bool>("Load Balance DOFs",false);
         p.set<bool>("Use Tpetra",false);
         p.set<bool>("Use Epetra ME",true);
@@ -293,7 +292,6 @@ namespace panzer_stk {
     std::size_t workset_size = Teuchos::as<std::size_t>(assembly_params.get<int>("Workset Size"));
     std::string field_order  = assembly_params.get<std::string>("Field Order"); // control nodal ordering of unknown
                                                                                    // global IDs in linear system
-    bool use_dofmanager_fei  = assembly_params.get<bool>("Use DOFManager FEI"); // use FEI if true, otherwise use internal dof manager
     bool use_load_balance = assembly_params.get<bool>("Load Balance DOFs");
     bool useTpetra = assembly_params.get<bool>("Use Tpetra");
     bool useThyraME = !assembly_params.get<bool>("Use Epetra ME");
@@ -446,7 +444,6 @@ namespace panzer_stk {
        blockedAssembly = true;
 
        panzer::BlockedDOFManagerFactory globalIndexerFactory;
-       globalIndexerFactory.setUseDOFManagerFEI(use_dofmanager_fei);
 
        Teuchos::RCP<panzer::GlobalIndexer> dofManager
          = globalIndexerFactory.buildGlobalIndexer(mpi_comm->getRawMpiComm(),physicsBlocks,conn_manager,field_order);
@@ -489,9 +486,7 @@ namespace panzer_stk {
        // use a blocked DOF manager
        blockedAssembly = true;
 
-       TEUCHOS_ASSERT(!use_dofmanager_fei);
        panzer::BlockedDOFManagerFactory globalIndexerFactory;
-       globalIndexerFactory.setUseDOFManagerFEI(false);
 
        Teuchos::RCP<panzer::GlobalIndexer> dofManager
          = globalIndexerFactory.buildGlobalIndexer(mpi_comm->getRawMpiComm(),physicsBlocks,conn_manager,field_order);
@@ -531,9 +526,7 @@ namespace panzer_stk {
 
        // use a flat DOF manager
 
-       TEUCHOS_ASSERT(!use_dofmanager_fei);
        panzer::DOFManagerFactory globalIndexerFactory;
-       globalIndexerFactory.setUseDOFManagerFEI(false);
        globalIndexerFactory.setUseTieBreak(use_load_balance);
        Teuchos::RCP<panzer::GlobalIndexer> dofManager
          = globalIndexerFactory.buildGlobalIndexer(mpi_comm->getRawMpiComm(),physicsBlocks,conn_manager,field_order);
@@ -555,7 +548,6 @@ namespace panzer_stk {
 
        // use a flat DOF manager
        panzer::DOFManagerFactory globalIndexerFactory;
-       globalIndexerFactory.setUseDOFManagerFEI(use_dofmanager_fei);
        globalIndexerFactory.setUseTieBreak(use_load_balance);
        globalIndexerFactory.setUseNeighbors(has_interface_condition);
        Teuchos::RCP<panzer::GlobalIndexer> dofManager

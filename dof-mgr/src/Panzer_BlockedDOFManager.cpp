@@ -60,11 +60,11 @@ using Teuchos::RCP;
 // ************************************************************
 
 BlockedDOFManager::BlockedDOFManager()
-   : fieldsRegistered_(false), maxSubFieldNum_(-1), requireOrientations_(false), useDOFManagerFEI_(true), useTieBreak_(false)
+   : fieldsRegistered_(false), maxSubFieldNum_(-1), requireOrientations_(false), useTieBreak_(false)
 { }
 
 BlockedDOFManager::BlockedDOFManager(const Teuchos::RCP<ConnManager> & connMngr,MPI_Comm mpiComm)
-   : fieldsRegistered_(false), maxSubFieldNum_(-1), requireOrientations_(false), useDOFManagerFEI_(true), useTieBreak_(false)
+   : fieldsRegistered_(false), maxSubFieldNum_(-1), requireOrientations_(false), useTieBreak_(false)
 {
    setConnManager(connMngr,mpiComm);
 }

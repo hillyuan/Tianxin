@@ -51,7 +51,7 @@ namespace panzer {
 
 class DOFManagerFactory : public virtual GlobalIndexerFactory {
 public:
-   DOFManagerFactory() : useDOFManagerFEI_(false), useTieBreak_(false), useNeighbors_(false) {}
+   DOFManagerFactory() : useTieBreak_(false), useNeighbors_(false) {}
 
    virtual ~DOFManagerFactory() {}
 
@@ -77,16 +77,6 @@ public:
                             const Teuchos::RCP<ConnManager> & connMngr,
                             const std::string & fieldOrder="") const;
 
-   void setUseDOFManagerFEI(bool flag)
-   { 
-     useDOFManagerFEI_ = flag; 
-   }
-
-   bool getUseDOFManagerFEI() const
-   { 
-     return false;
-   }
-
    void setUseTieBreak(bool flag) 
    { useTieBreak_ = flag; }
 
@@ -103,7 +93,6 @@ public:
 
 protected:
 
-   bool useDOFManagerFEI_;
    bool useTieBreak_;
    bool useNeighbors_;
 };

@@ -252,22 +252,6 @@ public:
      */
    virtual void ownedIndices(const std::vector<GlobalOrdinal> & indices,std::vector<bool> & isOwned) const; // ?
 
-   //@}
-   ////////////////////////////////////////////////////////////////////////////////////////////
-   ////////////////////////////////////////////////////////////////////////////////////////////
-
-   /** \brief Use the FEI DOF manager internally, or the standard version.
-     */
-   void setUseDOFManagerFEI(bool useFEI)
-   { useDOFManagerFEI_ = useFEI; }
-
-   /** \brief which DOF Manager is used internally?
-     */
-   bool getUseDOFManagerFEI() const
-   {
-     return false;
-   }
-
    /** \brief Set the connection manager and MPI_Comm objects.
      *
      * Set the connection manager and MPI_Comm objects. If this method
@@ -591,8 +575,6 @@ protected:
    mutable std::map<std::string,TupleToVectorPairMap> gidFieldOffsets_closure_;
 
    bool requireOrientations_;
-
-   bool useDOFManagerFEI_;
    bool useTieBreak_;
 };
 

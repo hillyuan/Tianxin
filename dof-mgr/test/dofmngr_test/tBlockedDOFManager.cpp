@@ -105,7 +105,6 @@ TEUCHOS_UNIT_TEST(tBlockedDOFManager_SimpleTests,assortedTests)
 
    RCP<ConnManager> connManager = rcp(new unit_test::ConnManager(myRank,numProc));
    BlockedDOFManager dofManager; 
-   dofManager.setUseDOFManagerFEI(false);
    dofManager.setConnManager(connManager,MPI_COMM_WORLD);
 
    TEST_ASSERT(dofManager.getComm()!=Teuchos::null);
@@ -156,7 +155,6 @@ TEUCHOS_UNIT_TEST(tBlockedDOFManager_SimpleTests,registerFields)
 
    RCP<ConnManager> connManger = rcp(new unit_test::ConnManager(myRank,numProc));
    BlockedDOFManager dofManager; 
-   dofManager.setUseDOFManagerFEI(false);
    dofManager.setConnManager(connManger,MPI_COMM_WORLD);
 
    TEST_EQUALITY(dofManager.getMaxSubFieldNumber(),-1);
@@ -290,7 +288,6 @@ TEUCHOS_UNIT_TEST(tBlockedDOFManager_SimpleTests,buildGlobalUnknowns)
 
    RCP<ConnManager> connManger = rcp(new unit_test::ConnManager(myRank,numProc));
    BlockedDOFManager dofManager; 
-   dofManager.setUseDOFManagerFEI(false);
    dofManager.setConnManager(connManger,MPI_COMM_WORLD);
 
    TEST_EQUALITY(dofManager.getMaxSubFieldNumber(),-1);
@@ -408,7 +405,6 @@ TEUCHOS_UNIT_TEST(tBlockedDOFManager_SimpleTests,getElement_gids_fieldoffsets)
 
    RCP<ConnManager> connManger = rcp(new unit_test::ConnManager(myRank,numProc));
    BlockedDOFManager dofManager; 
-   dofManager.setUseDOFManagerFEI(false);
    dofManager.setConnManager(connManger,MPI_COMM_WORLD);
 
    TEST_EQUALITY(dofManager.getMaxSubFieldNumber(),-1);
@@ -570,7 +566,6 @@ TEUCHOS_UNIT_TEST(tBlockedDOFManager_SimpleTests,validFieldOrder)
 {
 
    BlockedDOFManager dofManager; 
-   dofManager.setUseDOFManagerFEI(false);
 
    std::set<std::string> validFields;
    validFields.insert("horse");
@@ -712,7 +707,6 @@ TEUCHOS_UNIT_TEST(tBlockedDOFManager,mergetests)
    // DOF managers
    ////////////////////////////////////////////////////////
    BlockedDOFManager blkDofManager; 
-   blkDofManager.setUseDOFManagerFEI(false);
    blkDofManager.setConnManager(connManager,MPI_COMM_WORLD);
    blkDofManager.setFieldOrder(fieldOrder);
    blkDofManager.buildGlobalUnknowns(ugi_vector);

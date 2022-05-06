@@ -45,7 +45,6 @@
 
 #include "Teuchos_RCP.hpp"
 
-#include "Panzer_Base.hpp"
 #include "Panzer_BC.hpp"
 #include "Panzer_Traits.hpp"
 #include "Panzer_LinearObjFactory.hpp"
@@ -57,10 +56,17 @@ namespace panzer {
 }
 
 namespace panzer {
+	
+  //! Non-templated empty base class for template managers
+  class Base {
+  public:
+    Base() {}
+    virtual ~Base() {}
+  };
 
   //! Class for the matrix and residual fill.
   template <typename EvalT>
-    class AssemblyEngine : public panzer::Base {
+  class AssemblyEngine : public panzer::Base {
 
   public:    
     struct EvaluationFlags {

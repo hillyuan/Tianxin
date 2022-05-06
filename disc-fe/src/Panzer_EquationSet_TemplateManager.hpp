@@ -46,7 +46,6 @@
 #include "Phalanx_TemplateManager.hpp"
 
 #include "Panzer_Traits.hpp"
-#include "Panzer_Base.hpp"
 #include "Panzer_EquationSet.hpp"
 
 #include "Sacado_mpl_placeholders.hpp"

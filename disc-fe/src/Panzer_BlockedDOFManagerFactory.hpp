@@ -49,7 +49,7 @@ namespace panzer {
 
 class BlockedDOFManagerFactory : public virtual GlobalIndexerFactory {
 public:
-   BlockedDOFManagerFactory() : useDOFManagerFEI_(false), useTieBreak_(false) {}
+   BlockedDOFManagerFactory() : useTieBreak_(false) {}
    virtual ~BlockedDOFManagerFactory() {}
 
    /** Does a fieldOrder string require blocking? 
@@ -102,12 +102,6 @@ public:
                             const Teuchos::RCP<ConnManager> & connMngr,
                             const std::string & fieldOrder="") const;
 
-   void setUseDOFManagerFEI(bool flag)
-   { useDOFManagerFEI_ = flag; }
-
-   bool getUseDOFManagerFEI() const
-   { return useDOFManagerFEI_; }
-
    void setUseTieBreak(bool flag) 
    { useTieBreak_ = flag; }
 
@@ -115,7 +109,6 @@ public:
    { return useTieBreak_; }
 
 private:
-   bool useDOFManagerFEI_;
    bool useTieBreak_;
 };
 

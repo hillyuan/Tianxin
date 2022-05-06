@@ -47,7 +47,6 @@
 #include <string>
 #include "Sacado_mpl_apply.hpp"
 #include "Teuchos_RCP.hpp"
-#include "Panzer_Base.hpp"
 #include "user_app_ClosureModel_Factory.hpp"
 
 namespace user_app {
