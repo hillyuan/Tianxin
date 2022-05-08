@@ -213,33 +213,6 @@ namespace panzer_stk {
                               const Teuchos::Ptr<const Teuchos::ParameterList> & bc_list=Teuchos::null,
                               const Teuchos::RCP<Thyra::ModelEvaluator<ScalarT> > & physics_me=Teuchos::null) const;
 
-    /** \brief Setup the initial conditions in a model evaluator. Note that this
-      *        is entirely self contained.
-      */
-    void setupInitialConditions(Thyra::ModelEvaluator<ScalarT> & model,
-                                panzer::WorksetContainer & wkstContainer,
-                                const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
-                                const panzer::ClosureModelFactory_TemplateManager<panzer::Traits> & cm_factory,
-                                const panzer::LinearObjFactory<panzer::Traits> & lof,
-                                const Teuchos::ParameterList & closure_pl,
-                                const Teuchos::ParameterList & initial_cond_pl,
-                                const Teuchos::ParameterList & user_data_pl,
-                                bool write_dot_files,const std::string & dot_file_prefix) const;
-
-    /** \brief Write the initial conditions to exodus. Note that this
-      *        is entirely self contained.
-      */
-    void writeInitialConditions(const Thyra::ModelEvaluator<ScalarT> & model,
-                                const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
-                                const Teuchos::RCP<panzer::WorksetContainer> & wc,
-                                const Teuchos::RCP<const panzer::GlobalIndexer> & ugi,
-                                const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> > & lof,
-                                const Teuchos::RCP<panzer_stk::STK_Interface> & mesh,
-                                const panzer::ClosureModelFactory_TemplateManager<panzer::Traits> & cm_factory,
-                                const Teuchos::ParameterList & closure_model_pl,
-                                const Teuchos::ParameterList & user_data_pl,
-                                int workset_size) const;
-
     /** This method is to assist with construction of the model evaluators.
       */
     Teuchos::RCP<Thyra::ModelEvaluatorDefaultBase<double> >

@@ -237,18 +237,10 @@ namespace panzer {
     Teuchos::RCP<std::vector<panzer::Workset> > worksets;
 
     {
-      std::vector<std::size_t> local_cell_ids_a, local_cell_ids_b;
-      std::vector<std::size_t> local_side_ids_a, local_side_ids_b;
-
-      local_cell_ids_a.push_back(1);
-      local_cell_ids_a.push_back(5);
-      local_cell_ids_b.push_back(2);
-      local_cell_ids_b.push_back(6);
-
-      local_side_ids_a.push_back(1);
-      local_side_ids_a.push_back(1);
-      local_side_ids_b.push_back(3);
-      local_side_ids_b.push_back(3);
+      std::vector<std::size_t> local_cell_ids_a{1,5};
+      std::vector<std::size_t> local_cell_ids_b{2,6};
+      std::vector<std::size_t> local_side_ids_a{1,1};
+	  std::vector<std::size_t> local_side_ids_b{3,3};
 
       Kokkos::DynRankView<double,PHX::Device> cell_vertex_coordinates_a, cell_vertex_coordinates_b;
       mesh->getElementVertices(local_cell_ids_a,cell_vertex_coordinates_a);

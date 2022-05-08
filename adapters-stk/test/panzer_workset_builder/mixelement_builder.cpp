@@ -133,9 +133,6 @@ namespace panzer {
       panzer_stk::workset_utils::getIdsAndVertices(*mesh, element_blocks[i], local_cell_ids, 
 				cell_vertex_coordinates);
 
-      Teuchos::RCP<shards::CellTopology> topo
-         = Teuchos::rcp(new shards::CellTopology(shards::getCellTopologyData< shards::Quadrilateral<4> >()));
-
       Teuchos::RCP<const panzer::PhysicsBlock> pb = panzer::findPhysicsBlock(element_blocks[i],physicsBlocks);
       worksets.push_back(panzer::buildWorksets(pb->getWorksetNeeds(),pb->elementBlockID(),
 					       local_cell_ids,
@@ -165,7 +162,7 @@ namespace panzer {
     TEST_EQUALITY((*worksets[1])[0].block_id, element_blocks[1]);
     
   }
-	
+/*	
   TEUCHOS_UNIT_TEST(workset_builder, edge)
   {
 
@@ -219,14 +216,10 @@ namespace panzer {
     Teuchos::RCP<std::vector<panzer::Workset> > worksets;
 
     {
-      std::vector<std::size_t> local_cell_ids_a, local_cell_ids_b;
-      std::vector<std::size_t> local_side_ids_a, local_side_ids_b;
-
-      local_cell_ids_a.push_back(0);
-      local_cell_ids_b.push_back(4);
-
-      local_side_ids_a.push_back(3);
-      local_side_ids_b.push_back(1);
+      std::vector<std::size_t> local_cell_ids_a{0};
+	  std::vector<std::size_t> local_cell_ids_b{4};
+      std::vector<std::size_t> local_side_ids_a{3};
+	  std::vector<std::size_t> local_side_ids_b{1};
 
       Kokkos::DynRankView<double,PHX::Device> cell_vertex_coordinates_a, cell_vertex_coordinates_b;
       mesh->getElementVertices(local_cell_ids_a,cell_vertex_coordinates_a);
@@ -236,7 +229,7 @@ namespace panzer {
       Teuchos::RCP<const panzer::PhysicsBlock> pb_b = panzer::findPhysicsBlock(element_blocks[1],physicsBlocks);
       worksets = panzer::buildEdgeWorksets( pb_a->getWorksetNeeds(),pb_a->elementBlockID(),
  	                         local_cell_ids_a, local_side_ids_a, cell_vertex_coordinates_a,
-                                 pb_b->getWorksetNeeds(),pb_b->elementBlockID(),
+                             pb_b->getWorksetNeeds(),pb_b->elementBlockID(),
 			                 local_cell_ids_b, local_side_ids_b, cell_vertex_coordinates_b);
 
      
@@ -279,7 +272,7 @@ namespace panzer {
     }
     
   }
-
+*/
   void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
 			 std::vector<panzer::BC>& bcs)
   {

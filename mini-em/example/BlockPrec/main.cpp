@@ -29,7 +29,6 @@
 #include "Panzer_DOFManagerFactory.hpp"
 #include "Panzer_BlockedDOFManagerFactory.hpp"
 #include "Panzer_ModelEvaluator.hpp"
-#include "Panzer_InitialCondition_Builder.hpp"
 #include "Panzer_CheckBCConsistency.hpp"
 #include "Panzer_ResponseEvaluatorFactory_Functional.hpp"
 #include "Panzer_Response_Functional.hpp"

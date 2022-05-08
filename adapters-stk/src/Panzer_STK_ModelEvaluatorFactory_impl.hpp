@@ -65,7 +65,6 @@
 #include "Panzer_ThyraObjContainer.hpp"
 #include "Panzer_BlockedEpetraLinearObjFactory.hpp"
 #include "Panzer_BlockedTpetraLinearObjFactory.hpp"
-#include "Panzer_InitialCondition_Builder.hpp"
 #include "Panzer_ModelEvaluator_Epetra.hpp"
 #include "Panzer_ModelEvaluator.hpp"
 #include "Panzer_ElementBlockIdToPhysicsIdMap.hpp"
@@ -742,36 +741,6 @@ namespace panzer_stk {
                                      is_transient,
                                      t_init);
 
-    // Setup initial conditions
-    /////////////////////////////////////////////////////////////
-
-    {
-      // Create closure model list for use in defining initial conditions
-      // For now just remove Global MMS Parameters, if it exists
-      const Teuchos::ParameterList& models = p.sublist("Closure Models");
-      Teuchos::ParameterList cl_models(models.name());
-      for (Teuchos::ParameterList::ConstIterator model_it=models.begin(); 
-           model_it!=models.end(); ++model_it) {
-           std::string key = model_it->first;
-           if (model_it->first != "Global MMS Parameters")
-              cl_models.setEntry(key,model_it->second);
-       }
-      bool write_dot_files = false;
-      std::string prefix = "Panzer_AssemblyGraph_";
-      setupInitialConditions(*thyra_me,*wkstContainer,physicsBlocks,user_cm_factory,*linObjFactory,
-                             cl_models,
-                             p.sublist("Initial Conditions"),
-                             p.sublist("User Data"),
-                             p.sublist("Options").get("Write Volume Assembly Graphs",write_dot_files),
-                             p.sublist("Options").get("Volume Assembly Graph Prefix",prefix));
-    }
-
-    // Write the IC vector into the STK mesh: use response library
-    //////////////////////////////////////////////////////////////////////////
-    writeInitialConditions(*thyra_me,physicsBlocks,wkstContainer,globalIndexer,linObjFactory,mesh,user_cm_factory,
-                           p.sublist("Closure Models"),
-                           p.sublist("User Data"),workset_size);
-
     m_physics_me = thyra_me;
   }
 
@@ -857,122 +826,6 @@ namespace panzer_stk {
        for(std::size_t i=0;i<tokens.size();i++)
           mesh.addSolutionField(tokens[i],blockId);
     }
-  }
-
-  template<typename ScalarT>
-  void ModelEvaluatorFactory<ScalarT>::
-  setupInitialConditions(Thyra::ModelEvaluator<ScalarT> & model,
-                         panzer::WorksetContainer & wkstContainer,
-                         const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
-                         const panzer::ClosureModelFactory_TemplateManager<panzer::Traits> & cm_factory,
-                         const panzer::LinearObjFactory<panzer::Traits> & lof,
-                         const Teuchos::ParameterList & closure_pl,
-                         const Teuchos::ParameterList & initial_cond_pl,
-                         const Teuchos::ParameterList & user_data_pl,
-                         bool write_dot_files,const std::string & dot_file_prefix) const
-  {
-    using Teuchos::RCP;
-
-    Thyra::ModelEvaluatorBase::InArgs<double> nomValues = model.getNominalValues();
-    Teuchos::RCP<Thyra::VectorBase<double> > x_vec = Teuchos::rcp_const_cast<Thyra::VectorBase<double> >(nomValues.get_x());
-
-    if(initial_cond_pl.get<bool>("Zero Initial Conditions")) {
-      // zero out the x vector
-      Thyra::assign(x_vec.ptr(),0.0);
-    }
-    else if(!initial_cond_pl.sublist("Vector File").get<bool>("Enabled")) {
-      // read from exodus, or compute using field managers
-
-      std::map<std::string, Teuchos::RCP< PHX::FieldManager<panzer::Traits> > > phx_ic_field_managers;
-
-      panzer::setupInitialConditionFieldManagers(wkstContainer,
-                                                 physicsBlocks,
-                                                 cm_factory,
-                                                 closure_pl,
-                                                 initial_cond_pl,
-                                                 lof,
-                                                 user_data_pl,
-                                                 write_dot_files,
-                                                 dot_file_prefix,
-                                                 phx_ic_field_managers);
-/*
-      panzer::setupInitialConditionFieldManagers(wkstContainer,
-                                                 physicsBlocks,
-                                                 cm_factory,
-                                                 initial_cond_pl,
-                                                 lof,
-                                                 user_data_pl,
-                                                 write_dot_files,
-                                                 dot_file_prefix,
-                                                 phx_ic_field_managers);
-*/
-
-      // set the vector to be filled
-      Teuchos::RCP<panzer::LinearObjContainer> loc = lof.buildLinearObjContainer();
-      Teuchos::RCP<panzer::ThyraObjContainer<double> > tloc = Teuchos::rcp_dynamic_cast<panzer::ThyraObjContainer<double> >(loc);
-      tloc->set_x_th(x_vec);
-
-      panzer::evaluateInitialCondition(wkstContainer, phx_ic_field_managers, loc, lof, 0.0);
-    }
-    else {
-      const std::string & vectorFile = initial_cond_pl.sublist("Vector File").get<std::string>("File Name");
-      TEUCHOS_TEST_FOR_EXCEPTION(vectorFile=="",std::runtime_error,
-                                 "If \"Read From Vector File\" is true, then parameter \"Vector File\" cannot be the empty string.");
-
-      // set the vector to be filled
-      Teuchos::RCP<panzer::LinearObjContainer> loc = lof.buildLinearObjContainer();
-      Teuchos::RCP<panzer::ThyraObjContainer<double> > tloc = Teuchos::rcp_dynamic_cast<panzer::ThyraObjContainer<double> >(loc);
-      tloc->set_x_th(x_vec);
-
-      // read the vector
-      lof.readVector(vectorFile,*loc,panzer::LinearObjContainer::X);
-    }
-  }
-
-  template<typename ScalarT>
-  void ModelEvaluatorFactory<ScalarT>::
-  writeInitialConditions(const Thyra::ModelEvaluator<ScalarT> & model,
-                         const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
-                         const Teuchos::RCP<panzer::WorksetContainer> & wc,
-                         const Teuchos::RCP<const panzer::GlobalIndexer> & ugi,
-                         const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> > & lof,
-                         const Teuchos::RCP<panzer_stk::STK_Interface> & mesh,
-                         const panzer::ClosureModelFactory_TemplateManager<panzer::Traits> & cm_factory,
-                         const Teuchos::ParameterList & closure_model_pl,
-                         const Teuchos::ParameterList & user_data_pl,
-                         int workset_size) const
-  {
-    Teuchos::RCP<panzer::LinearObjContainer> loc = lof->buildLinearObjContainer();
-    Teuchos::RCP<panzer::ThyraObjContainer<double> > tloc = Teuchos::rcp_dynamic_cast<panzer::ThyraObjContainer<double> >(loc);
-    tloc->set_x_th(Teuchos::rcp_const_cast<Thyra::VectorBase<double> >(model.getNominalValues().get_x()));
-
-    Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > solnWriter
-        = initializeSolnWriterResponseLibrary(wc,ugi,lof,mesh);
-
-    {
-       Teuchos::ParameterList user_data(user_data_pl);
-       user_data.set<int>("Workset Size",workset_size);
-
-       finalizeSolnWriterResponseLibrary(*solnWriter,physicsBlocks,cm_factory,closure_model_pl,workset_size,user_data);
-    }
-
-    // initialize the assembly container
-    panzer::AssemblyEngineInArgs ae_inargs;
-    ae_inargs.container_ = loc;
-    ae_inargs.ghostedContainer_ = lof->buildGhostedLinearObjContainer();
-    ae_inargs.alpha = 0.0;
-    ae_inargs.beta = 1.0;
-    ae_inargs.evaluate_transient_terms = false;
-
-    // initialize the ghosted container
-    lof->initializeGhostedContainer(panzer::LinearObjContainer::X,*ae_inargs.ghostedContainer_);
-
-    // do import
-    lof->globalToGhostContainer(*ae_inargs.container_,*ae_inargs.ghostedContainer_,panzer::LinearObjContainer::X);
-
-    // fill STK mesh objects
-    solnWriter->addResponsesToInArgs<panzer::Traits::Residual>(ae_inargs);
-    solnWriter->evaluate<panzer::Traits::Residual>(ae_inargs);
   }
 
   //! build STK mesh from a mesh parameter list

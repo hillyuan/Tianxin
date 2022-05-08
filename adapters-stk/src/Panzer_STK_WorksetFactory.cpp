@@ -277,7 +277,7 @@ WorksetFactory :: generateWorksets(const panzer::PhysicsBlock& pb ) const
 	std::vector<stk::mesh::Entity> elements;
 	
 	const auto& eb = pb.elementBlockID();
-	const auto& needs = pb.getWorksetNeeds();
+	const auto& needs = pb.getWorksetNeedsNew();
 	const int worksetSize = needs.cellData.numCells();  // need reading?
 	
 	Teuchos::RCP<const shards::CellTopology> topo = mesh_->getCellTopology(eb);
