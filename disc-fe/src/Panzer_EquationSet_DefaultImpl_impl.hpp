@@ -140,25 +140,8 @@ setupDOFs()
 
   // Setup the default parameter list for closure models
   this->m_eval_plist->set("Block ID", getElementBlockId());
-  this->setupDeprecatedDOFsSupport();
 }
 
-// ***********************************************************************
-template <typename EvalT>
-void panzer::EquationSet_DefaultImpl<EvalT>::setupDeprecatedDOFsSupport()
-{
-  TEUCHOS_ASSERT(m_provided_dofs.size() > 0);
-  TEUCHOS_ASSERT(m_int_rules.size() > 0);
-
-  // Deprecated support assumes all equations in set use the same
-  // basis and integration rule
-  Teuchos::RCP<panzer::PureBasis> pure_basis = m_provided_dofs.begin()->second;
-  Teuchos::RCP<panzer::IntegrationRule> int_rule = m_int_rules.begin()->second;
-  Teuchos::RCP<panzer::BasisIRLayout> basis = panzer::basisIRLayout(pure_basis,*int_rule);
-
-  this->m_eval_plist->set("Basis", basis);
-  this->m_eval_plist->set("IR", int_rule);
-}
 
 // ***********************************************************************
 template <typename EvalT>

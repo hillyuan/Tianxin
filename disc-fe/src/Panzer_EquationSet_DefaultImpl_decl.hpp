@@ -342,9 +342,6 @@ namespace panzer {
     //object.  Useful for passing off input parameter sublists
     //directly to evaluators.
     Teuchos::RCP<Teuchos::ParameterList> getEquationSetParameterList() const;
-    
-    // Deprecated code support, NOTE: this assumes the same basis and inte rule are used for all dofs in the physics block!!!  We are setting these to avoid having to change closure model factories for all physics right away.
-    void setupDeprecatedDOFsSupport();
 
   protected:
 
