@@ -129,14 +129,6 @@ namespace panzer {
 							const Teuchos::ParameterList& models,
 							const Teuchos::ParameterList& user_data) const = 0;
 
-    virtual void buildAndRegisterInitialConditionEvaluators(PHX::FieldManager<panzer::Traits>& fm,
-							    const panzer::FieldLibrary& field_library,
-							    const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory,
-							    const std::string& model_name,
-							    const Teuchos::ParameterList& models,
-							    const panzer::LinearObjFactory<panzer::Traits> & lof,
-							    const Teuchos::ParameterList& user_data) const = 0;
-
     ///@}
 
     /// \name Query Methods

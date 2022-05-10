@@ -110,14 +110,6 @@ namespace panzer {
                                                         const Teuchos::ParameterList& models,
                                                         const Teuchos::ParameterList& user_data) const;
 
-    virtual void buildAndRegisterInitialConditionEvaluators(PHX::FieldManager<panzer::Traits>& fm,
-                                                            const panzer::FieldLibrary& fl,
-                                                            const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory,
-                                                            const std::string& model_name,
-                                                            const Teuchos::ParameterList& models,
-                                                            const LinearObjFactory<panzer::Traits> & lof,
-                                                            const Teuchos::ParameterList& user_data) const;
-
     virtual const Teuchos::RCP<Teuchos::ParameterList> getEvaluatorParameterList() const;
     
     virtual const std::vector<std::pair<std::string,Teuchos::RCP<panzer::PureBasis> > > & getProvidedDOFs() const;

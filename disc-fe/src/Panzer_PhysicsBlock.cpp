@@ -654,23 +654,6 @@ buildAndRegisterClosureModelEvaluators(PHX::FieldManager<panzer::Traits>& fm,
   }
 }
 
-// *******************************************************************
-void panzer::PhysicsBlock::
-buildAndRegisterInitialConditionEvaluators(PHX::FieldManager<panzer::Traits>& fm,
-                                      const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory,
-                                      const std::string& model_name,
-                                      const Teuchos::ParameterList& models,
-                                      const panzer::LinearObjFactory<panzer::Traits> & lof,
-                                      const Teuchos::ParameterList& user_data) const
-{
-  using namespace std;
-  using namespace panzer;
-  using namespace Teuchos;
-
-  // Only use the <Residual> evaluation type, so pass through to type specific call
-  this->buildAndRegisterInitialConditionEvaluatorsForType<panzer::Traits::Residual>(fm, factory, model_name, models, lof, user_data);
-}
-
 
 // *******************************************************************
 const std::vector<std::string>& panzer::PhysicsBlock::getDOFNames() const

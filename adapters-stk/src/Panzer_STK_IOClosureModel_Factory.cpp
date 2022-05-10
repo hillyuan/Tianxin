@@ -62,16 +62,14 @@ buildClosureModels(const std::string& model_id,
 {
   using Teuchos::RCP;
   using Teuchos::rcp;
-  using Teuchos::ParameterList;
-  using PHX::Evaluator;
 
   // build user evaluators
-  RCP< std::vector< RCP<Evaluator<panzer::Traits> > > > user_evals = 
+  RCP< std::vector< RCP<PHX::Evaluator<panzer::Traits> > > > user_evals = 
     userCMF_->buildClosureModels(model_id,models,fl,ir,default_params,user_data,global_data,fm);
 
   // add user evaluators to evaluator list
-  RCP< std::vector< RCP<Evaluator<panzer::Traits> > > > evaluators = 
-    rcp(new std::vector< RCP<Evaluator<panzer::Traits> > > );
+  RCP< std::vector< RCP<PHX::Evaluator<panzer::Traits> > > > evaluators = 
+    rcp(new std::vector< RCP<PHX::Evaluator<panzer::Traits> > > );
 
   // extract element block id
   std::string block_id = default_params.get<std::string>("Block ID");
