@@ -120,9 +120,6 @@ public:
    //! For this class this method does nothing.
    virtual void ghostToGlobal(int /* mem */) {} 
 
-   //! Nothing to do (its read only)
-   virtual bool requiresDirichletAdjustment() const { return false; }
-
    //! Set the owned vector (Tpetra version)
    void setOwnedVector_Tpetra(const Teuchos::RCP<const VectorType>& ownedVector);
 

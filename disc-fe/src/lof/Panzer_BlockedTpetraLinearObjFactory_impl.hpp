@@ -453,12 +453,10 @@ initializeGhostedContainer(int mem,BTLOC & loc) const
 
    if((mem & LOC::F) == LOC::F) {
       loc.set_f(getGhostedThyraRangeVector());
-      loc.setRequiresDirichletAdjustment(true);
    }
 
    if((mem & LOC::Mat) == LOC::Mat) {
       loc.set_A(getGhostedThyraMatrix());
-      loc.setRequiresDirichletAdjustment(true);
    }
 }
 

@@ -73,8 +73,6 @@ public:
    Teuchos::RCP<LinearObjContainer> getGhostedLOC() const { return ghostedLOC_; }
    Teuchos::RCP<LinearObjContainer> getGlobalLOC() const { return globalLOC_; }
 
-   virtual bool requiresDirichletAdjustment() const { return false; }
-
 private:
    Teuchos::RCP<LinearObjContainer> ghostedLOC_, globalLOC_;
 

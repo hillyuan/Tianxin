@@ -70,8 +70,7 @@ namespace panzer
    *         halo exchange for blocked vectors.                                  //                                               
    */                                                                            //                                               
   class BlockedVector_Write_GlobalEvaluationData                                 //                                               
-    :                                                                            //                                               
-    public WriteVector_GlobalEvaluationData                                      //                                               
+    : public WriteVector_GlobalEvaluationData                                    //                                               
   {
     public:
 
@@ -154,8 +153,7 @@ namespace panzer
        *                 `GlobalEvaluationData` interface.
        */
       virtual void
-      ghostToGlobal(
-        int mem);
+      ghostToGlobal(int mem);
 
       /**
        *  \brief Initialize internal data for communication.
@@ -225,19 +223,6 @@ namespace panzer
       {
         return gedBlocks_[i];
       } // end of getGEDBlock()
-
-      /**
-       *  \brief Determine if a Dirichlet adjustment is necessary.
-       *
-       *  For this class, there's nothing to do because it's read-only.
-       *
-       *  \returns False.                                                        // JMG:  But why?                                
-       */
-      bool
-      requiresDirichletAdjustment() const
-      {
-        return false;
-      } // end of requiresDirichletAdjustment()
 
     private:
 

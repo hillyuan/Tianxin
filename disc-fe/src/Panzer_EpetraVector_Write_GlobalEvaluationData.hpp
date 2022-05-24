@@ -158,17 +158,6 @@ namespace panzer
       initializeData();
 
       /**
-       *  \brief Determine if a Dirichlet adjustment is necessary.
-       *
-       *  \returns False.                                                        // JMG:  But why?                                
-       */
-      virtual bool
-      requiresDirichletAdjustment() const
-      {
-        return false;
-      } // end of requiresDirichletAdjustment()
-
-      /**
        *  \brief Set the owned vector (`Epetra` version).
        *
        *  \param[in] ownedVector An `Epetra_Vector` that you would like to set

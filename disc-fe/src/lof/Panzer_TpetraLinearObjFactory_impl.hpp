@@ -442,12 +442,10 @@ initializeGhostedContainer(int mem,TpetraLinearObjContainer<ScalarT,LocalOrdinal
     
    if((mem & LOC::F) == LOC::F) {
       loc.set_f(getGhostedTpetraVector());
-      loc.setRequiresDirichletAdjustment(true);
    }
 
    if((mem & LOC::Mat) == LOC::Mat) {
       loc.set_A(getGhostedTpetraMatrix());
-      loc.setRequiresDirichletAdjustment(true);
    }
 }
 

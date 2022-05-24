@@ -611,21 +611,9 @@ initializeGhostedContainer(int mem,LinearObjContainer & loc) const
      typedef BlockedEpetraLinearObjContainer BLOC;
 
      BLOC & bloc = Teuchos::dyn_cast<BLOC>(loc);
-
-     if((mem & LOC::F) == LOC::F)
-       bloc.setRequiresDirichletAdjustment(true);
-
-     if((mem & LOC::Mat) == LOC::Mat) 
-       bloc.setRequiresDirichletAdjustment(true);
    }
    else {
      EpetraLinearObjContainer & eloc = Teuchos::dyn_cast<EpetraLinearObjContainer>(loc);
-
-     if((mem & LOC::F) == LOC::F)
-       eloc.setRequiresDirichletAdjustment(true);
-
-     if((mem & LOC::Mat) == LOC::Mat) 
-       eloc.setRequiresDirichletAdjustment(true);
    }
 }
 

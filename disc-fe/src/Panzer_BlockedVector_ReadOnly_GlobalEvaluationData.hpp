@@ -226,19 +226,6 @@ namespace panzer
         return gedBlocks_[i];
       } // end of getGEDBlock()
 
-      /**
-       *  \brief Determine if a Dirichlet adjustment is necessary.
-       *
-       *  For this class, there's nothing to do because it's read-only.
-       *
-       *  \returns False.
-       */
-      bool
-      requiresDirichletAdjustment() const
-      {
-        return false;
-      } // end of requiresDirichletAdjustment()
-
     private:
 
       /**

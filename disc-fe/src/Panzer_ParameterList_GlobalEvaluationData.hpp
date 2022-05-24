@@ -63,8 +63,6 @@ public:
    virtual void ghostToGlobal(int /* mem */) {}
    virtual void globalToGhost(int /* mem */) {}
 
-   virtual bool requiresDirichletAdjustment() const { return false; }
-
    virtual void initializeData() {}
 
    const std::vector<std::string> & getActiveParameters() const
