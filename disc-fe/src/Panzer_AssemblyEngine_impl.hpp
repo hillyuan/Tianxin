@@ -68,9 +68,6 @@ evaluate(const panzer::AssemblyEngineInArgs& in, const EvaluationFlags flags)
 {
   typedef LinearObjContainer LOC;
 
-  // make sure this container gets a dirichlet adjustment
-  in.ghostedContainer_->setRequiresDirichletAdjustment(true);
-
   GlobalEvaluationDataContainer gedc;
 
   if ( flags.getValue() & EvaluationFlags::Initialize ) {
@@ -248,23 +245,23 @@ evaluateDirichletBCs(const panzer::AssemblyEngineInArgs& in)
         // right hand side and the ghosted matrix
   }
 
-  panzer::GlobalEvaluationDataContainer gedc;
-  gedc.addDataObject("Residual Scatter Container",in.ghostedContainer_);
-  in.fillGlobalEvaluationDataContainer(gedc);
+//  panzer::GlobalEvaluationDataContainer gedc;
+//  gedc.addDataObject("Residual Scatter Container",in.ghostedContainer_);
+//  in.fillGlobalEvaluationDataContainer(gedc);
 
   // adjust ghosted system for boundary conditions
-  for(GlobalEvaluationDataContainer::iterator itr=gedc.begin();itr!=gedc.end();itr++) {
+ // for(GlobalEvaluationDataContainer::iterator itr=gedc.begin();itr!=gedc.end();itr++) {
 
-    if(itr->second->requiresDirichletAdjustment()) {
-      Teuchos::RCP<LinearObjContainer> loc = Teuchos::rcp_dynamic_cast<LinearObjContainer>(itr->second);
+//    if(itr->second->requiresDirichletAdjustment()) {
+      Teuchos::RCP<LinearObjContainer> loc = Teuchos::rcp_dynamic_cast<LinearObjContainer>(in.ghostedContainer_);
       if(loc!=Teuchos::null) {
         m_lin_obj_factory->adjustForDirichletConditions(*localCounter_,*summedGhostedCounter_,*loc);
       }
       else {
         // GlobalEvaluationData_BCAdjustment here
       }
-    }
-  }
+ //   }
+ // }
 
   return globalCounter_;
 }

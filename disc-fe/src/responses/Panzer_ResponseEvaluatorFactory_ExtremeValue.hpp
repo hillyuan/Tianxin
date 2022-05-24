@@ -143,11 +143,9 @@ struct ExtremeValueResponse_Builder : public ResponseMESupportBuilderBase {
   bool requiresCellExtreme;
   bool useMax;
   std::string quadPointField;
-  bool applyDirichletToDerivative; // if this is set to true, then the dirichlet values will be zerod out in
-                                   // the DgDx vector
 
   std::string prefix;
-  ExtremeValueResponse_Builder() : applyDirichletToDerivative(false) {}
+  ExtremeValueResponse_Builder() {}
 
   virtual ~ExtremeValueResponse_Builder() {}
 
@@ -172,7 +170,7 @@ struct ExtremeValueResponse_Builder : public ResponseMESupportBuilderBase {
   template <typename T>
   Teuchos::RCP<panzer::ResponseEvaluatorFactoryBase> build() const
   { return Teuchos::rcp(new ResponseEvaluatorFactory_ExtremeValue<T,LO,GO>(comm,cubatureDegree,requiresCellExtreme,useMax,quadPointField,
-                                                                         linearObjFactory,globalIndexer,applyDirichletToDerivative,prefix)); }
+                                                                         linearObjFactory,globalIndexer,prefix)); }
 
   virtual Teuchos::RCP<panzer::ResponseEvaluatorFactoryBase> buildValueFactory() const
   { return build<panzer::Traits::Residual>(); }

@@ -64,8 +64,7 @@ class ResponseEvaluatorFactory_Functional : public ResponseEvaluatorFactory<Eval
 public:
 
    ResponseEvaluatorFactory_Functional(MPI_Comm comm, int cubatureDegree=1,bool requiresCellIntegral=true,const std::string & quadPointField="",
-                                       const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> > & linearObjFactory=Teuchos::null,
-                                       bool applyDirichletToDerivative=false)
+                                       const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> > & linearObjFactory=Teuchos::null)
      : comm_(comm), cubatureDegree_(cubatureDegree), requiresCellIntegral_(requiresCellIntegral)
      , quadPointField_(quadPointField), linearObjFactory_(linearObjFactory)
    { }
@@ -130,10 +129,8 @@ struct FunctionalResponse_Builder : public ResponseMESupportBuilderBase {
   int cubatureDegree;
   bool requiresCellIntegral;
   std::string quadPointField;
-  bool applyDirichletToDerivative; // if this is set to true, then the dirichlet values will be zerod out in
-                                   // the DgDx vector
 
-  FunctionalResponse_Builder() : applyDirichletToDerivative(false) {}
+  FunctionalResponse_Builder() {}
 
   virtual ~FunctionalResponse_Builder() {}
 
@@ -145,7 +142,7 @@ struct FunctionalResponse_Builder : public ResponseMESupportBuilderBase {
   template <typename T>
   Teuchos::RCP<panzer::ResponseEvaluatorFactoryBase> build() const
   { return Teuchos::rcp(new ResponseEvaluatorFactory_Functional<T,LO,GO>(comm,cubatureDegree,requiresCellIntegral,quadPointField,
-                                                                         linearObjFactory,applyDirichletToDerivative)); }
+                                                                         linearObjFactory)); }
 
   virtual Teuchos::RCP<panzer::ResponseEvaluatorFactoryBase> buildValueFactory() const
   { return build<panzer::Traits::Residual>(); }

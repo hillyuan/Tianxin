@@ -141,10 +141,8 @@ struct ProbeResponse_Builder : public ResponseMESupportBuilderBase {
   int fieldComponent;
   int cubatureDegree;
   std::string fieldName;
-  bool applyDirichletToDerivative; // if this is set to true, then the dirichlet values will be zerod out in
-                                   // the DgDx vector
 
-  ProbeResponse_Builder() : applyDirichletToDerivative(false) {}
+  ProbeResponse_Builder() {}
 
   virtual ~ProbeResponse_Builder() {}
 
@@ -169,8 +167,7 @@ struct ProbeResponse_Builder : public ResponseMESupportBuilderBase {
   template <typename T>
   Teuchos::RCP<panzer::ResponseEvaluatorFactoryBase> build() const
   { return Teuchos::rcp(new ResponseEvaluatorFactory_Probe<T,LO,GO>(comm,point,fieldComponent,cubatureDegree,fieldName,
-                                                                    linearObjFactory,globalIndexer,
-                                                                    applyDirichletToDerivative)); }
+                                                                    linearObjFactory,globalIndexer ); }
 
   virtual Teuchos::RCP<panzer::ResponseEvaluatorFactoryBase> buildValueFactory() const
   { return build<panzer::Traits::Residual>(); }
