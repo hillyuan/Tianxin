@@ -51,7 +51,6 @@
 #include "Teuchos_RCP.hpp"
 
 #include "Panzer_BCStrategy.hpp"
-#include "Panzer_GlobalDataAcceptor_DefaultImpl.hpp"
 #include "Panzer_Traits.hpp"
 
 #include "Panzer_Traits.hpp"
@@ -65,7 +64,6 @@ namespace panzer {
   
   template <typename EvalT>
   class BCStrategy_Neumann_DefaultImpl : public panzer::BCStrategy<EvalT>,
-					 public panzer::GlobalDataAcceptorDefaultImpl,
 					 public panzer::EvaluatorWithBaseImpl<panzer::Traits>
   {
     

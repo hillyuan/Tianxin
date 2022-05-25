@@ -44,12 +44,13 @@
 #define PANZER_GLOBAL_DATA_ACCEPTOR_DEFAULT_IMPL_HPP
 
 #include "Teuchos_RCP.hpp"
-#include "Panzer_GlobalDataAcceptor.hpp"
 
 namespace panzer {
+	
+  struct GlobalData;
 
   /** \brief Default implementation for accessing the GlobalData object.  */
-  class GlobalDataAcceptorDefaultImpl : public GlobalDataAcceptor {
+  class GlobalDataAcceptorDefaultImpl {
 
   public:
 

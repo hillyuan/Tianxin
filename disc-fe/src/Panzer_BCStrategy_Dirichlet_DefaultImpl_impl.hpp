@@ -75,7 +75,6 @@ BCStrategy_Dirichlet_DefaultImpl(const panzer::BC& bc,
 				 const Teuchos::RCP<panzer::GlobalData>& global_data,
 				 const bool in_check_apply_bc) :
   panzer::BCStrategy<EvalT>(bc),
-  panzer::GlobalDataAcceptorDefaultImpl(global_data),
   check_apply_bc(in_check_apply_bc),
   descriptor_map_built(false)
 {

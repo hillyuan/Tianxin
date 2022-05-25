@@ -51,7 +51,6 @@
 #include "Teuchos_RCP.hpp"
 
 #include "Panzer_BCStrategy.hpp"
-#include "Panzer_GlobalDataAcceptor_DefaultImpl.hpp"
 #include "Panzer_Traits.hpp"
 
 #include "Phalanx_FieldManager.hpp"
@@ -59,8 +58,7 @@
 namespace panzer {
   
   template <typename EvalT>
-    class BCStrategy_Dirichlet_DefaultImpl : public panzer::BCStrategy<EvalT>,
-					     public panzer::GlobalDataAcceptorDefaultImpl {
+    class BCStrategy_Dirichlet_DefaultImpl : public panzer::BCStrategy<EvalT> {
 
   public:    
 

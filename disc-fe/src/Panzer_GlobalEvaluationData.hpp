@@ -43,6 +43,8 @@
 #ifndef __Panzer_GlobalEvaluationData_hpp__
 #define __Panzer_GlobalEvaluationData_hpp__
 
+#include <ostream>
+
 namespace panzer {
 
 /** This class is used by panzer to manage 
