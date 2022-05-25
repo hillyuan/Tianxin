@@ -69,8 +69,7 @@ template <typename EvalT>
 panzer::BCStrategy_Interface_DefaultImpl<EvalT>::
 BCStrategy_Interface_DefaultImpl(const panzer::BC& bc,
 			       const Teuchos::RCP<panzer::GlobalData>& global_data) :
-  panzer::BCStrategy<EvalT>(bc),
-  panzer::GlobalDataAcceptorDefaultImpl(global_data)
+  panzer::BCStrategy<EvalT>(bc)
 {
   
 }

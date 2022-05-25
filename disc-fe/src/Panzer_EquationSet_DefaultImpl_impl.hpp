@@ -69,7 +69,7 @@ EquationSet_DefaultImpl(const Teuchos::RCP<Teuchos::ParameterList>& params,
                         const panzer::CellData& cell_data,
                         const Teuchos::RCP<panzer::GlobalData>& global_data,
                         const bool build_transient_support) :
-  panzer::GlobalDataAcceptorDefaultImpl(global_data),
+  m_gd(global_data),
   m_input_params(params),
   m_default_integration_order(default_integration_order),
   m_cell_data(cell_data),
@@ -664,7 +664,7 @@ buildAndRegisterClosureModelEvaluators(PHX::FieldManager<panzer::Traits>& fm,
                                                      ir,
                                                      *(this->m_eval_plist),
                                                      user_data,
-                                                     this->getGlobalData(),
+                                                     m_gd,
                                                      fm);
   
   for (std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >::size_type i=0; i < evaluators->size(); ++i)

@@ -77,12 +77,6 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   )
 
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  global_data
-  SOURCES global_data.cpp ${UNIT_TEST_DRIVER}
-  NUM_MPI_PROCS 1
-  )
-
-TRIBITS_ADD_EXECUTABLE_AND_TEST(
   parameter_library
   SOURCES parameter_library.cpp ${UNIT_TEST_DRIVER}
   NUM_MPI_PROCS 1

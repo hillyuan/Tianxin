@@ -44,7 +44,6 @@
 #define PANZER_EQUATION_SET_DEFAULTIMPL_DECL_HPP
 
 #include "Panzer_EquationSet.hpp"
-#include "Panzer_GlobalDataAcceptor_DefaultImpl.hpp"
 #include "Panzer_CellData.hpp"
 
 #include <map>
@@ -60,8 +59,7 @@ namespace PHX {
 namespace panzer {
 
   template <typename EvalT>
-  class EquationSet_DefaultImpl : public panzer::EquationSet<EvalT>,
-                                  public panzer::GlobalDataAcceptorDefaultImpl {
+  class EquationSet_DefaultImpl : public panzer::EquationSet<EvalT> {
     
   public:    
     
@@ -386,6 +384,8 @@ namespace panzer {
 
     // Tangent parameter names for setting up tangent fields
     std::vector<std::string> m_tangent_param_names;
+	
+	Teuchos::RCP<panzer::GlobalData> m_gd;
 	
   protected:
 	void enable_xdotdot() { m_xdotdot_support = true; }
