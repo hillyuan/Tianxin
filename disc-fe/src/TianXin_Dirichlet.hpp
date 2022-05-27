@@ -48,10 +48,16 @@ enum class DiricheltStrategy : int
 	1_0, Penalty, Lagrarangian
 };
 
-//**********************************************************************
-template< typename ScalarT >
-class Dirichlet
+// **************************************************************
+// Generic Template Impelementation for constructor and PostReg
+// **************************************************************
+
+template<typename EvalT, typename Traits>
+class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
 {
+  private:
+    typedef typename EvalT::ScalarT ScalarT;
+
   private:
     integer                      m_group_id;         // group id maybe used in activation
 	DiricheltStrategy            m_strategy;         // algortithm to deal with dirichlet consition
@@ -61,7 +67,10 @@ class Dirichlet
     std::string                  m_value;            // evaluator name
 
   public:
-    Dirichlet(const Teuchos::ParameterList& params );
+    DirichletBase(const Teuchos::ParameterList& params );
+
+    integer getGroupID() const
+	{ return m_group_id; }
 
     std::string getType() const
     { return m_type; }
@@ -74,10 +83,34 @@ class Dirichlet
 		assert(i>0 && i<m_dof_name.size());
 		return m_dof_name[i]; 
 	}
+	
+	void postRegistrationSetup(typename Traits::SetupData d,
+                             PHX::FieldManager<Traits>& vm);
+
+    // This function will be overloaded with template specialized code
+    void evaluateFields(typename Traits::EvalData d)=0;
 
   public:
     double m_penalty;
-    Teuchos::RCP<Teuchos::ParameterList> m_params;
+};
+
+// **************************************************************
+// **************************************************************
+// * Specializations
+// **************************************************************
+// **************************************************************
+
+template<typename EvalT, typename Traits> class Dirichlet;
+
+// **************************************************************
+// Residual
+// **************************************************************
+template<typename Traits>
+class Dirichlet<panzer::Traits::Residual,Traits>
+   : public DirichletBase<panzer::Traits::Residual, Traits> {
+public:
+  Dirichlet(Teuchos::ParameterList& p);
+  void evaluateFields(typename Traits::EvalData d);
 };
 
 }

@@ -63,11 +63,7 @@
 namespace panzer {
 
   struct WorksetNeeds;
-
- // struct LocalMeshPartition;
-
   class SubcellConnectivity;
-
   class OrientationsInterface;
 
   /**

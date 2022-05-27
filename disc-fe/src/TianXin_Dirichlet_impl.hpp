@@ -41,6 +41,27 @@
 #include <stdexcept>
 
 namespace TianXin {
+	
+template<typename EvalT,typename Traits>
+DirichletBase<EvalT, Traits>::DirichletBase(Teuchos::ParameterList& p) :
+: m_group_id(0), m_strategy(0), m_sideset_rank(0)
+{
+  std::string name = p.get< std::string >("Dirichlet Name");
+  Teuchos::RCP<PHX::DataLayout> dummy = Teuchos::rcp(new PHX::MDALayout<void>(0));
+  const PHX::Tag<ScalarT> fieldTag(name, dummy);
+
+  this->addEvaluatedField(fieldTag);
+  this->setName(name+PHX::print<EvalT>());
+}
+
+template<typename EvalT, typename Traits>
+void DirichletBase<EvalT, Traits>::
+postRegistrationSetup(typename Traits::SetupData d,
+                      PHX::FieldManager<Traits>& /* fm */)
+{
+  d.fill_field_dependencies(this->dependentFields(),this->evaluatedFields());
+}
+
 
 //**********************************************************************
 template<typename EvalT>

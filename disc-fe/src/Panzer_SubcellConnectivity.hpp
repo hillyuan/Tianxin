@@ -51,8 +51,6 @@
 
 namespace panzer {
 
-//struct LocalMeshPartition;
-
 class SubcellConnectivity
 {
 public:
@@ -207,7 +205,6 @@ public:
    *
    * \param[in] partition Partition of mesh
    */
-//  void setup(const panzer::LocalMeshPartition & partition);
   void setup(const std::vector<panzer::LocalOrdinal>& , const int, const std::vector<panzer::LocalOrdinal>& );
 
 };

@@ -49,10 +49,6 @@
 
 #include "Panzer_STK_Interface.hpp"
 
-namespace panzer
-{
-  struct LocalMeshInfo;
-}
 
 namespace panzer_stk {
 
@@ -107,12 +103,6 @@ private:
 
    /// Mesh
    Teuchos::RCP<const STK_Interface> mesh_;
-
-   // This needs to be set at the start, but is currently setup only if the
-   // workset descriptor requiers it
-   /// Alternative form of mesh
-   mutable Teuchos::RCP<const panzer::LocalMeshInfo> mesh_info_;
-
 
 };
 
