@@ -43,29 +43,8 @@
 namespace TianXin {
 	
 template<typename EvalT,typename Traits>
-DirichletBase<EvalT, Traits>::DirichletBase(Teuchos::ParameterList& p) :
-: m_group_id(0), m_strategy(0), m_sideset_rank(0)
-{
-  std::string name = p.get< std::string >("Dirichlet Name");
-  Teuchos::RCP<PHX::DataLayout> dummy = Teuchos::rcp(new PHX::MDALayout<void>(0));
-  const PHX::Tag<ScalarT> fieldTag(name, dummy);
-
-  this->addEvaluatedField(fieldTag);
-  this->setName(name+PHX::print<EvalT>());
-}
-
-template<typename EvalT, typename Traits>
-void DirichletBase<EvalT, Traits>::
-postRegistrationSetup(typename Traits::SetupData d,
-                      PHX::FieldManager<Traits>& /* fm */)
-{
-  d.fill_field_dependencies(this->dependentFields(),this->evaluatedFields());
-}
-
-
-//**********************************************************************
-template<typename EvalT>
-Dirichlet<EvalT>::Dirichlet(const Teuchos::ParameterList& params )
+DirichletBase<EvalT, Traits>::DirichletBase(Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer>& indexer) :
 : m_group_id(0), m_strategy(0), m_sideset_rank(0)
 {
   // ********************
@@ -73,6 +52,7 @@ Dirichlet<EvalT>::Dirichlet(const Teuchos::ParameterList& params )
   // ********************
   {    
     Teuchos::ParameterList valid_params;
+	valid_params.set<std::string>("Dirichlet Name", "Dirichlet_BC");
     valid_params.set<std::string>("Strategy", "1_0");
     valid_params.set<std::string>("NodeSet Name", "");
     valid_params.set<std::string>("EdgeSet Name", "");
@@ -138,8 +118,65 @@ Dirichlet<EvalT>::Dirichlet(const Teuchos::ParameterList& params )
     
     m_penalty = params.get<double>("Penalty");
     m_group_id = params.get<int>("Group ID");
-    
-};
+
+	std::vector<stk::mesh::EntityId> entities;
+    if( m_sideset_rank==0 ) {
+        mesh->getAllNodeSetIds(m_sideset_name,entities);
+		
+		for(auto myname: m_dof_name) {
+			int fdnum = indexer->getFieldNum(myname);
+			for ( auto nd: entities ) {
+				auto b = indexer->getNodalLDofOfField( fdnum, nd );
+				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
+					TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
+				    "Error - Cannot find dof of Nodeset!" );
+				m_local_dofs.emplace_back(b);
+			}
+		}
+	} else if( m_sideset_rank==1 ) {
+		mesh->getAllSideEdgesId(m_sideset_name,entities); 
+		for(auto myname: m_dof_name) {
+			int fdnum = indexer->getFieldNum(myname);
+			for ( auto nd: edges ) {
+				auto b = indexer->getEdgeLDofOfField( fdnum, nd );
+				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
+				TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
+				    "Error - Cannot find dof of Edgeset!" );
+				m_local_dofs.emplace_back(b);
+			}
+		}
+	}
+
+    std::string name = p.get< std::string >("Dirichlet Name");
+    Teuchos::RCP<PHX::DataLayout> dummy = Teuchos::rcp(new PHX::MDALayout<void>(0));
+    const PHX::Tag<ScalarT> fieldTag(name, dummy);
+
+    this->addEvaluatedField(fieldTag);
+    this->setName(name+PHX::print<EvalT>());
+}
+
+template<typename Traits>
+void DirichletsEvalutor<panzer::Traits::Residual, Traits> :: preEvaluate(typename Traits::PreEvalData d)
+{
+    if(Teuchos::is_null(m_GhostedContainer))
+        m_GhostedContainer = Teuchos::rcp_dynamic_cast<panzer::LinearObjContainer>(d.gedc->getDataObject("Ghosted Container"));
+}
+
+template<typename EvalT, typename Traits>
+void DirichletBase<EvalT, Traits>::
+postRegistrationSetup(typename Traits::SetupData d,
+                      PHX::FieldManager<Traits>& /* fm */)
+{
+//  d.fill_field_dependencies(this->dependentFields(),this->evaluatedFields());
+}
+
+
+//**********************************************************************
+template<typename Traits>
+Dirichlet<panzer::Traits::Residual,Traits>::Dirichlet(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
+: DirichletBase<panzer::Traits::Residual,Traits>(params, mesh, indexer )
+{};
 
 }
 

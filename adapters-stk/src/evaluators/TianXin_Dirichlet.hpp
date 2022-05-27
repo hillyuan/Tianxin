@@ -65,9 +65,15 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
     std::string                  m_sideset_name;     // sideset this Dirichlet condition act upon
     Teuchos::Array<std::string>  m_dof_name;         // ux,uy,uz etc
     std::string                  m_value;            // evaluator name
+	//working variables
+    std::vector< panzer::LocalOrdinal >      m_local_dofs;
+    std::vector< panzer::GlobalOrdinal >     m_global_dofs;
+	std::map< panzer::LocalOrdinal, ScalarT > m_dirichlets;
+	Teuchos::RCP<panzer::LinearObjContainer>  m_GhostedContainer;
 
   public:
-    DirichletBase(const Teuchos::ParameterList& params );
+    DirichletBase(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>&,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer );
 
     integer getGroupID() const
 	{ return m_group_id; }
@@ -84,8 +90,8 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
 		return m_dof_name[i]; 
 	}
 	
-	void postRegistrationSetup(typename Traits::SetupData d,
-                             PHX::FieldManager<Traits>& vm);
+	void preEvaluate(typename Traits::PreEvalData d);
+	void postRegistrationSetup(typename Traits::SetupData d, PHX::FieldManager<Traits>& vm);
 
     // This function will be overloaded with template specialized code
     void evaluateFields(typename Traits::EvalData d)=0;
@@ -109,7 +115,8 @@ template<typename Traits>
 class Dirichlet<panzer::Traits::Residual,Traits>
    : public DirichletBase<panzer::Traits::Residual, Traits> {
 public:
-  Dirichlet(Teuchos::ParameterList& p);
+  Dirichlet(Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>&,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
   void evaluateFields(typename Traits::EvalData d);
 };
 
