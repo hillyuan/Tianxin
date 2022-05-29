@@ -38,14 +38,15 @@
 #ifndef _BC_DIRICHLET_IMPL_HPP
 #define _BC_DIRICHLET_IMPL_HPP
 
+#include "Phalanx_DataLayout_MDALayout.hpp"
 #include <stdexcept>
 
 namespace TianXin {
 	
 template<typename EvalT,typename Traits>
-DirichletBase<EvalT, Traits>::DirichletBase(Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
-      const Teuchos::RCP<const panzer::GlobalIndexer>& indexer) :
-: m_group_id(0), m_strategy(0), m_sideset_rank(0)
+DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      Teuchos::RCP<const panzer::GlobalIndexer>& indexer)
+: m_group_id(0), m_strategy(DiricheltStrategy :: M10), m_sideset_rank(0)
 {
   // ********************
   // Validate and parse parameter list
@@ -64,7 +65,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(Teuchos::ParameterList& p, const Teu
     valid_params.set<std::string>("Value Name", "");
   }
   
-	m_dof_name = params.get<std::string>("DOF Names");
+	m_dof_name = params.get< Teuchos::Array<std::string> >("DOF Names");
 	try {
 		if( m_dof_name.empty() )
 			throw std::runtime_error("error in Dirichlet condition defintion. DOF Names not given!");
@@ -83,12 +84,12 @@ DirichletBase<EvalT, Traits>::DirichletBase(Teuchos::ParameterList& p, const Teu
 
     const auto& method = params.get<std::string>("Strategy");
     if( method=="Penalty" )
-		m_strategy = DiricheltStrategy : Penalty;
+		m_strategy = DiricheltStrategy :: Penalty;
 	else if( method=="Lagrarangian" )
-		m_strategy = DiricheltStrategy : Lagrarangian;
+		m_strategy = DiricheltStrategy :: Lagrarangian;
 	else
-		m_strategy = DiricheltStrategy : 1_0;
-    m_strategy = DiricheltStrategy : 1_0;    // only this one is available currently
+		m_strategy = DiricheltStrategy :: M10;
+    m_strategy = DiricheltStrategy :: M10;    // only this one is available currently
 
     const auto& s_set_name = params.get<std::string>("SideSet Name");
 	const auto& n_set_name = params.get<std::string>("NodeSet Name");
@@ -137,7 +138,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(Teuchos::ParameterList& p, const Teu
 		mesh->getAllSideEdgesId(m_sideset_name,entities); 
 		for(auto myname: m_dof_name) {
 			int fdnum = indexer->getFieldNum(myname);
-			for ( auto nd: edges ) {
+			for ( auto nd: entities ) {
 				auto b = indexer->getEdgeLDofOfField( fdnum, nd );
 				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
 				TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
@@ -147,7 +148,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(Teuchos::ParameterList& p, const Teu
 		}
 	}
 
-    std::string name = p.get< std::string >("Dirichlet Name");
+    std::string name = params.get< std::string >("Dirichlet Name");
     Teuchos::RCP<PHX::DataLayout> dummy = Teuchos::rcp(new PHX::MDALayout<void>(0));
     const PHX::Tag<ScalarT> fieldTag(name, dummy);
 
@@ -155,8 +156,8 @@ DirichletBase<EvalT, Traits>::DirichletBase(Teuchos::ParameterList& p, const Teu
     this->setName(name+PHX::print<EvalT>());
 }
 
-template<typename Traits>
-void DirichletsEvalutor<panzer::Traits::Residual, Traits> :: preEvaluate(typename Traits::PreEvalData d)
+template<typename EvalT,typename Traits>
+void DirichletBase<EvalT, Traits> :: preEvaluate(typename Traits::PreEvalData d)
 {
     if(Teuchos::is_null(m_GhostedContainer))
         m_GhostedContainer = Teuchos::rcp_dynamic_cast<panzer::LinearObjContainer>(d.gedc->getDataObject("Ghosted Container"));
@@ -173,10 +174,10 @@ postRegistrationSetup(typename Traits::SetupData d,
 
 //**********************************************************************
 template<typename Traits>
-Dirichlet<panzer::Traits::Residual,Traits>::Dirichlet(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
-      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
+DirichletsEvalutor<panzer::Traits::Residual,Traits>::DirichletsEvalutor(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
 : DirichletBase<panzer::Traits::Residual,Traits>(params, mesh, indexer )
-{};
+{}
 
 }
 

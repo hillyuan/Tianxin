@@ -65,10 +65,10 @@
 #include "Panzer_ClosureModel_Factory_TemplateManager.hpp"
 #include "Panzer_ModelEvaluator_Epetra.hpp"
 #include "Panzer_ModelEvaluator.hpp"
-
 #include "Panzer_NodeType.hpp"
 
 #include "Thyra_EpetraModelEvaluator.hpp"
+#include "TianXin_Dirichlet.hpp"
 
 #ifdef PANZER_HAVE_TEKO
 #include "Teko_RequestHandler.hpp"
@@ -279,6 +279,11 @@ namespace panzer_stk {
                              const Teuchos::ParameterList& user_data,
                              bool writeGraph,const std::string & graphPrefix,
 			     bool write_field_managers,const std::string & field_manager_prefix) const;
+				 
+	Teuchos::RCP< PHX::FieldManager<panzer::Traits> >
+	buildDirichletFieldManager( const Teuchos::ParameterList& params, 
+							    Teuchos::RCP<const panzer::GlobalIndexer> & ugi,
+                                Teuchos::RCP<const panzer_stk::STK_Interface> & mesh );
 
     /**
       */

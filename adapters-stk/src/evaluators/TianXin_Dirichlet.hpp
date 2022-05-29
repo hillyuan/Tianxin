@@ -39,13 +39,13 @@
 #define _BC_DIRICHLET_HPP
 
 #include <map>
-##include <cassert>
+#include <cassert>
 
 namespace TianXin {
 
 enum class DiricheltStrategy : int
 {
-	1_0, Penalty, Lagrarangian
+	M10, Penalty, Lagrarangian
 };
 
 // **************************************************************
@@ -59,7 +59,7 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
     typedef typename EvalT::ScalarT ScalarT;
 
   private:
-    integer                      m_group_id;         // group id maybe used in activation
+    int                          m_group_id;         // group id maybe used in activation
 	DiricheltStrategy            m_strategy;         // algortithm to deal with dirichlet consition
 	int                          m_sideset_rank;     // 0: node; 1: edge; 2: face; 3: volume
     std::string                  m_sideset_name;     // sideset this Dirichlet condition act upon
@@ -72,14 +72,14 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
 	Teuchos::RCP<panzer::LinearObjContainer>  m_GhostedContainer;
 
   public:
-    DirichletBase(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>&,
-      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer );
+    DirichletBase(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>&,
+      Teuchos::RCP<const panzer::GlobalIndexer> & indexer );
 
-    integer getGroupID() const
+    int getGroupID() const
 	{ return m_group_id; }
 
-    std::string getType() const
-    { return m_type; }
+    int getMethod() const
+    { return static_cast<int>(m_strategy); }
 
     const std::string getSideSetName() const
     { return m_sideset_name; }
@@ -106,17 +106,17 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
 // **************************************************************
 // **************************************************************
 
-template<typename EvalT, typename Traits> class Dirichlet;
+template<typename EvalT, typename Traits> class DirichletsEvalutor;
 
 // **************************************************************
 // Residual
 // **************************************************************
 template<typename Traits>
-class Dirichlet<panzer::Traits::Residual,Traits>
+class DirichletsEvalutor<panzer::Traits::Residual,Traits>
    : public DirichletBase<panzer::Traits::Residual, Traits> {
 public:
-  Dirichlet(Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>&,
-      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
+  DirichletsEvalutor(const Teuchos::ParameterList& p, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
   void evaluateFields(typename Traits::EvalData d);
 };
 
