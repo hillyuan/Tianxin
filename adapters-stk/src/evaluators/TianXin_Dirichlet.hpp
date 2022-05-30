@@ -66,10 +66,11 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
     Teuchos::Array<std::string>  m_dof_name;         // ux,uy,uz etc
     std::string                  m_value;            // evaluator name
 	//working variables
-    std::vector< panzer::LocalOrdinal >      m_local_dofs;
-    std::vector< panzer::GlobalOrdinal >     m_global_dofs;
-	std::map< panzer::LocalOrdinal, ScalarT > m_dirichlets;
+    Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>    m_local_dofs;
+    Kokkos::View<panzer::GlobalOrdinal*,Kokkos::LayoutRight,PHX::Device >  m_global_dofs;
+	Kokkos::View<ScalarT*,Kokkos::LayoutRight,PHX::Device>                 m_values;
 	Teuchos::RCP<panzer::LinearObjContainer>  m_GhostedContainer;
+	
 
   public:
     DirichletBase(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>&,

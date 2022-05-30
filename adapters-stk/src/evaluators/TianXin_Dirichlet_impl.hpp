@@ -120,6 +120,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params
     m_penalty = params.get<double>("Penalty");
     m_group_id = params.get<int>("Group ID");
 
+    std::set< panzer::LocalOrdinal > localIDs;
 	std::vector<stk::mesh::EntityId> entities;
     if( m_sideset_rank==0 ) {
         mesh->getAllNodeSetIds(m_sideset_name,entities);
@@ -131,7 +132,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params
 				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
 					TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
 				    "Error - Cannot find dof of Nodeset!" );
-				m_local_dofs.emplace_back(b);
+				localIDs.insert(b);
 			}
 		}
 	} else if( m_sideset_rank==1 ) {
@@ -143,10 +144,26 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params
 				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
 				TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
 				    "Error - Cannot find dof of Edgeset!" );
-				m_local_dofs.emplace_back(b);
+				localIDs.insert(b);
 			}
 		}
 	}
+	
+	// Create a view in the default execution space
+	Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device> localIDs_k 
+       = Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>("Dirichelt::localIDs_",localIDs.size());
+	// Create a mirror of localIDs_k in host memory
+	auto localIDs_h = Kokkos::create_mirror_view(localIDs_k);
+	std::size_t nid;
+	for( const auto& lid: localIDs ) {
+         localIDs_h(nid) = lid;
+		 ++nid;
+    }
+	// Copy data from host to device if necessary
+    Kokkos::deep_copy(localIDs_k, localIDs_h);
+
+    // store in Kokkos type
+    m_local_dofs = localIDs_k;
 
     std::string name = params.get< std::string >("Dirichlet Name");
     Teuchos::RCP<PHX::DataLayout> dummy = Teuchos::rcp(new PHX::MDALayout<void>(0));
@@ -172,12 +189,24 @@ postRegistrationSetup(typename Traits::SetupData d,
 }
 
 
-//**********************************************************************
+// **************************************************************
+// **************************************************************
+// * Specializations
+// **************************************************************
+// **************************************************************
+
+
 template<typename Traits>
 DirichletsEvalutor<panzer::Traits::Residual,Traits>::DirichletsEvalutor(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
       Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
 : DirichletBase<panzer::Traits::Residual,Traits>(params, mesh, indexer )
 {}
+
+template<typename Traits>
+void DirichletsEvalutor<panzer::Traits::Residual, Traits> :: evaluateFields(typename Traits::EvalData d)
+{
+  //m_GhostedContainer->evalDirichletResidual(m_dirichlets);
+}
 
 }
 

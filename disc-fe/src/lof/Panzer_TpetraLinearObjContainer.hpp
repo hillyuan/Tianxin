@@ -221,6 +221,13 @@ public:
       }
    }
    
+   // -- 1-0 clear out
+   void applyDirichletBoundaryCondition( Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>& local_dofs,
+		Kokkos::View<ScalarT*,Kokkos::LayoutRight,PHX::Device>& values) 
+   {
+	   Tpetra::applyDirichletBoundaryConditionToLocalMatrixRows(*A, local_dofs);
+   }
+   
    // -- Penaly
    void applyDirichletBoundaryCondition( const double& p, const std::map< panzer::LocalOrdinal, double >& indx ) override
    {
@@ -283,6 +290,21 @@ public:
 	  	double a = x_1dview[itr.first] - itr.second;
          f->replaceLocalValue(itr.first, a);
       }
+   }
+   
+   void evalDirichletResidual( Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>& local_dofs,
+		Kokkos::View<ScalarT*,Kokkos::LayoutRight,PHX::Device>& values) 
+   {
+	   //Teuchos::ArrayRCP<const ScalarT> x_1dview = x->get1dView();
+	   const auto& xview = x->getLocalViewDevice(Tpetra::Access::ReadOnly);
+	   auto& kokkosResidual = f->getLocalViewDevice(Tpetra::Access::ReadWrite);
+	   LocalOrdinalT numDofs = local_dofs.extent(0);
+	   Kokkos::parallel_for( numDofs, KOKKOS_LAMBDA (const LocalOrdinalT lclRow) {
+			ScalarT a = xview(local_dofs(lclRow),0) - values(lclRow);
+			//kokkosResidual(local_dofs(lclRow)) = a;
+			Kokkos::atomic_assign(&kokkosResidual(local_dofs(lclRow),0), a);
+	        //f->replaceLocalValue(local_dofs(lclRow), a);
+       } );
    }
    
    void applyConcentratedLoad( const std::map< panzer::LocalOrdinal, double >& indx ) override
