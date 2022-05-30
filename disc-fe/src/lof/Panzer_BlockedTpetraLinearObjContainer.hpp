@@ -129,7 +129,14 @@ public:
    
    void applyDirichletBoundaryCondition( const std::map< panzer::LocalOrdinal, double >& indx ) override;
    void applyDirichletBoundaryCondition( const double&, const std::map< panzer::LocalOrdinal, double >& indx ) override;
+   void applyDirichletBoundaryCondition( Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>& local_dofs,
+		Kokkos::View<double*,Kokkos::LayoutRight,PHX::Device>& values) override {;}
    void evalDirichletResidual( const std::map< panzer::LocalOrdinal, double >& indx ) override {;}
+   void evalDirichletResidual( Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>& local_dofs,
+		Kokkos::View<double*,Kokkos::LayoutRight,PHX::Device>& values) override
+   {
+      TEUCHOS_ASSERT(false); // not yet implemented
+   }
    void applyConcentratedLoad( const std::map< panzer::LocalOrdinal, double >& indx ) override
    {
       TEUCHOS_ASSERT(false); // not yet implemented
