@@ -79,30 +79,6 @@ namespace panzer {
   void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
 			 std::vector<panzer::BC>& bcs);
 
-  TEUCHOS_UNIT_TEST(bcstrategy, basic_construction)
-  {
-
-    std::size_t bc_id = 0;
-    panzer::BCType dirichlet = BCT_Dirichlet;
-    std::string sideset_id = "4";
-    std::string element_block_id = "fluid";
-    std::string dof_name = "UX";
-    std::string strategy = "Constant";
-    double value = 5.0;
-    Teuchos::ParameterList p;
-    p.set("Value",value);
-    panzer::BC bc(bc_id, dirichlet, sideset_id, element_block_id, dof_name,
-		  strategy, p);
-
-    Teuchos::RCP<panzer::BCStrategy_TemplateManager<panzer::Traits> > bcs;
-
-    Teuchos::RCP<panzer::GlobalData> gd = panzer::createGlobalData();
-
-    user_app::BCFactory my_factory;
-    bcs = my_factory.buildBCStrategy(bc,gd);
-
-  }
-
   TEUCHOS_UNIT_TEST(bcstrategy, constant_bc_strategy)
   {
 
@@ -241,15 +217,14 @@ namespace panzer {
     double tol = 10.0*std::numeric_limits<double>::epsilon();
 	auto f_2d = f->getLocalViewHost(Tpetra::Access::ReadOnly);
 	auto f_1d = Kokkos::subview(f_2d, Kokkos::ALL (), 0);
-    for (std::size_t i=0; i < f->getLocalLength(); ++i) {
+    for (std::size_t i=0; i < 2; ++i) {  // i < f->getLocalLength()
       TEST_FLOATING_EQUALITY(f_1d(i), -4.0, tol );
     }
 
-    // Check Jacobian values.  Should have one on diagonal and zero
-    // elsewhere.
+    // Check Jacobian values. The constrained two (0,1) have one on diagonal and zero elsewhere.
     RCP<Tpetra::CrsMatrix<double,int,panzer::GlobalOrdinal>> jac = 
 		Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(input.container_)->get_A();
-    for (std::size_t i=0; i < jac->getLocalNumRows(); ++i) {
+    for (std::size_t i=0; i < 2; ++i) {  // i < jac->getLocalNumRows()
       std::size_t numEntries = 0;
 	  std::size_t sz = jac->getNumEntriesInLocalRow(i);
 	  lids_type local_column_indices("ind",sz);
@@ -258,7 +233,7 @@ namespace panzer {
       //Teuchos::Array<double> values(sz);
       jac->getLocalRowCopy(i, local_column_indices, values, numEntries);
       for (std::size_t j=0; j < numEntries; j++) {
-	//std::cout << "J(" <<jac->GRID(i) << "," << jac->GCID(local_column_indices[j]) << ") = " << values[j] << std::endl;
+	    std::cout << "J(" << i << "," << local_column_indices[j] << ") = " << values[j] << std::endl;
 	    if ( i == local_column_indices[j] ) {
 	      TEST_FLOATING_EQUALITY(values[j], 1.0, tol);
 	    }
@@ -286,48 +261,6 @@ namespace panzer {
       p.set("Basis Order",1);
     }
 
-    {
-      std::size_t bc_id = 0;
-      panzer::BCType dirichlet = BCT_Dirichlet;
-      std::string sideset_id = "left";
-      std::string element_block_id = "eblock-0_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 5.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, dirichlet, sideset_id, element_block_id, dof_name,
-		    strategy, p);
-      bcs.push_back(bc);
-    }
-    {
-      std::size_t bc_id = 1;
-      panzer::BCType dirichlet = BCT_Dirichlet;
-      std::string sideset_id = "right";
-      std::string element_block_id = "eblock-0_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 5.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, dirichlet, sideset_id, element_block_id, dof_name,
-		    strategy, p);
-      bcs.push_back(bc);
-    }
-    {
-      std::size_t bc_id = 2;
-      panzer::BCType dirichlet = BCT_Dirichlet;
-      std::string sideset_id = "top";
-      std::string element_block_id = "eblock-0_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 5.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, dirichlet, sideset_id, element_block_id, dof_name,
-		    strategy, p);
-      bcs.push_back(bc);
-    }
     {
       std::size_t bc_id = 3;
       panzer::BCType dirichlet = BCT_Dirichlet;
