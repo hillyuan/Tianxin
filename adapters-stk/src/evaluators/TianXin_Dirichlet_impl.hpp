@@ -43,28 +43,16 @@
 namespace TianXin {
 	
 template<typename EvalT,typename Traits>
-DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer>& indexer)
 : m_group_id(0), m_strategy(DiricheltStrategy :: M10), m_sideset_rank(0)
 {
-  // ********************
-  // Validate and parse parameter list
-  // ********************
-  {    
-    Teuchos::ParameterList valid_params;
-	valid_params.set<std::string>("Dirichlet Name", "Dirichlet_BC");
-    valid_params.set<std::string>("Strategy", "1_0");
-    valid_params.set<std::string>("NodeSet Name", "");
-    valid_params.set<std::string>("EdgeSet Name", "");
-	valid_params.set<std::string>("FaceSet Name", "");
-	valid_params.set<std::string>("SideSet Name", "");
-    valid_params.set<int>("Group ID", 0);
-    valid_params.set<double>("Penalty", 1.e30);
-    valid_params.set< Teuchos::Array<std::string> >("DOF Names", Teuchos::tuple<std::string>("") );
-    valid_params.set<std::string>("Value Name", "");
-  }
+    Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::parameterList();
+    *params = p;
+
+    this->validateParameters(*params);
   
-	m_dof_name = params.get< Teuchos::Array<std::string> >("DOF Names");
+	m_dof_name = params->get< Teuchos::Array<std::string> >("DOF Names");
 	try {
 		if( m_dof_name.empty() )
 			throw std::runtime_error("error in Dirichlet condition defintion. DOF Names not given!");
@@ -72,7 +60,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params
 	catch (std::exception& e) {
 		 std::cout << e.what() << std::endl;
 	}
-	m_value_name = params.get<std::string>("Value Name");
+	m_value_name = params->get<std::string>("Value Name");
 	try {
 		if( m_value_name.empty() )
 			throw std::runtime_error("error in Dirichlet condition defintion. Value Name not given!");
@@ -81,7 +69,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params
 		 std::cout << e.what() << std::endl;
 	}
 
-    const auto& method = params.get<std::string>("Strategy");
+    const auto& method = params->get<std::string>("Strategy");
     if( method=="Penalty" )
 		m_strategy = DiricheltStrategy :: Penalty;
 	else if( method=="Lagrarangian" )
@@ -90,10 +78,10 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params
 		m_strategy = DiricheltStrategy :: M10;
     m_strategy = DiricheltStrategy :: M10;    // only this one is available currently
 
-    const auto& s_set_name = params.get<std::string>("SideSet Name");
-	const auto& n_set_name = params.get<std::string>("NodeSet Name");
-	const auto& e_set_name = params.get<std::string>("EdgeSet Name");
-	const auto& f_set_name = params.get<std::string>("FaceSet Name");
+    const auto& s_set_name = params->get<std::string>("SideSet Name");
+	const auto& n_set_name = params->get<std::string>("NodeSet Name");
+	const auto& e_set_name = params->get<std::string>("EdgeSet Name");
+	const auto& f_set_name = params->get<std::string>("FaceSet Name");
 	
 	try {
 		if( !s_set_name.empty() ) {
@@ -116,8 +104,8 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params
 		 std::cout << e.what() << std::endl;
 	}
     
-    m_penalty = params.get<double>("Penalty");
-    m_group_id = params.get<int>("Group ID");
+    m_penalty = params->get<double>("Penalty");
+    m_group_id = params->get<int>("Group ID");
 
     std::set< panzer::LocalOrdinal > localIDs;
 	std::vector<stk::mesh::EntityId> entities;
@@ -164,12 +152,31 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params
     // store in Kokkos type
     m_local_dofs = localIDs_k;
 
-    std::string name = params.get< std::string >("Dirichlet Name");
+    std::string name = params->get< std::string >("Dirichlet Name");
     Teuchos::RCP<PHX::DataLayout> dummy = Teuchos::rcp(new PHX::MDALayout<void>(0));
     const PHX::Tag<ScalarT> fieldTag(name, dummy);
 
     this->addEvaluatedField(fieldTag);
     this->setName(name+PHX::print<EvalT>());
+}
+
+template<typename EvalT,typename Traits>
+void DirichletBase<EvalT, Traits> :: validateParameters(Teuchos::ParameterList& p) const
+{
+    Teuchos::ParameterList valid_params;
+  
+	valid_params.set<std::string>("Dirichlet Name", "Dirichlet_BC");
+    valid_params.set<std::string>("Strategy", "1_0");
+    valid_params.set<std::string>("NodeSet Name", "");
+    valid_params.set<std::string>("EdgeSet Name", "");
+	valid_params.set<std::string>("FaceSet Name", "");
+	valid_params.set<std::string>("SideSet Name", "");
+    valid_params.set<int>("Group ID", 0);
+    valid_params.set<double>("Penalty", 1.e30);
+    valid_params.set< Teuchos::Array<std::string> >("DOF Names", Teuchos::tuple<std::string>("") );
+    valid_params.set<std::string>("Value Name", "");
+	
+    p.validateParametersAndSetDefaults(valid_params);
 }
 
 template<typename EvalT,typename Traits>

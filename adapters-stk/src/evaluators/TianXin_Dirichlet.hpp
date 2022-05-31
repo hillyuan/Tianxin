@@ -75,6 +75,8 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
     std::string                  m_sideset_name;     // sideset this Dirichlet condition act upon
     Teuchos::Array<std::string>  m_dof_name;         // ux,uy,uz etc
     std::string                  m_value_name;       // evaluator name
+	
+	void validateParameters(Teuchos::ParameterList& p) const;
 
   public:
     DirichletBase(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>&,
