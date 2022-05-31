@@ -38,6 +38,14 @@
 #ifndef _BC_DIRICHLET_HPP
 #define _BC_DIRICHLET_HPP
 
+#include "Phalanx_config.hpp"
+#include "Phalanx_Evaluator_WithBaseImpl.hpp"
+#include "Phalanx_Evaluator_Derived.hpp"
+#include "Phalanx_MDField.hpp"
+#include "Phalanx_DataLayout_MDALayout.hpp"
+
+//#include "Xpetra_CrsMatrix.hpp"
+
 #include <map>
 #include <cassert>
 
@@ -57,6 +65,8 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
 {
   private:
     typedef typename EvalT::ScalarT ScalarT;
+	typedef typename panzer::LocalOrdinal LO;
+	typedef typename panzer::GlobalOrdinal GO;
 
   private:
     int                          m_group_id;         // group id maybe used in activation
@@ -64,13 +74,7 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
 	int                          m_sideset_rank;     // 0: node; 1: edge; 2: face; 3: volume
     std::string                  m_sideset_name;     // sideset this Dirichlet condition act upon
     Teuchos::Array<std::string>  m_dof_name;         // ux,uy,uz etc
-    std::string                  m_value;            // evaluator name
-	//working variables
-    Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>    m_local_dofs;
-    Kokkos::View<panzer::GlobalOrdinal*,Kokkos::LayoutRight,PHX::Device >  m_global_dofs;
-	Kokkos::View<ScalarT*,Kokkos::LayoutRight,PHX::Device>                 m_values;
-	Teuchos::RCP<panzer::LinearObjContainer>  m_GhostedContainer;
-	
+    std::string                  m_value_name;       // evaluator name
 
   public:
     DirichletBase(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>&,
@@ -97,8 +101,14 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
     // This function will be overloaded with template specialized code
     void evaluateFields(typename Traits::EvalData d)=0;
 
-  public:
+  protected:
     double m_penalty;
+	//working variables
+    Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>    m_local_dofs;
+    Kokkos::View<panzer::GlobalOrdinal*,Kokkos::LayoutRight,PHX::Device >  m_global_dofs;
+	Kokkos::View<ScalarT*,Kokkos::LayoutRight,PHX::Device>                 m_values;
+	Teuchos::RCP<panzer::LinearObjContainer>  m_GhostedContainer; 
+    //Teuchos::RCP<Xpetra::CrsMatrix<ScalarT, LO, GO, KokkosClassic::DefaultNode::DefaultNodeType> >  m_crsmatrix;
 };
 
 // **************************************************************
@@ -115,6 +125,18 @@ template<typename EvalT, typename Traits> class DirichletsEvalutor;
 template<typename Traits>
 class DirichletsEvalutor<panzer::Traits::Residual,Traits>
    : public DirichletBase<panzer::Traits::Residual, Traits> {
+public:
+  DirichletsEvalutor(const Teuchos::ParameterList& p, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
+  void evaluateFields(typename Traits::EvalData d);
+};
+
+// **************************************************************
+// Jacobian
+// **************************************************************
+template<typename Traits>
+class DirichletsEvalutor<panzer::Traits::Jacobian,Traits>
+   : public DirichletBase<panzer::Traits::Jacobian, Traits> {
 public:
   DirichletsEvalutor(const Teuchos::ParameterList& p, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
       Teuchos::RCP<const panzer::GlobalIndexer> & indexer);

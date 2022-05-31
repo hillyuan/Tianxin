@@ -38,7 +38,6 @@
 #ifndef _BC_DIRICHLET_IMPL_HPP
 #define _BC_DIRICHLET_IMPL_HPP
 
-#include "Phalanx_DataLayout_MDALayout.hpp"
 #include <stdexcept>
 
 namespace TianXin {
@@ -73,9 +72,9 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params
 	catch (std::exception& e) {
 		 std::cout << e.what() << std::endl;
 	}
-	m_value = params.get<std::string>("Value Name");
+	m_value_name = params.get<std::string>("Value Name");
 	try {
-		if( m_value.empty() )
+		if( m_value_name.empty() )
 			throw std::runtime_error("error in Dirichlet condition defintion. Value Name not given!");
 	}
 	catch (std::exception& e) {
@@ -178,6 +177,7 @@ void DirichletBase<EvalT, Traits> :: preEvaluate(typename Traits::PreEvalData d)
 {
     if(Teuchos::is_null(m_GhostedContainer))
         m_GhostedContainer = Teuchos::rcp_dynamic_cast<panzer::LinearObjContainer>(d.gedc->getDataObject("Ghosted Container"));
+	//m_crsmatrix = d.gedc->getDataObject("Ghosted Container")->get_A();
 }
 
 template<typename EvalT, typename Traits>
@@ -195,6 +195,9 @@ postRegistrationSetup(typename Traits::SetupData d,
 // **************************************************************
 // **************************************************************
 
+// **************************************************************
+// Residual
+// **************************************************************
 
 template<typename Traits>
 DirichletsEvalutor<panzer::Traits::Residual,Traits>::DirichletsEvalutor(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
@@ -205,7 +208,23 @@ DirichletsEvalutor<panzer::Traits::Residual,Traits>::DirichletsEvalutor(const Te
 template<typename Traits>
 void DirichletsEvalutor<panzer::Traits::Residual, Traits> :: evaluateFields(typename Traits::EvalData d)
 {
-  //m_GhostedContainer->evalDirichletResidual(m_dirichlets);
+  this->m_GhostedContainer->evalDirichletResidual(this->m_local_dofs, this->m_values);
+}
+
+// **************************************************************
+// Jacobian
+// **************************************************************
+
+template<typename Traits>
+DirichletsEvalutor<panzer::Traits::Jacobian,Traits>::DirichletsEvalutor(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
+: DirichletBase<panzer::Traits::Jacobian,Traits>(params, mesh, indexer )
+{}
+
+template<typename Traits>
+void DirichletsEvalutor<panzer::Traits::Jacobian, Traits> :: evaluateFields(typename Traits::EvalData d)
+{
+  this->m_GhostedContainer->applyDirichletBoundaryCondition(this->m_local_dofs, this->m_values);
 }
 
 }

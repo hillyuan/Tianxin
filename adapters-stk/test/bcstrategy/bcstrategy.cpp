@@ -62,7 +62,7 @@
 #include "Panzer_WorksetContainer.hpp"
 #include "Panzer_FieldManagerBuilder.hpp"
 #include "Panzer_STKConnManager.hpp"
-#include "Panzer_BlockedEpetraLinearObjFactory.hpp"
+#include "Panzer_TpetraLinearObjFactory.hpp"
 #include "Panzer_AssemblyEngine.hpp"
 #include "Panzer_AssemblyEngine_InArgs.hpp"
 #include "Panzer_AssemblyEngine_TemplateManager.hpp"
@@ -72,7 +72,7 @@
 #include "user_app_EquationSetFactory.hpp"
 #include "user_app_ClosureModel_Factory_TemplateBuilder.hpp"
 
-#include "Epetra_MpiComm.h"
+#include "Tpetra_Core.hpp"
 
 namespace panzer {
 
@@ -106,8 +106,8 @@ namespace panzer {
   TEUCHOS_UNIT_TEST(bcstrategy, constant_bc_strategy)
   {
 
-    using std::cout;
-    using std::endl;
+    using lids_type = typename Tpetra::CrsMatrix<double, int, panzer::GlobalOrdinal,panzer::TpetraNodeType>::nonconst_local_inds_host_view_type;
+    using vals_type = typename Tpetra::CrsMatrix<double, int, panzer::GlobalOrdinal,panzer::TpetraNodeType>::nonconst_values_host_view_type;
     using Teuchos::RCP;
 
     // pause_to_attach();
@@ -121,7 +121,8 @@ namespace panzer {
     panzer_stk::SquareQuadMeshFactory factory;
     factory.setParameterList(pl);
     RCP<panzer_stk::STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
-    RCP<Epetra_Comm> Comm = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+    //RCP<Epetra_Comm> Comm = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+	//RCP<const Teuchos::Comm<int> > Comm = Tpetra::getDefaultComm();
 
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
     std::vector<panzer::BC> bcs;
@@ -175,14 +176,14 @@ namespace panzer {
     const Teuchos::RCP<panzer::ConnManager>
       conn_manager = Teuchos::rcp(new panzer_stk::STKConnManager(mesh));
 
+    Teuchos::RCP<const Teuchos::MpiComm<int> > tComm = Teuchos::rcp(new Teuchos::MpiComm<int>(MPI_COMM_WORLD));
     panzer::DOFManagerFactory globalIndexerFactory;
     RCP<panzer::GlobalIndexer> dofManager
          = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);
 
-    Teuchos::RCP<const Teuchos::MpiComm<int> > tComm = Teuchos::rcp(new Teuchos::MpiComm<int>(MPI_COMM_WORLD));
-    Teuchos::RCP<panzer::BlockedEpetraLinearObjFactory<panzer::Traits,int> > eLinObjFactory
-          = Teuchos::rcp(new panzer::BlockedEpetraLinearObjFactory<panzer::Traits,int>(tComm.getConst(),dofManager));
-    Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > linObjFactory = eLinObjFactory;
+    Teuchos::RCP<panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal> > tLinObjFactory
+          = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(tComm.getConst(),dofManager));
+    Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > linObjFactory = tLinObjFactory;
 
     // setup field manager build
     /////////////////////////////////////////////////////////////
@@ -206,23 +207,24 @@ namespace panzer {
     panzer::AssemblyEngine_TemplateBuilder builder(fmb,linObjFactory);
     ae_tm.buildObjects(builder);
 
-    RCP<panzer::EpetraLinearObjContainer> eGhosted
-       = Teuchos::rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(linObjFactory->buildGhostedLinearObjContainer());
-    RCP<panzer::EpetraLinearObjContainer> eGlobal
-       = Teuchos::rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(linObjFactory->buildLinearObjContainer());
-    eLinObjFactory->initializeGhostedContainer(panzer::EpetraLinearObjContainer::X |
-                                               panzer::EpetraLinearObjContainer::DxDt |
-                                               panzer::EpetraLinearObjContainer::F |
-                                               panzer::EpetraLinearObjContainer::Mat,*eGhosted);
-    eLinObjFactory->initializeContainer(panzer::EpetraLinearObjContainer::X |
-                                        panzer::EpetraLinearObjContainer::DxDt |
-                                        panzer::EpetraLinearObjContainer::F |
-                                        panzer::EpetraLinearObjContainer::Mat,*eGlobal);
+    RCP< panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> > eGhosted
+       = Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> >(linObjFactory->buildGhostedLinearObjContainer());
+    RCP<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> > eGlobal
+       = Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(linObjFactory->buildLinearObjContainer());
+    tLinObjFactory->initializeGhostedContainer(panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::X |
+                                               panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::DxDt |
+                                               panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::F |
+                                               panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::Mat,*eGhosted);
+    tLinObjFactory->initializeContainer(panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::X |
+                                        panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::DxDt |
+                                        panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::F |
+                                        panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::Mat,*eGlobal);
     panzer::AssemblyEngineInArgs input(eGhosted,eGlobal);
 
-    RCP<Epetra_Vector> x = Teuchos::rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(input.container_)->get_x();
+    RCP<Tpetra::Vector<double,int,panzer::GlobalOrdinal,panzer::TpetraNodeType>> x = 
+		Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(input.container_)->get_x();
 
-    x->PutScalar(1.0);
+    x->putScalar(1.0);
     input.beta = 1.0;
 
     ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
@@ -234,32 +236,39 @@ namespace panzer {
     // one element with same dirichlet bc on each side, so all nodes
     // have same dirichlet bc applied to it.
 
-    RCP<Epetra_Vector> f = Teuchos::rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(input.container_)->get_f();
+    RCP<Tpetra::Vector<double,int,panzer::GlobalOrdinal,panzer::TpetraNodeType>> f = 
+		Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(input.container_)->get_f();
     double tol = 10.0*std::numeric_limits<double>::epsilon();
-    for (int i=0; i < f->MyLength(); ++i) {
-      TEST_FLOATING_EQUALITY((*f)[i], -4.0, tol );
+	auto f_2d = f->getLocalViewHost(Tpetra::Access::ReadOnly);
+	auto f_1d = Kokkos::subview(f_2d, Kokkos::ALL (), 0);
+    for (std::size_t i=0; i < f->getLocalLength(); ++i) {
+      TEST_FLOATING_EQUALITY(f_1d(i), -4.0, tol );
     }
 
     // Check Jacobian values.  Should have one on diagonal and zero
     // elsewhere.
-    RCP<Epetra_CrsMatrix> jac = Teuchos::rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(input.container_)->get_A();
-    for (int i=0; i < jac->NumMyRows(); ++i) {
-      int num_indices = -1;
-      double* values = NULL;
-      int* local_column_indices = NULL;
-      jac->ExtractMyRowView(i, num_indices, values, local_column_indices);
-      for (int j=0; j < num_indices; j++) {
-	std::cout << "J(" <<jac->GRID(i) << "," << jac->GCID(local_column_indices[j]) << ") = " << values[j] << std::endl;
-	if (jac->GRID(i) == jac->GCID(local_column_indices[j])) {
-	  TEST_FLOATING_EQUALITY(values[j], 1.0, tol);
-	}
-	else {
-	  TEST_FLOATING_EQUALITY(values[j], 0.0, tol);
-	}
+    RCP<Tpetra::CrsMatrix<double,int,panzer::GlobalOrdinal>> jac = 
+		Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(input.container_)->get_A();
+    for (std::size_t i=0; i < jac->getLocalNumRows(); ++i) {
+      std::size_t numEntries = 0;
+	  std::size_t sz = jac->getNumEntriesInLocalRow(i);
+	  lids_type local_column_indices("ind",sz);
+      vals_type values("val",sz);
+	  //Teuchos::Array<int> local_column_indices(sz);
+      //Teuchos::Array<double> values(sz);
+      jac->getLocalRowCopy(i, local_column_indices, values, numEntries);
+      for (std::size_t j=0; j < numEntries; j++) {
+	//std::cout << "J(" <<jac->GRID(i) << "," << jac->GCID(local_column_indices[j]) << ") = " << values[j] << std::endl;
+	    if ( i == local_column_indices[j] ) {
+	      TEST_FLOATING_EQUALITY(values[j], 1.0, tol);
+	    }
+	    else {
+	      TEST_FLOATING_EQUALITY(values[j], 0.0, tol);
+	    }
       }
     }
 
-    jac->Print(std::cout);
+    jac->print(std::cout);
 
   }
 
