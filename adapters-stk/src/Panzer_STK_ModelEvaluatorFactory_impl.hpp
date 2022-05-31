@@ -1236,18 +1236,18 @@ namespace panzer_stk {
   {
 	  Teuchos::RCP<PHX::FieldManager<panzer::Traits>> pfm = Teuchos::rcp<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
 
-	  Teuchos::RCP< TianXin::DirichletsEvalutor<panzer::Traits::Residual, panzer::Traits> > re =
-        Teuchos::rcp( new TianXin::DirichletsEvalutor<panzer::Traits::Residual, panzer::Traits>(params, mesh, ugi) );
+	  Teuchos::RCP< TianXin::DirichletsEvalautor<panzer::Traits::Residual, panzer::Traits> > re =
+        Teuchos::rcp( new TianXin::DirichletsEvalautor<panzer::Traits::Residual, panzer::Traits>(params, mesh, ugi) );
       pfm->registerEvaluator<panzer::Traits::Residual>(re);
       pfm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
 
- /* Teuchos::RCP< DirichletsEvalutor<panzer::Traits::Jacobian, panzer::Traits> > je =
-    Teuchos::rcp( new DirichletsEvalutor<panzer::Traits::Jacobian, panzer::Traits>(ds, mesh) );
+ /* Teuchos::RCP< DirichletsEvalautor<panzer::Traits::Jacobian, panzer::Traits> > je =
+    Teuchos::rcp( new DirichletsEvalautor<panzer::Traits::Jacobian, panzer::Traits>(ds, mesh) );
   phx_dirichlet_field_manager_->registerEvaluator<panzer::Traits::Jacobian>(je);
   phx_dirichlet_field_manager_->requireField<panzer::Traits::Jacobian>(*je->evaluatedFields()[0]);
 
-  Teuchos::RCP< DirichletsEvalutor<panzer::Traits::Tangent, panzer::Traits> > te =
-    Teuchos::rcp( new DirichletsEvalutor<panzer::Traits::Tangent, panzer::Traits>(ds, mesh) );
+  Teuchos::RCP< DirichletsEvalautor<panzer::Traits::Tangent, panzer::Traits> > te =
+    Teuchos::rcp( new DirichletsEvalautor<panzer::Traits::Tangent, panzer::Traits>(ds, mesh) );
   phx_dirichlet_field_manager_->registerEvaluator<panzer::Traits::Tangent>(te);
   phx_dirichlet_field_manager_->requireField<panzer::Traits::Tangent>(*te->evaluatedFields()[0]);*/
 	  return pfm;

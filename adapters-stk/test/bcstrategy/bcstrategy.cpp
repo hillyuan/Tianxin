@@ -69,9 +69,10 @@
 #include "Panzer_AssemblyEngine_TemplateBuilder.hpp"
 #include "Panzer_DOFManagerFactory.hpp"
 #include "Panzer_GlobalData.hpp"
+#include "TianXin_Dirichlet.hpp"
+
 #include "user_app_EquationSetFactory.hpp"
 #include "user_app_ClosureModel_Factory_TemplateBuilder.hpp"
-
 #include "Tpetra_Core.hpp"
 
 namespace panzer {
@@ -103,6 +104,14 @@ namespace panzer {
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
     std::vector<panzer::BC> bcs;
     testInitialzation(ipb, bcs);
+	
+	Teuchos::ParameterList pl_dirichlet("Dirichlet BC");
+	{
+      pl_dirichlet.set("NodeSet Name","bottom");
+	  pl_dirichlet.set("Value Name","constant");
+      pl_dirichlet.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+    }
+	pl_dirichlet.print();
 
     Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
 
@@ -156,6 +165,8 @@ namespace panzer {
     panzer::DOFManagerFactory globalIndexerFactory;
     RCP<panzer::GlobalIndexer> dofManager
          = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);
+		 
+    TianXin::DirichletsEvalautor<panzer::Traits::Residual,panzer::Traits> dfm(pl_dirichlet,mesh,dofManager);
 
     Teuchos::RCP<panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal> > tLinObjFactory
           = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(tComm.getConst(),dofManager));

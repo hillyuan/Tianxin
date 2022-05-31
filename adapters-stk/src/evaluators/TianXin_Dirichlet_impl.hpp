@@ -43,8 +43,8 @@
 namespace TianXin {
 	
 template<typename EvalT,typename Traits>
-DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
-      Teuchos::RCP<const panzer::GlobalIndexer>& indexer)
+DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer>& indexer)
 : m_group_id(0), m_strategy(DiricheltStrategy :: M10), m_sideset_rank(0)
 {
   // ********************
@@ -200,13 +200,13 @@ postRegistrationSetup(typename Traits::SetupData d,
 // **************************************************************
 
 template<typename Traits>
-DirichletsEvalutor<panzer::Traits::Residual,Traits>::DirichletsEvalutor(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
-      Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
+DirichletsEvalautor<panzer::Traits::Residual,Traits>::DirichletsEvalautor(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
 : DirichletBase<panzer::Traits::Residual,Traits>(params, mesh, indexer )
 {}
 
 template<typename Traits>
-void DirichletsEvalutor<panzer::Traits::Residual, Traits> :: evaluateFields(typename Traits::EvalData d)
+void DirichletsEvalautor<panzer::Traits::Residual, Traits> :: evaluateFields(typename Traits::EvalData d)
 {
   this->m_GhostedContainer->evalDirichletResidual(this->m_local_dofs, this->m_values);
 }
@@ -216,13 +216,13 @@ void DirichletsEvalutor<panzer::Traits::Residual, Traits> :: evaluateFields(type
 // **************************************************************
 
 template<typename Traits>
-DirichletsEvalutor<panzer::Traits::Jacobian,Traits>::DirichletsEvalutor(const Teuchos::ParameterList& params, Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
-      Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
+DirichletsEvalautor<panzer::Traits::Jacobian,Traits>::DirichletsEvalautor(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
 : DirichletBase<panzer::Traits::Jacobian,Traits>(params, mesh, indexer )
 {}
 
 template<typename Traits>
-void DirichletsEvalutor<panzer::Traits::Jacobian, Traits> :: evaluateFields(typename Traits::EvalData d)
+void DirichletsEvalautor<panzer::Traits::Jacobian, Traits> :: evaluateFields(typename Traits::EvalData d)
 {
   this->m_GhostedContainer->applyDirichletBoundaryCondition(this->m_local_dofs, this->m_values);
 }
