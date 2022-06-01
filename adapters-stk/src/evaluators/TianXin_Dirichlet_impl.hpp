@@ -47,12 +47,10 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
       const Teuchos::RCP<const panzer::GlobalIndexer>& indexer)
 : m_group_id(0), m_strategy(DiricheltStrategy :: M10), m_sideset_rank(0)
 {
-    Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::parameterList();
-    *params = p;
-
-    this->validateParameters(*params);
+    Teuchos::ParameterList params(p);
+    this->validateParameters(params);
   
-	m_dof_name = params->get< Teuchos::Array<std::string> >("DOF Names");
+	m_dof_name = params.get< Teuchos::Array<std::string> >("DOF Names");
 	try {
 		if( m_dof_name.empty() )
 			throw std::runtime_error("error in Dirichlet condition defintion. DOF Names not given!");
@@ -60,16 +58,21 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 	catch (std::exception& e) {
 		 std::cout << e.what() << std::endl;
 	}
-	m_value_name = params->get<std::string>("Value Name");
-	try {
+	m_value_type = params.get<std::string>("Value Type");
+	if( m_value_type=="Constant" ) {
+		this->m_pFunctor = std::unique_ptr<TianXin::WorksetFunctor<EvalT>>(new TianXin::ConstantFunctor<EvalT>(params));
+	} else if ( m_value_type=="Linear" ) {
+		this->m_pFunctor = std::unique_ptr<TianXin::WorksetFunctor<EvalT>>(new TianXin::LinearFunctor<EvalT>(params));
+	}
+	/*try {
 		if( m_value_name.empty() )
 			throw std::runtime_error("error in Dirichlet condition defintion. Value Name not given!");
 	}
 	catch (std::exception& e) {
 		 std::cout << e.what() << std::endl;
-	}
+	}*/
 
-    const auto& method = params->get<std::string>("Strategy");
+    const auto& method = params.get<std::string>("Strategy");
     if( method=="Penalty" )
 		m_strategy = DiricheltStrategy :: Penalty;
 	else if( method=="Lagrarangian" )
@@ -78,10 +81,10 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 		m_strategy = DiricheltStrategy :: M10;
     m_strategy = DiricheltStrategy :: M10;    // only this one is available currently
 
-    const auto& s_set_name = params->get<std::string>("SideSet Name");
-	const auto& n_set_name = params->get<std::string>("NodeSet Name");
-	const auto& e_set_name = params->get<std::string>("EdgeSet Name");
-	const auto& f_set_name = params->get<std::string>("FaceSet Name");
+    const auto& s_set_name = params.get<std::string>("SideSet Name");
+	const auto& n_set_name = params.get<std::string>("NodeSet Name");
+	const auto& e_set_name = params.get<std::string>("EdgeSet Name");
+	const auto& f_set_name = params.get<std::string>("FaceSet Name");
 	
 	try {
 		if( !s_set_name.empty() ) {
@@ -104,8 +107,8 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 		 std::cout << e.what() << std::endl;
 	}
     
-    m_penalty = params->get<double>("Penalty");
-    m_group_id = params->get<int>("Group ID");
+    m_penalty = params.get<double>("Penalty");
+    m_group_id = params.get<int>("Group ID");
 
     std::set< panzer::LocalOrdinal > localIDs;
 	std::vector<stk::mesh::EntityId> entities;
@@ -135,24 +138,26 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 			}
 		}
 	}
+	m_ndofs = localIDs.size();
 	
 	// Create a view in the default execution space
 	Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device> localIDs_k 
        = Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>("Dirichelt::localIDs_",localIDs.size());
 	// Create a mirror of localIDs_k in host memory
 	auto localIDs_h = Kokkos::create_mirror_view(localIDs_k);
-	std::size_t nid;
+	std::size_t nid=0;
 	for( const auto& lid: localIDs ) {
          localIDs_h(nid) = lid;
 		 ++nid;
     }
 	// Copy data from host to device if necessary
     Kokkos::deep_copy(localIDs_k, localIDs_h);
-
     // store in Kokkos type
     m_local_dofs = localIDs_k;
 
-    std::string name = params->get< std::string >("Dirichlet Name");
+	m_values = Kokkos::View<ScalarT*,Kokkos::LayoutRight,PHX::Device>("Dirichelt::Value_",m_ndofs);
+
+    std::string name = params.get< std::string >("Dirichlet Name");
     Teuchos::RCP<PHX::DataLayout> dummy = Teuchos::rcp(new PHX::MDALayout<void>(0));
     const PHX::Tag<ScalarT> fieldTag(name, dummy);
 
@@ -174,9 +179,23 @@ void DirichletBase<EvalT, Traits> :: validateParameters(Teuchos::ParameterList& 
     valid_params.set<int>("Group ID", 0);
     valid_params.set<double>("Penalty", 1.e30);
     valid_params.set< Teuchos::Array<std::string> >("DOF Names", Teuchos::tuple<std::string>("") );
-    valid_params.set<std::string>("Value Name", "");
+    valid_params.set<std::string>("Value Type", "Constant");
 	
     p.validateParametersAndSetDefaults(valid_params);
+}
+
+template<typename EvalT,typename Traits>
+void DirichletBase<EvalT, Traits> :: setValues(const panzer::Workset& wk)
+{
+    // Create a mirror of localIDs_k in host memory
+	auto value_h = Kokkos::create_mirror_view(m_values);
+	std::size_t nid=0;
+	for( std::size_t i=0; i<m_ndofs; ++i ) {
+	     value_h(nid) = (*m_pFunctor)(wk);
+		 ++nid;
+	}
+	// Copy data from host to device if necessary
+	Kokkos::deep_copy(m_values, value_h);
 }
 
 template<typename EvalT,typename Traits>
@@ -215,7 +234,8 @@ DirichletsEvalautor<panzer::Traits::Residual,Traits>::DirichletsEvalautor(const 
 template<typename Traits>
 void DirichletsEvalautor<panzer::Traits::Residual, Traits> :: evaluateFields(typename Traits::EvalData d)
 {
-  this->m_GhostedContainer->evalDirichletResidual(this->m_local_dofs, this->m_values);
+	this->setValues(d);
+	this->m_GhostedContainer->evalDirichletResidual(this->m_local_dofs, this->m_values);
 }
 
 // **************************************************************

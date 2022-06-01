@@ -44,6 +44,7 @@
 #include "Phalanx_MDField.hpp"
 #include "Phalanx_DataLayout_MDALayout.hpp"
 
+#include "TianXin_Functor.hpp"
 //#include "Xpetra_CrsMatrix.hpp"
 
 #include <map>
@@ -74,7 +75,7 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
 	int                          m_sideset_rank;     // 0: node; 1: edge; 2: face; 3: volume
     std::string                  m_sideset_name;     // sideset this Dirichlet condition act upon
     Teuchos::Array<std::string>  m_dof_name;         // ux,uy,uz etc
-    std::string                  m_value_name;       // evaluator name
+    std::string                  m_value_type;       // evaluator name
 	
 	void validateParameters(Teuchos::ParameterList& p) const;
 
@@ -105,12 +106,15 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
 
   protected:
     double m_penalty;
+	std::unique_ptr<TianXin::WorksetFunctor<EvalT>> m_pFunctor;
 	//working variables
+	std::size_t m_ndofs;
     Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>    m_local_dofs;
     Kokkos::View<panzer::GlobalOrdinal*,Kokkos::LayoutRight,PHX::Device >  m_global_dofs;
 	Kokkos::View<ScalarT*,Kokkos::LayoutRight,PHX::Device>                 m_values;
 	Teuchos::RCP<panzer::LinearObjContainer>  m_GhostedContainer; 
     //Teuchos::RCP<Xpetra::CrsMatrix<ScalarT, LO, GO, KokkosClassic::DefaultNode::DefaultNodeType> >  m_crsmatrix;
+	void setValues(const panzer::Workset&);
 };
 
 // **************************************************************

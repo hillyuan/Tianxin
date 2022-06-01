@@ -108,7 +108,7 @@ namespace panzer {
 	Teuchos::ParameterList pl_dirichlet("Dirichlet BC");
 	{
       pl_dirichlet.set("NodeSet Name","bottom");
-	  pl_dirichlet.set("Value Name","constant");
+	  pl_dirichlet.set("Value Type","constant");
       pl_dirichlet.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
     }
 	pl_dirichlet.print();
