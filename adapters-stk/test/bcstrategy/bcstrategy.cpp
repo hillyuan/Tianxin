@@ -48,9 +48,6 @@
 #include <Teuchos_Assert.hpp>
 
 #include "Panzer_Traits.hpp"
-#include "Panzer_BC.hpp"
-#include "Panzer_BCStrategy.hpp"
-#include "user_app_BCStrategy_Factory.hpp"
 #include <iostream>
 
 #include "PanzerAdaptersSTK_config.hpp"
@@ -77,9 +74,6 @@
 
 namespace panzer {
 
-  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-			 std::vector<panzer::BC>& bcs);
-
   TEUCHOS_UNIT_TEST(bcstrategy, constant_Dirichlet_strategy)
   {
 
@@ -102,8 +96,15 @@ namespace panzer {
 	//RCP<const Teuchos::Comm<int> > Comm = Tpetra::getDefaultComm();
 
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
-    std::vector<panzer::BC> bcs;
-    testInitialzation(ipb, bcs);
+    Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
+    {
+      Teuchos::ParameterList& p = physics_block.sublist("a");
+      p.set("Type","Energy");
+      p.set("Prefix","");
+      p.set("Model ID","solid");
+      p.set("Basis Type","HGrad");
+      p.set("Basis Order",1);
+    }
 	
 	Teuchos::ParameterList pl_dirichlet("Dirichlet BC");
 	{
@@ -122,7 +123,6 @@ namespace panzer {
     //////////////////////////////////////////////////////////////
     const std::size_t workset_size = 1;
     Teuchos::RCP<user_app::MyFactory> eqset_factory = Teuchos::rcp(new user_app::MyFactory);
-    user_app::BCFactory bc_factory;
     std::vector<Teuchos::RCP<panzer::PhysicsBlock> > physicsBlocks;
     {
       std::map<std::string,std::string> block_ids_to_physics_ids;
@@ -169,28 +169,30 @@ namespace panzer {
     RCP<panzer::GlobalIndexer> dofManager
          = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);
 
-    auto dfm = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>() );		 
-	Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Residual, panzer::Traits> > dirichlet_res =
-      Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Residual, panzer::Traits>(pl_dirichlet,mesh,dofManager) );
-    dfm->registerEvaluator<panzer::Traits::Residual>(dirichlet_res);
-    dfm->requireField<panzer::Traits::Residual>(*dirichlet_res->evaluatedFields()[0]);
+    auto dfm = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>() );
+	{	
+		Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Residual, panzer::Traits> > dirichlet_res =
+			Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Residual, panzer::Traits>(pl_dirichlet,mesh,dofManager) );
+		dfm->registerEvaluator<panzer::Traits::Residual>(dirichlet_res);
+		dfm->requireField<panzer::Traits::Residual>(*dirichlet_res->evaluatedFields()[0]);
 	
-    Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits> > dirichlet_jac =
-      Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits>(pl_dirichlet,mesh,dofManager) );
-    dfm->registerEvaluator<panzer::Traits::Jacobian>(dirichlet_jac);
-    dfm->requireField<panzer::Traits::Jacobian>(*dirichlet_jac->evaluatedFields()[0]);
+		Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits> > dirichlet_jac =
+			Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits>(pl_dirichlet,mesh,dofManager) );
+		dfm->registerEvaluator<panzer::Traits::Jacobian>(dirichlet_jac);
+		dfm->requireField<panzer::Traits::Jacobian>(*dirichlet_jac->evaluatedFields()[0]);
 	
-	Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Tangent, panzer::Traits> > dirichlet_tag =
-      Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Tangent, panzer::Traits>(pl_dirichlet,mesh,dofManager) );
-    dfm->registerEvaluator<panzer::Traits::Tangent>(dirichlet_tag);
-    dfm->requireField<panzer::Traits::Tangent>(*dirichlet_tag->evaluatedFields()[0]);
+		Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Tangent, panzer::Traits> > dirichlet_tag =
+			Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Tangent, panzer::Traits>(pl_dirichlet,mesh,dofManager) );
+		dfm->registerEvaluator<panzer::Traits::Tangent>(dirichlet_tag);
+		dfm->requireField<panzer::Traits::Tangent>(*dirichlet_tag->evaluatedFields()[0]);
 	
-	panzer::Traits::SD setupData;
-	std::vector<PHX::index_size_type> derivative_dimensions;
-    derivative_dimensions.push_back(1);
-    dfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
-    dfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Tangent>(derivative_dimensions);
-	dfm->postRegistrationSetup(setupData);
+		panzer::Traits::SD setupData;
+		std::vector<PHX::index_size_type> derivative_dimensions;
+		derivative_dimensions.push_back(1);
+		dfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
+		dfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Tangent>(derivative_dimensions);
+		dfm->postRegistrationSetup(setupData);
+	}
 
     Teuchos::RCP<panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal> > tLinObjFactory
           = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(tComm.getConst(),dofManager));
@@ -212,7 +214,6 @@ namespace panzer {
 
     fmb->setWorksetContainer(wkstContainer);
     fmb->setupVolumeFieldManagers(physicsBlocks,cm_factory,closure_models,*linObjFactory,user_data);
-    //fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory,user_data);
 	fmb->setDirichletFieldManager( dfm );
 	//const auto& pfm = fmb->getDirichletFieldManager();
 	//pfm->print(std::cout);
@@ -283,36 +284,6 @@ namespace panzer {
 
     jac->print(std::cout);
 
-  }
-
-  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-			 std::vector<panzer::BC>& bcs)
-  {
-    // Physics block
-    Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
-    {
-      Teuchos::ParameterList& p = physics_block.sublist("a");
-      p.set("Type","Energy");
-      p.set("Prefix","");
-      p.set("Model ID","solid");
-      p.set("Basis Type","HGrad");
-      p.set("Basis Order",1);
-    }
-
-    {
-      std::size_t bc_id = 3;
-      panzer::BCType dirichlet = BCT_Dirichlet;
-      std::string sideset_id = "bottom";
-      std::string element_block_id = "eblock-0_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 5.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, dirichlet, sideset_id, element_block_id, dof_name,
-		    strategy, p);
-      bcs.push_back(bc);
-    }
   }
 
 }
