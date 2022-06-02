@@ -122,8 +122,7 @@ public:
    {
       TEUCHOS_ASSERT(false); // not yet implemented
    }
-   void applyDirichletBoundaryCondition( Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>& local_dofs,
-		Kokkos::View<double*,Kokkos::LayoutRight,PHX::Device>& values) override
+   void applyDirichletBoundaryCondition( const Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs) final
    {
       TEUCHOS_ASSERT(false); // not yet implemented
    }
@@ -131,8 +130,8 @@ public:
    {
       TEUCHOS_ASSERT(false); // not yet implemented
    }
-   void evalDirichletResidual( Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>& local_dofs,
-		Kokkos::View<double*,Kokkos::LayoutRight,PHX::Device>& values) override
+   void evalDirichletResidual( Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs,
+		Kokkos::View<double*, Kokkos::HostSpace>& values) final
    {
       TEUCHOS_ASSERT(false); // not yet implemented
    }

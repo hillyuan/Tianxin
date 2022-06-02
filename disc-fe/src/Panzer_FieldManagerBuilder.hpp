@@ -105,6 +105,9 @@ namespace panzer {
 	
 	const std::shared_ptr< PHX::FieldManager<panzer::Traits> >
     getDirichletFieldManager() const { return phx_dirichlet_field_manager_; }
+	
+	void setDirichletFieldManager(std::shared_ptr< PHX::FieldManager<panzer::Traits> > pfm)
+	{phx_dirichlet_field_manager_=pfm;}
 	  
 	const std::shared_ptr< PHX::FieldManager<panzer::Traits> >
     getNeumannFieldManager() const { return phx_neumann_field_manager_; }

@@ -65,12 +65,11 @@ public:
    virtual void initialize() = 0;
    
    virtual void evalDirichletResidual( const std::map< panzer::LocalOrdinal, double >& indx ) = 0;
-   virtual void evalDirichletResidual( Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>& local_dofs,
-		Kokkos::View<double*,Kokkos::LayoutRight,PHX::Device>& values) = 0;
+   virtual void evalDirichletResidual( Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs,
+		Kokkos::View<double*, Kokkos::HostSpace>& values) = 0;
    virtual void applyDirichletBoundaryCondition( const std::map< panzer::LocalOrdinal, double >& indx ) = 0;
    virtual void applyDirichletBoundaryCondition( const double&, const std::map< panzer::LocalOrdinal, double >& indx ) = 0;
-   virtual void applyDirichletBoundaryCondition( Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>& local_dofs,
-		Kokkos::View<double*,Kokkos::LayoutRight,PHX::Device>& values) =0;
+   virtual void applyDirichletBoundaryCondition( const Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs) =0;
    virtual void applyConcentratedLoad( const std::map< panzer::LocalOrdinal, double >& indx ) = 0;
    
    virtual void writeMatrixMarket(const std::string& filename) const = 0;

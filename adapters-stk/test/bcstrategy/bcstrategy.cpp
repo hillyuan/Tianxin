@@ -80,7 +80,7 @@ namespace panzer {
   void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
 			 std::vector<panzer::BC>& bcs);
 
-  TEUCHOS_UNIT_TEST(bcstrategy, constant_bc_strategy)
+  TEUCHOS_UNIT_TEST(bcstrategy, constant_Dirichlet_strategy)
   {
 
     using lids_type = typename Tpetra::CrsMatrix<double, int, panzer::GlobalOrdinal,panzer::TpetraNodeType>::nonconst_local_inds_host_view_type;
@@ -108,8 +108,11 @@ namespace panzer {
 	Teuchos::ParameterList pl_dirichlet("Dirichlet BC");
 	{
       pl_dirichlet.set("NodeSet Name","bottom");
-	  pl_dirichlet.set("Value Type","constant");
+	  pl_dirichlet.set("Value Type","Constant");
       pl_dirichlet.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	  Teuchos::ParameterList pl_sub("Constant");
+	  pl_sub.set("Value",5.0);
+	  pl_dirichlet.set("Constant",pl_sub);
     }
 	pl_dirichlet.print();
 
@@ -165,8 +168,18 @@ namespace panzer {
     panzer::DOFManagerFactory globalIndexerFactory;
     RCP<panzer::GlobalIndexer> dofManager
          = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);
-		 
-    TianXin::DirichletsEvalautor<panzer::Traits::Residual,panzer::Traits> dfm(pl_dirichlet,mesh,dofManager);
+
+    auto dfm = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>() );		 
+	Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Residual, panzer::Traits> > dirichlet_res =
+      Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Residual, panzer::Traits>(pl_dirichlet,mesh,dofManager) );
+    dfm->registerEvaluator<panzer::Traits::Residual>(dirichlet_res);
+    dfm->requireField<panzer::Traits::Residual>(*dirichlet_res->evaluatedFields()[0]);
+	
+    Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits> > dirichlet_jac =
+      Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits>(pl_dirichlet,mesh,dofManager) );
+    dfm->registerEvaluator<panzer::Traits::Jacobian>(dirichlet_jac);
+    dfm->requireField<panzer::Traits::Jacobian>(*dirichlet_jac->evaluatedFields()[0]);
+	
 
     Teuchos::RCP<panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal> > tLinObjFactory
           = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(tComm.getConst(),dofManager));

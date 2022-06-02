@@ -48,9 +48,6 @@ namespace TianXin {
 template<typename EvalT>
 class WorksetFunctor
 {
-  protected:
-    typedef typename EvalT::ScalarT ScalarT;
-
   public:
     WorksetFunctor(const Teuchos::ParameterList& params ) {}
     virtual double operator()(const panzer::Workset&) = 0;
@@ -63,8 +60,6 @@ class WorksetFunctor
 template<typename EvalT>
 class ConstantFunctor : public WorksetFunctor<EvalT>
 {
-  using typename WorksetFunctor<EvalT>::ScalarT;
-
   public:
     ConstantFunctor(const Teuchos::ParameterList& params );
     double operator()(const panzer::Workset&) final;
@@ -80,8 +75,6 @@ class ConstantFunctor : public WorksetFunctor<EvalT>
 template<typename EvalT>
 class LinearFunctor : public WorksetFunctor<EvalT>
 {
-  using typename WorksetFunctor<EvalT>::ScalarT;
-
   public:
     LinearFunctor(const Teuchos::ParameterList& params );
     double operator()(const panzer::Workset&) final;
@@ -98,8 +91,6 @@ class LinearFunctor : public WorksetFunctor<EvalT>
 template<typename EvalT>
 class TimeTableFunctor : public WorksetFunctor<EvalT>
 {
-  using typename WorksetFunctor<EvalT>::ScalarT;
-
   public:
     TimeTableFunctor(const Teuchos::ParameterList& params );
     double operator()(const panzer::Workset&) final;

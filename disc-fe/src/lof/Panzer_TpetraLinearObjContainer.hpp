@@ -222,10 +222,9 @@ public:
    }
    
    // -- 1-0 clear out
-   void applyDirichletBoundaryCondition( Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>& local_dofs,
-		Kokkos::View<double*,Kokkos::LayoutRight,PHX::Device>& values) override
+   void applyDirichletBoundaryCondition( const Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs) final
    {
-	 //  Tpetra::applyDirichletBoundaryConditionToLocalMatrixRows(*A, local_dofs);
+	   Tpetra::applyDirichletBoundaryConditionToLocalMatrixRows(*A, local_dofs);
    }
    
    // -- Penaly
@@ -292,8 +291,8 @@ public:
       }
    }
    
-   void evalDirichletResidual( Kokkos::View<panzer::LocalOrdinal*,Kokkos::LayoutRight,PHX::Device>& local_dofs,
-		Kokkos::View<double*,Kokkos::LayoutRight,PHX::Device>& values) override
+   void evalDirichletResidual( Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs,
+		Kokkos::View<double*, Kokkos::HostSpace>& values) final
    {
 	   //Teuchos::ArrayRCP<const ScalarT> x_1dview = x->get1dView();
 	   const auto& xview = x->getLocalViewDevice(Tpetra::Access::ReadOnly);
