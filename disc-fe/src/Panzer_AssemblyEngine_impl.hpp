@@ -386,10 +386,12 @@ evaluateDirichletCondition(const panzer::AssemblyEngineInArgs& in)
   in.fillGlobalEvaluationDataContainer(*(ped.gedc));
 	
   const std::shared_ptr< PHX::FieldManager<panzer::Traits> > pfm = m_field_manager_builder->getDirichletFieldManager();
+
   if( pfm == nullptr ) return;
 
   pfm->template preEvaluate<EvalT>(ped);
   workset.pivot_dirichlet = in.pivot_dirichlet;
+  workset.time = in.time;
   pfm->template evaluateFields<EvalT>(workset);
   pfm->template postEvaluate<EvalT>(NULL);
 }

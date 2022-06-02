@@ -294,15 +294,16 @@ public:
    void evalDirichletResidual( Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs,
 		Kokkos::View<double*, Kokkos::HostSpace>& values) final
    {
-	   //Teuchos::ArrayRCP<const ScalarT> x_1dview = x->get1dView();
-	   const auto& xview = x->getLocalViewDevice(Tpetra::Access::ReadOnly);
-	   const auto& kokkosResidual = f->getLocalViewDevice(Tpetra::Access::ReadWrite);
+	   Teuchos::ArrayRCP<const ScalarT> x_1dview = x->get1dView();
+	   //const auto& xview = x->getLocalViewDevice(Tpetra::Access::ReadOnly);
+	   //const auto& kokkosResidual = f->getLocalViewDevice(Tpetra::Access::ReadWrite);
 	   LocalOrdinalT numDofs = local_dofs.extent(0);
 	   Kokkos::parallel_for( numDofs, KOKKOS_LAMBDA (const LocalOrdinalT lclRow) {
-			double a = xview(local_dofs(lclRow),0) - values(lclRow);
+			double a = x_1dview[local_dofs(lclRow)] - values(lclRow);
+			std::cout << lclRow << " ,,, " << local_dofs(lclRow) << " ,,, " << a << std::endl;
 			//kokkosResidual(local_dofs(lclRow)) = a;
-			Kokkos::atomic_assign(&kokkosResidual(local_dofs(lclRow),0), a);
-	        //f->replaceLocalValue(local_dofs(lclRow), a);
+			//Kokkos::atomic_assign(&kokkosResidual(local_dofs(lclRow),0), a);
+	        f->replaceLocalValue(local_dofs(lclRow), a);
        } );
    }
    

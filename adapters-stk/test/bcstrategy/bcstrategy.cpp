@@ -180,6 +180,17 @@ namespace panzer {
     dfm->registerEvaluator<panzer::Traits::Jacobian>(dirichlet_jac);
     dfm->requireField<panzer::Traits::Jacobian>(*dirichlet_jac->evaluatedFields()[0]);
 	
+	Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Tangent, panzer::Traits> > dirichlet_tag =
+      Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Tangent, panzer::Traits>(pl_dirichlet,mesh,dofManager) );
+    dfm->registerEvaluator<panzer::Traits::Tangent>(dirichlet_tag);
+    dfm->requireField<panzer::Traits::Tangent>(*dirichlet_tag->evaluatedFields()[0]);
+	
+	panzer::Traits::SD setupData;
+	std::vector<PHX::index_size_type> derivative_dimensions;
+    derivative_dimensions.push_back(1);
+    dfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
+    dfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Tangent>(derivative_dimensions);
+	dfm->postRegistrationSetup(setupData);
 
     Teuchos::RCP<panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal> > tLinObjFactory
           = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(tComm.getConst(),dofManager));
@@ -201,7 +212,10 @@ namespace panzer {
 
     fmb->setWorksetContainer(wkstContainer);
     fmb->setupVolumeFieldManagers(physicsBlocks,cm_factory,closure_models,*linObjFactory,user_data);
-    fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory,user_data);
+    //fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory,user_data);
+	fmb->setDirichletFieldManager( dfm );
+	//const auto& pfm = fmb->getDirichletFieldManager();
+	//pfm->print(std::cout);
 
     panzer::AssemblyEngine_TemplateManager<panzer::Traits> ae_tm;
     panzer::AssemblyEngine_TemplateBuilder builder(fmb,linObjFactory);

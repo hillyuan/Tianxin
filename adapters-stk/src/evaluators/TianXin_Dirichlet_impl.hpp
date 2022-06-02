@@ -45,7 +45,7 @@ namespace TianXin {
 template<typename EvalT,typename Traits>
 DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer>& indexer)
-: m_group_id(0), m_strategy(DiricheltStrategy :: M10), m_sideset_rank(0)
+: PHX::EvaluatorWithBaseImpl<Traits>("Dirichlet Boundary Conditions")
 {
     Teuchos::ParameterList params(p);
   
@@ -156,7 +156,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 
 	m_values = Kokkos::View<RealType*,Kokkos::HostSpace>("Dirichelt::Value_",m_ndofs);
 
-    std::string name = params.get< std::string >("Dirichlet Name","");
+    std::string name = params.get< std::string >("Dirichlet Name","DIRICHLET");
     Teuchos::RCP<PHX::DataLayout> dummy = Teuchos::rcp(new PHX::MDALayout<void>(0));
     const PHX::Tag<ScalarT> fieldTag(name, dummy);
 
@@ -186,14 +186,15 @@ void DirichletBase<EvalT, Traits> :: preEvaluate(typename Traits::PreEvalData d)
 	//m_crsmatrix = d.gedc->getDataObject("Ghosted Container")->get_A();
 }
 
+/*
 template<typename EvalT, typename Traits>
 void DirichletBase<EvalT, Traits>::
 postRegistrationSetup(typename Traits::SetupData d,
-                      PHX::FieldManager<Traits>& /* fm */)
+                      PHX::FieldManager<Traits>& )
 {
-//  d.fill_field_dependencies(this->dependentFields(),this->evaluatedFields());
+    d.fill_field_dependencies(this->dependentFields(),this->evaluatedFields());
 }
-
+*/
 
 // **************************************************************
 // **************************************************************
@@ -214,6 +215,7 @@ DirichletEvalautor<panzer::Traits::Residual,Traits>::DirichletEvalautor(const Te
 template<typename Traits>
 void DirichletEvalautor<panzer::Traits::Residual, Traits> :: evaluateFields(typename Traits::EvalData d)
 {
+	std::cout << "enter\n";
 	this->setValues(d);
 	this->m_GhostedContainer->evalDirichletResidual(this->m_local_dofs, this->m_values);
 }
@@ -234,6 +236,20 @@ void DirichletEvalautor<panzer::Traits::Jacobian, Traits> :: evaluateFields(type
 	//this->setValues(d);
     this->m_GhostedContainer->applyDirichletBoundaryCondition(this->m_local_dofs);
 }
+
+// **************************************************************
+// Tangent
+// **************************************************************
+
+template<typename Traits>
+DirichletEvalautor<panzer::Traits::Tangent,Traits>::DirichletEvalautor(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
+: DirichletBase<panzer::Traits::Tangent,Traits>(params, mesh, indexer )
+{}
+
+template<typename Traits>
+void DirichletEvalautor<panzer::Traits::Tangent, Traits> :: evaluateFields(typename Traits::EvalData d)
+{}
 
 }
 

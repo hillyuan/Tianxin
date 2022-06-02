@@ -98,7 +98,7 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
 	}
 	
 	void preEvaluate(typename Traits::PreEvalData d);
-	void postRegistrationSetup(typename Traits::SetupData d, PHX::FieldManager<Traits>& vm);
+	//void postRegistrationSetup(typename Traits::SetupData d, PHX::FieldManager<Traits>& vm);
 
     // This function will be overloaded with template specialized code
     void evaluateFields(typename Traits::EvalData d)=0;
@@ -142,6 +142,18 @@ public:
 template<typename Traits>
 class DirichletEvalautor<panzer::Traits::Jacobian,Traits>
    : public DirichletBase<panzer::Traits::Jacobian, Traits> {
+public:
+  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
+  void evaluateFields(typename Traits::EvalData d);
+};
+
+// **************************************************************
+// Tangent
+// **************************************************************
+template<typename Traits>
+class DirichletEvalautor<panzer::Traits::Tangent,Traits>
+   : public DirichletBase<panzer::Traits::Tangent, Traits> {
 public:
   DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
