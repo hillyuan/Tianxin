@@ -63,6 +63,8 @@
 #include <PanzerAdaptersSTK_config.hpp>
 #include <Kokkos_ViewFactory.hpp>
 
+#include "TianXin_AbstractDiscretation.hpp"
+
 #include <unordered_map>
 #include <memory>
 
@@ -103,7 +105,7 @@ protected:
 Teuchos::RCP<ElementDescriptor>
 buildElementDescriptor(stk::mesh::EntityId elmtId,std::vector<stk::mesh::EntityId> & nodes);
 
-class STK_Interface {
+class STK_Interface : public TianXin::AbstractDiscretation {
 public:
    typedef double ProcIdData; // ECC: Not sure why?
    typedef stk::mesh::Field<double> SolutionFieldType;
@@ -288,7 +290,8 @@ public:
 
    /** Look up a global node and get the coordinate.
      */
-   const double * getNodeCoordinates(stk::mesh::EntityId nodeId) const;
+   //const double * getNodeCoordinates(stk::mesh::EntityId nodeId) const;
+   const double * getNodeCoordinates(std::size_t nodeId) const final;
 
    /** Look up a global node and get the coordinate.
      */

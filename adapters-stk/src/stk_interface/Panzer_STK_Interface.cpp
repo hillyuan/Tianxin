@@ -1152,7 +1152,13 @@ void STK_Interface::buildSubcells()
      addFaces();
 }
 
-const double * STK_Interface::getNodeCoordinates(stk::mesh::EntityId nodeId) const
+/*const double * STK_Interface::getNodeCoordinates(stk::mesh::EntityId nodeId) const
+{
+   stk::mesh::Entity node = bulkData_->get_entity(getNodeRank(),nodeId);
+   return stk::mesh::field_data(*coordinatesField_,node);
+}*/
+
+const double * STK_Interface::getNodeCoordinates(std::size_t nodeId) const
 {
    stk::mesh::Entity node = bulkData_->get_entity(getNodeRank(),nodeId);
    return stk::mesh::field_data(*coordinatesField_,node);

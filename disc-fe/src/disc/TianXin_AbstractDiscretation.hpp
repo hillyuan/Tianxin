@@ -38,10 +38,12 @@
 #ifndef _TIANXIN_ABSTRACTDISCRTATION_HPP
 #define _TIANXIN_ABSTRACTDISCRTATION_HPP
 
+#include <cstddef>
+
 namespace TianXin {
 
 struct AbstractDiscretation {
-	virtual const double* getNodeCoordinates(int&) = 0;
+	virtual const double* getNodeCoordinates(std::size_t) const = 0;
 };
 
 }

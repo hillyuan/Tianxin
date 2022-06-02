@@ -58,6 +58,8 @@
 #include "Panzer_IntegrationDescriptor.hpp"
 #include "Panzer_BasisDescriptor.hpp"
 
+#include "TianXin_AbstractDiscretation.hpp"
+
 #include "Phalanx_KokkosDeviceTypes.hpp"
 
 namespace panzer {
@@ -367,6 +369,8 @@ namespace panzer {
     std::vector<double> gather_seeds; // generic gather seeds
     bool evaluate_transient_terms;
     double pivot_dirichlet;
+	
+	Teuchos::RCP<TianXin::AbstractDiscretation> mesh;
 
     //! other contains details about the side-sharing elements on the other side
     //! of the interface. If Teuchos::nonnull(other), then Workset contains two
