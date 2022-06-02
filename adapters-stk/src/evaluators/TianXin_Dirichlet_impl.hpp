@@ -215,7 +215,6 @@ DirichletEvalautor<panzer::Traits::Residual,Traits>::DirichletEvalautor(const Te
 template<typename Traits>
 void DirichletEvalautor<panzer::Traits::Residual, Traits> :: evaluateFields(typename Traits::EvalData d)
 {
-	std::cout << "enter\n";
 	this->setValues(d);
 	this->m_GhostedContainer->evalDirichletResidual(this->m_local_dofs, this->m_values);
 }

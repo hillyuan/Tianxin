@@ -241,17 +241,17 @@ namespace panzer {
     x->putScalar(1.0);
     input.beta = 1.0;
 
+	ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
     ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
-    ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
 
     // Check residual values.  Evaluation should have put (x - 5.0)
     // into each residual.  With initial guess of 1.0, check to make
     // sure each entry in residual has -4.0.  Note that we are using
     // one element with same dirichlet bc on each side, so all nodes
     // have same dirichlet bc applied to it.
-
     RCP<Tpetra::Vector<double,int,panzer::GlobalOrdinal,panzer::TpetraNodeType>> f = 
 		Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(input.container_)->get_f();
+	//Teuchos::ArrayRCP<const double> f_1dview = f->get1dView();
     double tol = 10.0*std::numeric_limits<double>::epsilon();
 	auto f_2d = f->getLocalViewHost(Tpetra::Access::ReadOnly);
 	auto f_1d = Kokkos::subview(f_2d, Kokkos::ALL (), 0);
