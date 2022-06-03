@@ -59,11 +59,6 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 	}
 	m_value_type = params.get<std::string>("Value Type","Constant");
 	this->m_pFunctor = WorksetFunctorFactory::Instance().Create(m_value_type, params);
-	/*if( m_value_type=="Constant" ) {
-		this->m_pFunctor = std::unique_ptr<TianXin::WorksetFunctor>(new TianXin::ConstantFunctor<RealType>(params));
-	} else if ( m_value_type=="Linear" ) {
-		this->m_pFunctor = std::unique_ptr<TianXin::WorksetFunctor>(new TianXin::LinearFunctor<RealType>(params));
-	}*/
 
     const auto& method = params.get<std::string>("Strategy", "1_0");
     if( method=="Penalty" )

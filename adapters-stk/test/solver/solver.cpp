@@ -60,6 +60,7 @@ using Teuchos::rcp;
 #include "Panzer_Workset_Builder.hpp"
 #include "Panzer_FieldManagerBuilder.hpp"
 #include "Panzer_STKConnManager.hpp"
+#include "Panzer_TpetraLinearObjFactory.hpp"
 #include "Panzer_BlockedEpetraLinearObjFactory.hpp"
 #include "Panzer_AssemblyEngine.hpp"
 #include "Panzer_AssemblyEngine_TemplateManager.hpp"
@@ -76,6 +77,7 @@ using Teuchos::rcp;
 #include "user_app_EquationSetFactory.hpp"
 #include "user_app_ClosureModel_Factory_TemplateBuilder.hpp"
 #include "user_app_BCStrategy_Factory.hpp"
+#include "TianXin_Dirichlet.hpp"
 
 #include <cstdio> // for get char
 
@@ -296,16 +298,6 @@ namespace panzer {
 
     //std::cout << *gx << std::endl;
 
-    // Export solution to ghosted vector for exodus output
-    RCP<Epetra_Vector> solution = Thyra::get_Epetra_Vector(*(ep_lof->getMap(0)), gx);
-    Epetra_Vector ghosted_solution(*(ep_lof->getGhostedMap(0)));
-    RCP<Epetra_Import> importer = ep_lof->getGhostedImport(0);
-    ghosted_solution.PutScalar(0.0);
-    ghosted_solution.Import(*solution,*importer,Insert);
-
-    panzer_stk::write_solution_data(*dofManager,*mesh,ghosted_solution);
-    mesh->writeToExodus("output.exo");
-
     // Test solution values on left, middle, and right side of mesh.
     // Note that this is based on the exact 20x20 test mesh on 4
     // processes.  It will fail on more or less processes due to
@@ -358,9 +350,8 @@ namespace panzer {
     // evaluates them sparately, so this method is not tested in the
     // model evaluator.
     {
-      using Teuchos::rcp;
-      RCP<Epetra_Vector> x = rcp(new Epetra_Vector(*ep_me->get_x_map()));
-      RCP<Epetra_Vector> f = rcp(new Epetra_Vector(*ep_me->get_f_map()));
+      RCP<Epetra_Vector> x = Teuchos::rcp(new Epetra_Vector(*ep_me->get_x_map()));
+      RCP<Epetra_Vector> f = Teuchos::rcp(new Epetra_Vector(*ep_me->get_f_map()));
       RCP<Epetra_Operator> J = ep_me->create_W();
       x->PutScalar(0.0);
       EpetraExt::ModelEvaluator::InArgs in_args = ep_me->createInArgs();
@@ -368,8 +359,6 @@ namespace panzer {
       in_args.set_x(x);
       out_args.set_f(f);
       out_args.set_W(J);
-      ep_me->evalModel(in_args, out_args);
-      //Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(J)->Print(std::cout);
       ep_me->evalModel(in_args, out_args);
       //Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(J)->Print(std::cout);
     }

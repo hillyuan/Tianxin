@@ -38,7 +38,7 @@
 #ifndef _WORKSET_FUNCTOR_IMPL_HPP
 #define _WORKSET_FUNCTOR_IMPL_HPP
 
-//#include <stk_expreval/Evaluator.hpp>
+#include <stk_expreval/Evaluator.hpp>
 
 namespace TianXin {
 

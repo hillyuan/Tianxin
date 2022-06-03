@@ -298,10 +298,10 @@ public:
 	   const auto& fview = f->getLocalViewDevice(Tpetra::Access::ReadWrite);
 	   LocalOrdinalT numDofs = local_dofs.extent(0);
 	   Kokkos::parallel_for( numDofs, KOKKOS_LAMBDA (const LocalOrdinalT lclRow) {
-			double a = xview(local_dofs(lclRow),0) - values(lclRow);
+			//double a = xview(local_dofs(lclRow),0) - values(lclRow);
 			//std::cout << lclRow << " ,,, " << local_dofs(lclRow) << " ,,, " << a << std::endl;
-			//fview(local_dofs(lclRow)) = a;
-			Kokkos::atomic_assign(&fview(local_dofs(lclRow),0), a);
+			fview(local_dofs(lclRow),0) = xview(local_dofs(lclRow),0) - values(lclRow);
+			//Kokkos::atomic_assign(&fview(local_dofs(lclRow),0), a);
        } );
 	/*  Teuchos::ArrayRCP<const ScalarT> x_1dview = x->get1dView();
 	  Teuchos::ArrayRCP<double> f_1dview = f->get1dViewNonConst();
