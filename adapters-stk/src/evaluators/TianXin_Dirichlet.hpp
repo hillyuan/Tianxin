@@ -105,7 +105,7 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
 
   protected:
     double m_penalty;
-	std::unique_ptr<TianXin::WorksetFunctor<RealType>> m_pFunctor;
+	std::unique_ptr<TianXin::WorksetFunctor> m_pFunctor;
 	//working variables
 	std::size_t m_ndofs;
     Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>   m_local_dofs;

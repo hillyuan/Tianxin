@@ -58,17 +58,11 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 		 std::cout << e.what() << std::endl;
 	}
 	m_value_type = params.get<std::string>("Value Type","Constant");
-	if( m_value_type=="Constant" ) {
-		this->m_pFunctor = std::unique_ptr<TianXin::WorksetFunctor<RealType>>(new TianXin::ConstantFunctor<RealType>(params));
+	this->m_pFunctor = WorksetFunctorFactory::Instance().Create(m_value_type, params);
+	/*if( m_value_type=="Constant" ) {
+		this->m_pFunctor = std::unique_ptr<TianXin::WorksetFunctor>(new TianXin::ConstantFunctor<RealType>(params));
 	} else if ( m_value_type=="Linear" ) {
-		this->m_pFunctor = std::unique_ptr<TianXin::WorksetFunctor<RealType>>(new TianXin::LinearFunctor<RealType>(params));
-	}
-	/*try {
-		if( m_value_name.empty() )
-			throw std::runtime_error("error in Dirichlet condition defintion. Value Name not given!");
-	}
-	catch (std::exception& e) {
-		 std::cout << e.what() << std::endl;
+		this->m_pFunctor = std::unique_ptr<TianXin::WorksetFunctor>(new TianXin::LinearFunctor<RealType>(params));
 	}*/
 
     const auto& method = params.get<std::string>("Strategy", "1_0");

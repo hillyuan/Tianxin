@@ -181,11 +181,6 @@ namespace panzer {
 		dfm->registerEvaluator<panzer::Traits::Jacobian>(dirichlet_jac);
 		dfm->requireField<panzer::Traits::Jacobian>(*dirichlet_jac->evaluatedFields()[0]);
 	
-		Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Tangent, panzer::Traits> > dirichlet_tag =
-			Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Tangent, panzer::Traits>(pl_dirichlet,mesh,dofManager) );
-		dfm->registerEvaluator<panzer::Traits::Tangent>(dirichlet_tag);
-		dfm->requireField<panzer::Traits::Tangent>(*dirichlet_tag->evaluatedFields()[0]);
-	
 		panzer::Traits::SD setupData;
 		std::vector<PHX::index_size_type> derivative_dimensions;
 		derivative_dimensions.push_back(1);

@@ -35,10 +35,10 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _WORKSET_IMPL_HPP
-#define _WORKSET_IMPL_HPP
+#ifndef _WORKSET_FUNCTOR_IMPL_HPP
+#define _WORKSET_FUNCTOR_IMPL_HPP
 
-#include <stk_expreval/Evaluator.hpp>
+//#include <stk_expreval/Evaluator.hpp>
 
 namespace TianXin {
 
@@ -47,7 +47,7 @@ namespace TianXin {
 // **************************************************************
 template<typename EvalT>
 ConstantFunctor<EvalT>::ConstantFunctor(const Teuchos::ParameterList& params )
-: WorksetFunctor<EvalT>(params)
+: WorksetFunctor(params)
 {
 	const Teuchos::ParameterList& p = params.sublist("Constant"); 
 	m_value = p.get<double>("Value");
@@ -65,7 +65,7 @@ double ConstantFunctor<EvalT> :: operator()(const panzer::Workset&)
 // **************************************************************
 template<typename EvalT>
 LinearFunctor<EvalT>::LinearFunctor(const Teuchos::ParameterList& params )
-: WorksetFunctor<EvalT>(params)
+: WorksetFunctor(params)
 {
 	const Teuchos::ParameterList& p = params.sublist("Constant"); 
 	m_value = p.get<double>("Value");
@@ -86,7 +86,7 @@ double LinearFunctor<EvalT> :: operator()(const panzer::Workset& wk)
 // **************************************************************
 template<typename EvalT>
 TimeTableFunctor<EvalT>::TimeTableFunctor(const Teuchos::ParameterList& params )
-: WorksetFunctor<EvalT>(params)
+: WorksetFunctor(params)
 {
 	const Teuchos::ParameterList& p = params.sublist("TimeTable"); 
 	m_time = p.get<Teuchos::Array<double>>("Time Values").toVector();
@@ -125,7 +125,7 @@ double TimeTableFunctor<EvalT> :: operator()(const panzer::Workset& wk)
 // **************************************************************
 template<typename EvalT>
 TimeExpressionFunctor<EvalT>::TimeExpressionFunctor(const Teuchos::ParameterList& params )
-: WorksetFunctor<EvalT>(params)
+: WorksetFunctor(params)
 {
 	const Teuchos::ParameterList& p = params.sublist("Constant"); 
 	expression = p.get<std::string>("Expression");
@@ -134,11 +134,12 @@ TimeExpressionFunctor<EvalT>::TimeExpressionFunctor(const Teuchos::ParameterList
 template<typename EvalT>
 double TimeExpressionFunctor<EvalT> :: operator()(const panzer::Workset& wk)
 {
-	stk::expreval::Eval expr_eval(expression);
+/*	stk::expreval::Eval expr_eval(expression);
     expr_eval.parse();
 	double curtime = wk.time;
     expr_eval.bindVariable("t", curtime);
-    return expr_eval.evaluate();;
+    return expr_eval.evaluate();;*/
+	return 0.0;
 }
 
 }

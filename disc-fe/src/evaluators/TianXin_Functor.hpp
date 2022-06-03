@@ -40,12 +40,10 @@
 
 #include "Panzer_Workset.hpp"
 #include <Teuchos_ParameterList.hpp>
-
-#include <cassert>
+#include "TianXin_Factory.hpp"
 
 namespace TianXin {
 
-template<typename EvalT>
 class WorksetFunctor
 {
   public:
@@ -58,7 +56,7 @@ class WorksetFunctor
 // **************************************************************
 
 template<typename EvalT>
-class ConstantFunctor : public WorksetFunctor<EvalT>
+class ConstantFunctor : public WorksetFunctor
 {
   public:
     ConstantFunctor(const Teuchos::ParameterList& params );
@@ -67,13 +65,12 @@ class ConstantFunctor : public WorksetFunctor<EvalT>
     double m_value;
 };
 
-
 // **************************************************************
 // Linear function
 // **************************************************************
 
 template<typename EvalT>
-class LinearFunctor : public WorksetFunctor<EvalT>
+class LinearFunctor : public WorksetFunctor
 {
   public:
     LinearFunctor(const Teuchos::ParameterList& params );
@@ -89,7 +86,7 @@ class LinearFunctor : public WorksetFunctor<EvalT>
 // **************************************************************
 
 template<typename EvalT>
-class TimeTableFunctor : public WorksetFunctor<EvalT>
+class TimeTableFunctor : public WorksetFunctor
 {
   public:
     TimeTableFunctor(const Teuchos::ParameterList& params );
@@ -104,10 +101,8 @@ class TimeTableFunctor : public WorksetFunctor<EvalT>
 // **************************************************************
 
 template<typename EvalT>
-class TimeExpressionFunctor : public WorksetFunctor<EvalT>
+class TimeExpressionFunctor : public WorksetFunctor
 {
-  using typename WorksetFunctor<EvalT>::ScalarT;
-
   public:
     TimeExpressionFunctor(const Teuchos::ParameterList& params );
     double operator()(const panzer::Workset&) final;
@@ -128,6 +123,22 @@ class CoordExpressionFunctor : public WorksetFunctor<EvalT>
   private:
     std::string expression{""};
 };*/
+
+typedef Factory<WorksetFunctor,std::string,Teuchos::ParameterList> WorksetFunctorFactory;
+
+template<typename EvalT>
+WorksetFunctor* createConstantFunctor(const Teuchos::ParameterList& params)             
+{ 
+    return new ConstantFunctor<EvalT>(params);     
+}
+bool const ok = WorksetFunctorFactory::Instance().Register( "Constant", createConstantFunctor<double>);
+
+template<typename EvalT>
+WorksetFunctor* createLinearFunctor(const Teuchos::ParameterList& params)             
+{ 
+    return new LinearFunctor<EvalT>(params);     
+}
+bool const ok1 = WorksetFunctorFactory::Instance().Register( "Linear", createLinearFunctor<double>);
 
 
 }
