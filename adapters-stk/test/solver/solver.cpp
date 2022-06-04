@@ -510,9 +510,6 @@ namespace panzer {
     std::vector<Teuchos::RCP<Teuchos::Array<std::string> > > p_names;
     std::vector<Teuchos::RCP<Teuchos::Array<double> > > p_values;
 
-    RCP<panzer::ModelEvaluator_Epetra> ep_me =
-      Teuchos::rcp(new panzer::ModelEvaluator_Epetra(fmb,rLibrary,ep_lof, p_names,p_values, gd, true));
-
     // Get solver params from input file
     RCP<Teuchos::ParameterList> piro_params = rcp(new Teuchos::ParameterList("Piro Parameters"));
     Teuchos::updateParametersFromXmlFile("solver_rythmos.xml", piro_params.ptr());
@@ -535,6 +532,8 @@ namespace panzer {
       createLinearSolveStrategy(linearSolverBuilder);
 
     // Build Thyra Model Evluator
+	RCP<panzer::ModelEvaluator_Epetra> ep_me =
+      Teuchos::rcp(new panzer::ModelEvaluator_Epetra(fmb,rLibrary,ep_lof, p_names,p_values, gd, true));
     RCP<Thyra::ModelEvaluatorDefaultBase<double> > thyra_me =
       Thyra::epetraModelEvaluator(ep_me,lowsFactory);
 
@@ -566,16 +565,6 @@ namespace panzer {
     piro->evalModel(inArgs, outArgs);
 
     //std::cout << *gx << std::endl;
-
-    // Export solution to ghosted vector for exodus output
-    RCP<Epetra_Vector> solution = Thyra::get_Epetra_Vector(*(ep_lof->getMap(0)), gx);
-    Epetra_Vector ghosted_solution(*(ep_lof->getGhostedMap(0)));
-    RCP<Epetra_Import> importer = ep_lof->getGhostedImport(0);
-    ghosted_solution.PutScalar(0.0);
-    ghosted_solution.Import(*solution,*importer,Insert);
-
-    panzer_stk::write_solution_data(*dofManager,*mesh,ghosted_solution);
-
   }
 
   // *****************************************************************

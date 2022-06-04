@@ -56,8 +56,7 @@ namespace TianXin {
 		typedef std::function<AbstractProduct*(CreatorParmTList)> ProductCreator;
 
 	private:
-        typedef std::unordered_map<IdentifierType, ProductCreator> IdToProductMap;
-		IdToProductMap associations_;
+        std::unordered_map<IdentifierType, ProductCreator> associations_;
 		
 	private:
 		Factory() {}
@@ -85,7 +84,7 @@ namespace TianXin {
 		
 		template<typename Derived>
 		bool Register(const IdentifierType& id) {
-			return this->Register(id, Creator<Derived>);
+			return this->Register(id, DerivedCreator<Derived>);
 		//	ProductCreator creator_func = static_cast<AbstractProduct*(*)(CreatorParmTList&)>(Creator<Derived>);
 		//	ProductCreator creator_func = Creator<Derived>;
 		//	auto ret = associations_.insert(std::make_pair(id, creator_func));
@@ -101,12 +100,6 @@ namespace TianXin {
 
         std::unique_ptr<AbstractProduct> Create(const IdentifierType& id, CreatorParmTList& param)
         {
-            /*typename IdToProductMap::iterator i = associations_.find(id);
-            if (i != associations_.end())
-            {
-                return (i->second)();
-            }
-            return this->OnUnknownType(id);*/
 			auto iter = associations_.find(id);
 			if (iter == associations_.end()) return std::unique_ptr<AbstractProduct>(nullptr);
 			return std::unique_ptr<AbstractProduct>((iter->second)(param));
@@ -114,9 +107,10 @@ namespace TianXin {
 		
 	private:
 		template<typename Derived>
-		static AbstractProduct* Creator(CreatorParmTList& param) {
-			return new Derived(param);
+		static AbstractProduct* DerivedCreator(const CreatorParmTList& param) {
+			return static_cast<AbstractProduct*>(new Derived(param));
 		}
+
     };
 	
 }

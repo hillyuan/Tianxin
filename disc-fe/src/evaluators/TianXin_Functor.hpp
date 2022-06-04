@@ -51,6 +51,8 @@ class WorksetFunctor
     virtual double operator()(const panzer::Workset&) = 0;
 };
 
+typedef Factory<WorksetFunctor,std::string,Teuchos::ParameterList> WorksetFunctorFactory;
+
 // **************************************************************
 // Constat function
 // **************************************************************
@@ -64,7 +66,7 @@ class ConstantFunctor : public WorksetFunctor
   private:
     double m_value;
 };
-
+bool ok = WorksetFunctorFactory::Instance().template Register< ConstantFunctor<double> >( "Constant");
 // **************************************************************
 // Linear function
 // **************************************************************
@@ -79,7 +81,7 @@ class LinearFunctor : public WorksetFunctor
     double m_elapse_time;
     double m_value;
 };
-
+bool ok1 = WorksetFunctorFactory::Instance().template Register< LinearFunctor<double> >( "Linear");
 
 // **************************************************************
 // Table Function of Time
@@ -95,6 +97,7 @@ class TimeTableFunctor : public WorksetFunctor
     std::vector<double> m_time;
     std::vector<double> m_value;
 };
+bool ok2 = WorksetFunctorFactory::Instance().template Register< TimeTableFunctor<double> >( "TimeTable");
 
 // **************************************************************
 // Function of time expression
@@ -124,21 +127,19 @@ class CoordExpressionFunctor : public WorksetFunctor<EvalT>
     std::string expression{""};
 };*/
 
-typedef Factory<WorksetFunctor,std::string,Teuchos::ParameterList> WorksetFunctorFactory;
-
-template<typename EvalT>
+/*template<typename EvalT>
 WorksetFunctor* createConstantFunctor(const Teuchos::ParameterList& params)             
 { 
     return new ConstantFunctor<EvalT>(params);     
 }
-bool const ok = WorksetFunctorFactory::Instance().Register( "Constant", createConstantFunctor<double>);
+
 
 template<typename EvalT>
 WorksetFunctor* createLinearFunctor(const Teuchos::ParameterList& params)             
 { 
     return new LinearFunctor<EvalT>(params);     
 }
-bool const ok1 = WorksetFunctorFactory::Instance().Register( "Linear", createLinearFunctor<double>);
+bool const ok1 = WorksetFunctorFactory::Instance().Register( "Linear", createLinearFunctor<double>);*/
 
 
 }

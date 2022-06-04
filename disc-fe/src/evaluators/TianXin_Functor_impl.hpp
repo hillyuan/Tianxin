@@ -134,12 +134,11 @@ TimeExpressionFunctor<EvalT>::TimeExpressionFunctor(const Teuchos::ParameterList
 template<typename EvalT>
 double TimeExpressionFunctor<EvalT> :: operator()(const panzer::Workset& wk)
 {
-/*	stk::expreval::Eval expr_eval(expression);
+	stk::expreval::Eval expr_eval(expression);
     expr_eval.parse();
 	double curtime = wk.time;
     expr_eval.bindVariable("t", curtime);
-    return expr_eval.evaluate();;*/
-	return 0.0;
+    return expr_eval.evaluate();
 }
 
 }
