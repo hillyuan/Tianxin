@@ -66,7 +66,9 @@ class ConstantFunctor : public WorksetFunctor
   private:
     double m_value;
 };
-bool ok = WorksetFunctorFactory::Instance().template Register< ConstantFunctor<double> >( "Constant");
+namespace FunctorRegister {
+	 static bool const ok = WorksetFunctorFactory::Instance().template Register< ConstantFunctor<double> >( "Constant");
+}
 // **************************************************************
 // Linear function
 // **************************************************************
@@ -81,7 +83,9 @@ class LinearFunctor : public WorksetFunctor
     double m_elapse_time;
     double m_value;
 };
-bool ok1 = WorksetFunctorFactory::Instance().template Register< LinearFunctor<double> >( "Linear");
+namespace FunctorRegister {
+	static bool const ok1 = WorksetFunctorFactory::Instance().template Register< LinearFunctor<double> >( "Linear");
+}
 
 // **************************************************************
 // Table Function of Time
@@ -97,7 +101,9 @@ class TimeTableFunctor : public WorksetFunctor
     std::vector<double> m_time;
     std::vector<double> m_value;
 };
-bool ok2 = WorksetFunctorFactory::Instance().template Register< TimeTableFunctor<double> >( "TimeTable");
+namespace FunctorRegister {
+	static bool const ok2 = WorksetFunctorFactory::Instance().template Register< TimeTableFunctor<double> >( "TimeTable");
+}
 
 // **************************************************************
 // Function of time expression
