@@ -44,7 +44,7 @@
 #define PANZER_EVALUATORS_REGISTRAR_HPP
 
 #include "Phalanx_FieldManager.hpp"
-
+#include "Panzer_Traits.hpp"
 #include "Panzer_Evaluator_WithBaseImpl.hpp"
 
 namespace panzer {
