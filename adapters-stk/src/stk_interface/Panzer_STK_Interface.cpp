@@ -1513,7 +1513,29 @@ void STK_Interface::getAllSides(const std::string & sideName,const std::string &
    stk::mesh::get_selected_entities(sideBlock,bulkData_->buckets(getSideRank()),sides);
 }
 
-void STK_Interface::getAllSideEdgesId(const std::string & sideName,std::vector<stk::mesh::EntityId> & edgesIds) const
+/*void STK_Interface::getAllSideEdgesId(const std::string & sideName,std::vector<stk::mesh::EntityId> & edgesIds) const
+{
+   stk::mesh::Part * sidePart = getSideset(sideName);
+   if (sidePart==0 ) {
+      std::cout << "Unknown side set \"" << sideName << "\"" << std::endl;
+      return;
+   }
+
+   stk::mesh::Selector side = *sidePart;
+   // check side set dimension here?
+
+   // grab elements
+   std::vector<stk::mesh::Entity> edges;
+   stk::mesh::get_selected_entities(side,bulkData_->buckets(getEdgeRank()),edges);
+
+   edgesIds.clear();
+   for( const auto n: edges )
+   {
+	   edgesIds.emplace_back( bulkData_->identifier(n) );
+   }
+}*/
+
+void STK_Interface::getAllSideEdgesId(const std::string & sideName,std::vector<std::size_t> & edgesIds) const
 {
    stk::mesh::Part * sidePart = getSideset(sideName);
    if (sidePart==0 ) {
@@ -1622,7 +1644,7 @@ void STK_Interface::getAllNodeSet(const std::string & nodesetName,std::vector<st
    // grab nodes
    stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getNodeRank()),nodes);
 }
-	
+/*	
 void STK_Interface::getAllNodeSetIds(const std::string & nodesetName,std::vector<stk::mesh::EntityId> & nodeIds) const
 {
    stk::mesh::Part * nodePart = getNodeset(nodesetName);
@@ -1641,9 +1663,29 @@ void STK_Interface::getAllNodeSetIds(const std::string & nodesetName,std::vector
    {
 	   nodeIds.emplace_back( bulkData_->identifier(n) );
    }
-}
+}*/
 	
 void STK_Interface::getAllNodeSetIds(const std::string & nodesetName,std::vector<panzer::GlobalOrdinal> & nodeIds) const
+{
+   stk::mesh::Part * nodePart = getNodeset(nodesetName);
+   TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,std::logic_error,
+                      "Unknown side set \"" << nodesetName << "\"");
+
+   stk::mesh::Selector nodeset = *nodePart;
+   stk::mesh::Selector ownedBlock = (metaData_->locally_owned_part() | metaData_->globally_shared_part()) & nodeset;
+
+   // grab nodes
+   std::vector<stk::mesh::Entity> nodes;
+   stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getNodeRank()),nodes);
+	
+   nodeIds.clear();
+   for( const auto n: nodes )
+   {
+	   nodeIds.emplace_back( bulkData_->identifier(n) );
+   }
+}
+
+void STK_Interface::getAllNodeSetIds(const std::string & nodesetName,std::vector<std::size_t> & nodeIds) const
 {
    stk::mesh::Part * nodePart = getNodeset(nodesetName);
    TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,std::logic_error,

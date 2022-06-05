@@ -1241,15 +1241,19 @@ namespace panzer_stk {
       pfm->registerEvaluator<panzer::Traits::Residual>(re);
       pfm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
 
- /* Teuchos::RCP< DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits> > je =
-    Teuchos::rcp( new DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits>(ds, mesh) );
-  phx_dirichlet_field_manager_->registerEvaluator<panzer::Traits::Jacobian>(je);
-  phx_dirichlet_field_manager_->requireField<panzer::Traits::Jacobian>(*je->evaluatedFields()[0]);
+	  Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits> > je =
+        Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits>(params, mesh, ugi) );
+      pfm->registerEvaluator<panzer::Traits::Jacobian>(je);
+      pfm->requireField<panzer::Traits::Jacobian>(*je->evaluatedFields()[0]);
+	  
+	  panzer::Traits::SD setupData;
 
-  Teuchos::RCP< DirichletEvalautor<panzer::Traits::Tangent, panzer::Traits> > te =
-    Teuchos::rcp( new DirichletEvalautor<panzer::Traits::Tangent, panzer::Traits>(ds, mesh) );
-  phx_dirichlet_field_manager_->registerEvaluator<panzer::Traits::Tangent>(te);
-  phx_dirichlet_field_manager_->requireField<panzer::Traits::Tangent>(*te->evaluatedFields()[0]);*/
+	  std::vector<PHX::index_size_type> derivative_dimensions;
+      derivative_dimensions.push_back(1);
+      pfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
+      pfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Tangent>(derivative_dimensions);
+      pfm->postRegistrationSetup(setupData);
+	  
 	  return pfm;
   }
 

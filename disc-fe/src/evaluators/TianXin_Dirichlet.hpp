@@ -44,7 +44,11 @@
 #include "Phalanx_MDField.hpp"
 #include "Phalanx_DataLayout_MDALayout.hpp"
 
+#include "Teuchos_ParameterList.hpp"
+
 #include "TianXin_Functor.hpp"
+#include "TianXin_AbstractDiscretation.hpp"
+#include "Panzer_GlobalIndexer.hpp"
 //#include "Xpetra_CrsMatrix.hpp"
 
 #include <map>
@@ -79,7 +83,7 @@ class DirichletBase : public PHX::EvaluatorWithBaseImpl<Traits>
     std::string                  m_value_type;       // evaluator name
 
   public:
-    DirichletBase(const Teuchos::ParameterList& params, const Teuchos::RCP<const panzer_stk::STK_Interface>&,
+    DirichletBase(const Teuchos::ParameterList& params, const Teuchos::RCP<const TianXin::AbstractDiscretation>&,
       const Teuchos::RCP<const panzer::GlobalIndexer> & indexer );
 
     int getGroupID() const
@@ -131,7 +135,7 @@ template<typename Traits>
 class DirichletEvalautor<panzer::Traits::Residual,Traits>
    : public DirichletBase<panzer::Traits::Residual, Traits> {
 public:
-  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
   void evaluateFields(typename Traits::EvalData d);
 };
@@ -143,7 +147,7 @@ template<typename Traits>
 class DirichletEvalautor<panzer::Traits::Jacobian,Traits>
    : public DirichletBase<panzer::Traits::Jacobian, Traits> {
 public:
-  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
   void evaluateFields(typename Traits::EvalData d);
 };
@@ -155,7 +159,7 @@ template<typename Traits>
 class DirichletEvalautor<panzer::Traits::Tangent,Traits>
    : public DirichletBase<panzer::Traits::Tangent, Traits> {
 public:
-  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const panzer_stk::STK_Interface>& mesh,
+  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
   void evaluateFields(typename Traits::EvalData d);
 };

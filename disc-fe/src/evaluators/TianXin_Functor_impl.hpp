@@ -38,7 +38,7 @@
 #ifndef _WORKSET_FUNCTOR_IMPL_HPP
 #define _WORKSET_FUNCTOR_IMPL_HPP
 
-#include <stk_expreval/Evaluator.hpp>
+//#include <stk_expreval/Evaluator.hpp>
 
 namespace TianXin {
 
@@ -134,11 +134,12 @@ TimeExpressionFunctor<EvalT>::TimeExpressionFunctor(const Teuchos::ParameterList
 template<typename EvalT>
 double TimeExpressionFunctor<EvalT> :: operator()(const panzer::Workset& wk)
 {
-	stk::expreval::Eval expr_eval(expression);
+/*	stk::expreval::Eval expr_eval(expression);
     expr_eval.parse();
 	double curtime = wk.time;
     expr_eval.bindVariable("t", curtime);
-    return expr_eval.evaluate();
+    return expr_eval.evaluate();*/
+	return 0.0;
 }
 
 }

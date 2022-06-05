@@ -51,6 +51,8 @@
 #include "Panzer_LinearObjFactory.hpp"
 #include "Panzer_ClosureModel_Factory_TemplateManager.hpp"
 #include "Panzer_WorksetContainer.hpp"
+#include "TianXin_AbstractDiscretation.hpp"
+#include "TianXin_Dirichlet.hpp"
 
 // Forward Declarations
 namespace panzer {
@@ -177,6 +179,9 @@ namespace panzer {
                               const LinearObjFactory<panzer::Traits> & lo_factory,
 			      const Teuchos::ParameterList& user_data)
     { setupBCFieldManagers(bcs,physicsBlocks,Teuchos::null,cm_factory,bc_factory,closure_models,lo_factory,user_data); }
+	
+	void setupDiricheltFieldManagers(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer );
 
     void writeVolumeGraphvizDependencyFiles(std::string filename_prefix,
 					    const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks) const;
