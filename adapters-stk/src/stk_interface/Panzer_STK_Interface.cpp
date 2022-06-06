@@ -1348,6 +1348,40 @@ void STK_Interface::getAllEdges(const std::string & edgeBlockName,std::vector<st
    stk::mesh::get_selected_entities(edge_block,bulkData_->buckets(getEdgeRank()),edges);
 }
 
+void STK_Interface::getEdgeSetInfo(const std::string & edgeBlockName,std::vector<std::size_t>& edgesIds, std::vector<int>& orient ) const
+{
+   using NodeView = Kokkos::View<panzer::GlobalOrdinal*, Kokkos::DefaultHostExecutionSpace>;
+	
+   stk::mesh::Part * edgeBlockPart = getEdgeBlock(edgeBlockName);
+   TEUCHOS_TEST_FOR_EXCEPTION(edgeBlockPart==0,std::logic_error,
+                      "Unknown edge block \"" << edgeBlockName << "\"");
+
+   //stk::mesh::Selector edge_block = *edgeBlockPart;
+   stk::mesh::Selector edge_block = (metaData_->locally_owned_part() | metaData_->globally_shared_part() | *edgeBlockPart );
+
+   // grab elements
+   std::vector<stk::mesh::Entity> edges;
+   stk::mesh::get_selected_entities(edge_block,bulkData_->buckets(getEdgeRank()),edges);
+   
+   edgesIds.clear();
+   //panzer::GlobalOrdinal edgesnodes[2];
+   shards::CellTopology line(shards::getCellTopologyData< shards::Line<2> >());
+   for( const auto n: edges )
+   {
+	   edgesIds.emplace_back( bulkData_->identifier(n) );
+	   const size_t numNodes = bulkData_->num_connectivity(n, getNodeRank());  // must =2
+	   NodeView edgesnodes("nodes",numNodes);
+	   stk::mesh::Entity const* nodes = bulkData_->begin(n, getNodeRank());
+	   for( std::size_t i=0; i<numNodes; ++i) {
+		   stk::mesh::Entity nd = nodes[i];
+		   edgesnodes[i] = bulkData_->identifier(nd);
+	   }
+	   auto ori = Intrepid2::Orientation::getOrientation(line,edgesnodes);
+	  // int ordinal = Intrepid2::Orientation::template getOrientation<panzer::GlobalOrdinal>(edgesnodes,2);
+	 //  orient.emplace_back( ordinal );
+   }
+}
+
 void STK_Interface::getAllEdges(const std::string & edgeBlockName,const std::string & blockName,std::vector<stk::mesh::Entity> & edges) const
 {
    stk::mesh::Part * edgeBlockPart = getEdgeBlock(edgeBlockName);

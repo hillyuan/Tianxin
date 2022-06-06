@@ -59,6 +59,7 @@
 
 #include <Shards_CellTopology.hpp>
 #include <Shards_CellTopologyData.h>
+#include <Intrepid2_Orientation.hpp>
 
 #include <PanzerAdaptersSTK_config.hpp>
 #include <Kokkos_ViewFactory.hpp>
@@ -365,7 +366,7 @@ public:
      * \param[in,out] edges Vector of entities containing the requested edges.
      */
    void getAllEdges(const std::string & edgeBlockName,const std::string & blockName,std::vector<stk::mesh::Entity> & edges) const;
-
+   void getEdgeSetInfo(const std::string&, std::vector<std::size_t>& id, std::vector<int>& orient) const;
    /** Get a vector of faces owned by this processor
      */
    void getMyFaces(std::vector<stk::mesh::Entity> & faces) const;
