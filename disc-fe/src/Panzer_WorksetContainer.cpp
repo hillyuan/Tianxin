@@ -46,7 +46,6 @@
 
 #include "Panzer_Workset_Utilities.hpp"
 #include "Panzer_CommonArrayFactories.hpp"
-#include "Panzer_OrientationContainer.hpp"
 #include "Panzer_Dimension.hpp"
 
 namespace panzer {
