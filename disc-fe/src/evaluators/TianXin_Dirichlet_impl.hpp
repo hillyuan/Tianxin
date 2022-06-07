@@ -117,7 +117,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 			}
 		}
 	} else if( m_sideset_rank==1 ) {
-		mesh->getAllSideEdgesId(m_sideset_name,entities); 
+		mesh->getAllEdgeSetIds(m_sideset_name,entities); 
 		for(auto myname: m_dof_name) {
 			int fdnum = indexer->getFieldNum(myname);
 			for ( auto nd: entities ) {

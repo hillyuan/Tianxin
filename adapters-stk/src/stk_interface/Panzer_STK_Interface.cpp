@@ -1576,20 +1576,18 @@ void STK_Interface::getAllSides(const std::string & sideName,const std::string &
    }
 }*/
 
-void STK_Interface::getAllSideEdgesId(const std::string & sideName,std::vector<std::size_t> & edgesIds) const
+void STK_Interface::getAllEdgeSetIds(const std::string& sideName,std::vector<std::size_t> & edgesIds) const
 {
-   stk::mesh::Part * sidePart = getSideset(sideName);
-   if (sidePart==0 ) {
-      std::cout << "Unknown side set \"" << sideName << "\"" << std::endl;
-      return;
-   }
+   stk::mesh::Part * edgeBlockPart = getEdgeBlock(sideName);
+   TEUCHOS_TEST_FOR_EXCEPTION(edgeBlockPart==0,std::logic_error,
+                      "Unknown edge block \"" << sideName << "\"");
 
-   stk::mesh::Selector side = *sidePart;
-   // check side set dimension here?
+   //stk::mesh::Selector edge_block = *edgeBlockPart;
+   stk::mesh::Selector edge_block = (metaData_->locally_owned_part() | metaData_->globally_shared_part() | *edgeBlockPart );
 
    // grab elements
    std::vector<stk::mesh::Entity> edges;
-   stk::mesh::get_selected_entities(side,bulkData_->buckets(getEdgeRank()),edges);
+   stk::mesh::get_selected_entities(edge_block,bulkData_->buckets(getEdgeRank()),edges);
 
    edgesIds.clear();
    for( const auto n: edges )

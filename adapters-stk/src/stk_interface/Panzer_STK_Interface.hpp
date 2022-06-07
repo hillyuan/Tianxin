@@ -456,7 +456,7 @@ public:
      * \param[in,out] edges Vector of entities containing the requested sides.
      */
    //void getAllSideEdgesId(const std::string & sideName,std::vector<stk::mesh::EntityId> & edges) const;
-   void getAllSideEdgesId(const std::string&, std::vector<std::size_t>& edges) const;
+   void getAllEdgeSetIds(const std::string&, std::vector<std::size_t>& edges) const;
 
    /** Get Entities corresponding to the node set requested. This also limits the entities
      * to be in a particular element block. The Entites in the vector should be of dimension
