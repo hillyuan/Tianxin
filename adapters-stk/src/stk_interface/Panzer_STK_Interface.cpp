@@ -76,6 +76,7 @@
 
 #include <set>
 #include <limits>
+#include <cassert>
 
 using Teuchos::RCP;
 using Teuchos::rcp;
@@ -1364,21 +1365,27 @@ void STK_Interface::getEdgeSetInfo(const std::string & edgeBlockName,std::vector
    stk::mesh::get_selected_entities(edge_block,bulkData_->buckets(getEdgeRank()),edges);
    
    edgesIds.clear();
-   //panzer::GlobalOrdinal edgesnodes[2];
-   shards::CellTopology line(shards::getCellTopologyData< shards::Line<2> >());
+   stk::topology topo = metaData_->get_topology( *edgeBlockPart );
+   unsigned nvertices = topo.num_vertices();
+   NodeView edgesnodes("nodes",nvertices);
+   int mp, edgeOrt[1];
+   shards::CellTopology line = stk::mesh::get_cell_topology(topo);
    for( const auto n: edges )
    {
 	   edgesIds.emplace_back( bulkData_->identifier(n) );
-	   const size_t numNodes = bulkData_->num_connectivity(n, getNodeRank());  // must =2
-	   NodeView edgesnodes("nodes",numNodes);
+	   const size_t numNodes = bulkData_->num_connectivity(n, getNodeRank());
+	   assert( line.getNodeCount() == numNodes );
+	   
 	   stk::mesh::Entity const* nodes = bulkData_->begin(n, getNodeRank());
-	   for( std::size_t i=0; i<numNodes; ++i) {
+	   for( std::size_t i=0; i<nvertices; ++i) {
 		   stk::mesh::Entity nd = nodes[i];
 		   edgesnodes[i] = bulkData_->identifier(nd);
 	   }
 	   auto ori = Intrepid2::Orientation::getOrientation(line,edgesnodes);
-	  // int ordinal = Intrepid2::Orientation::template getOrientation<panzer::GlobalOrdinal>(edgesnodes,2);
-	 //  orient.emplace_back( ordinal );
+	   ori.getEdgeOrientation(edgeOrt,1);
+	   mp = 1;
+	   if( edgeOrt[1]==1 ) mp=-1;
+	   orient.emplace_back( mp );
    }
 }
 
