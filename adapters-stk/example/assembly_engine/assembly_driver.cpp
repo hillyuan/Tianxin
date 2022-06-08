@@ -1,12 +1,9 @@
 // @HEADER
 // ***********************************************************************
 //
-//           Panzer: A partial differential equation assembly
+//           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2011) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
+//                 Copyright (2022) Xi Yuan
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -23,10 +20,10 @@
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// THIS SOFTWARE IS PROVIDED THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR THE
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -35,8 +32,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Questions? Contact Roger P. Pawlowski (rppawlo@sandia.gov) and
-// Eric C. Cyr (eccyr@sandia.gov)
 // ***********************************************************************
 // @HEADER
 
@@ -48,8 +43,6 @@
 
 using Teuchos::RCP;
 using Teuchos::rcp;
-
-#include "Thyra_get_Epetra_Operator.hpp"
 
 #include "Teuchos_DefaultComm.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
@@ -66,7 +59,7 @@ using Teuchos::rcp;
 #include "Panzer_AssemblyEngine_InArgs.hpp"
 #include "Panzer_AssemblyEngine_TemplateManager.hpp"
 #include "Panzer_AssemblyEngine_TemplateBuilder.hpp"
-#include "Panzer_BlockedEpetraLinearObjFactory.hpp"
+#include "Panzer_TpetraLinearObjFactory.hpp"
 #include "Panzer_DOFManagerFactory.hpp"
 #include "Panzer_GlobalData.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
@@ -74,14 +67,12 @@ using Teuchos::rcp;
 #include "user_app_ClosureModel_Factory_TemplateBuilder.hpp"
 #include "user_app_BCStrategy_Factory.hpp"
 
-#include "EpetraExt_RowMatrixOut.h"
-#include "EpetraExt_VectorOut.h"
-#include "EpetraExt_MultiVectorOut.h"
+#include "MatrixMarket_Tpetra.hpp"
 
 #include "Thyra_VectorSpaceBase.hpp"
 #include "Thyra_VectorBase.hpp"
 #include "Thyra_LinearOpBase.hpp"
-#include "Thyra_EpetraLinearOp.hpp"
+#include "Thyra_TpetraLinearOp.hpp"
 
 #include "Panzer_STK_Utilities.hpp"
 
@@ -96,6 +87,8 @@ int main(int argc,char * argv[])
    using Teuchos::RCP;
    using panzer::StrPureBasisPair;
    using panzer::StrPureBasisComp;
+   using TpetraCrsMatrix = Tpetra::CrsMatrix<double,int,panzer::GlobalOrdinal>;
+   using LOC = panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>;
 
    Teuchos::GlobalMPISession mpiSession(&argc,&argv);
    Kokkos::initialize(argc,argv);
@@ -227,8 +220,8 @@ int main(int argc,char * argv[])
 
    // construct some linear algebra object, build object to pass to evaluators
    Teuchos::RCP<const Teuchos::MpiComm<int> > tComm = Teuchos::rcp(new Teuchos::MpiComm<int>(MPI_COMM_WORLD));
-   Teuchos::RCP<panzer::BlockedEpetraLinearObjFactory<panzer::Traits,int> > eLinObjFactory
-         = Teuchos::rcp(new panzer::BlockedEpetraLinearObjFactory<panzer::Traits,int>(tComm.getConst(),dofManager));
+   Teuchos::RCP<panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal> > eLinObjFactory
+         = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(tComm.getConst(),dofManager));
    Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > linObjFactory = eLinObjFactory;
 
    // setup field manager build
@@ -267,18 +260,27 @@ int main(int argc,char * argv[])
 
    // build ghosted variables
    out << "BUILD LA" << std::endl;
-   RCP<panzer::EpetraLinearObjContainer> ghostCont 
-         = Teuchos::rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(linObjFactory->buildGhostedLinearObjContainer());
-   RCP<panzer::EpetraLinearObjContainer> container 
-         = Teuchos::rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(linObjFactory->buildLinearObjContainer());
-   eLinObjFactory->initializeContainer(panzer::EpetraLinearObjContainer::X |
-                                       panzer::EpetraLinearObjContainer::DxDt |
-                                       panzer::EpetraLinearObjContainer::F |
-                                       panzer::EpetraLinearObjContainer::Mat,*container);
-   eLinObjFactory->initializeGhostedContainer(panzer::EpetraLinearObjContainer::X |
-                                              panzer::EpetraLinearObjContainer::DxDt |
-                                              panzer::EpetraLinearObjContainer::F |
-                                              panzer::EpetraLinearObjContainer::Mat,*ghostCont);
+   RCP<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>> ghostCont 
+         = Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(linObjFactory->buildGhostedLinearObjContainer());
+   RCP<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>> container 
+         = Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(linObjFactory->buildLinearObjContainer());
+   eLinObjFactory->initializeContainer(panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::X |
+                                       panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::DxDt |
+                                       panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::F |
+                                       panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::Mat,*container);
+   eLinObjFactory->initializeGhostedContainer(panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::X |
+                                              panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::DxDt |
+                                              panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::F |
+                                              panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::Mat,*ghostCont);
+   //ghostCont = container->buildGhostedLinearObjContainer();
+   // setup factory
+   //RCP<LinearObjContainer> container = linObjFactory->buildLinearObjContainer();
+   //RCP<LinearObjContainer> ghostedContainer = linObjFactory->buildGhostedLinearObjContainer();
+
+   //RCP<TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> > tContainer = rcp_dynamic_cast<TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> >(container);
+   //RCP<TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> > tGhostedContainer = rcp_dynamic_cast<TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> >(ghostedContainer);
+//TEST_ASSERT(container->get_x()!=Teuchos::null);
+//TEST_ASSERT(ghostCont->get_x()!=Teuchos::null);
 
    panzer::AssemblyEngineInArgs input(ghostCont,container);
    input.alpha = 0;
@@ -291,40 +293,45 @@ int main(int argc,char * argv[])
 
    out << "RAN SUCCESSFULLY!" << std::endl;
 
-   out << "SOLVE" << std::endl;
+   out << "SOLVE-a" << std::endl;
 
    // notice that this should be called by the assembly driver!
    // linObjFactory->ghostToGlobalContainer(*ghostCont,*container);
 
-   Teuchos::RCP<const Thyra::LinearOpBase<double> > th_A = Thyra::epetraLinearOp(container->get_A());
-   Teuchos::RCP<const Thyra::VectorSpaceBase<double> > range  = th_A->range();
-   Teuchos::RCP<const Thyra::VectorSpaceBase<double> > domain = th_A->domain();
-
-   Teuchos::RCP<Thyra::VectorBase<double> > th_x = Thyra::create_Vector(container->get_x(),domain);
-   Teuchos::RCP<Thyra::VectorBase<double> > th_f = Thyra::create_Vector(container->get_f(),range);
+   Teuchos::RCP<Thyra::VectorBase<double> > th_x = Thyra::createVector(container->get_x()); 
+   Teuchos::RCP<Thyra::VectorBase<double> > th_f = Thyra::createVector(container->get_f());
 
    // solve with amesos
    Stratimikos::DefaultLinearSolverBuilder solverBuilder;
    Teuchos::RCP<Teuchos::ParameterList> validList = Teuchos::rcp(new Teuchos::ParameterList(*solverBuilder.getValidParameters()));
    solverBuilder.setParameterList(validList);
-   
+  
    RCP<Thyra::LinearOpWithSolveFactoryBase<double> > lowsFactory = solverBuilder.createLinearSolveStrategy("Amesos");
-   RCP<Thyra::LinearOpWithSolveBase<double> > lows = Thyra::linearOpWithSolve(*lowsFactory, th_A.getConst());
-   Thyra::solve<double>(*lows, Thyra::NOTRANS, *th_f, th_x.ptr());
+   out << " aaabaa/n";
+  // thyraA = Xpetra::ThyraUtils<Scalar,LocalOrdinal,GlobalOrdinal,Node>::toThyra(xpCrsA->getCrsMatrix());
+   const Teuchos::RCP<Tpetra::Operator<double,int,panzer::GlobalOrdinal> > baseOp = container->get_A();
+   const Teuchos::RCP<const Thyra::VectorSpaceBase<double> > rangeSpace = Thyra::createVectorSpace<double>(baseOp->getRangeMap());
+   const Teuchos::RCP<const Thyra::VectorSpaceBase<double> > domainSpace = Thyra::createVectorSpace<double>(baseOp->getDomainMap());
+   Teuchos::RCP<Thyra::TpetraLinearOp<double,int,panzer::GlobalOrdinal> > tLinearOp = Thyra::tpetraLinearOp(rangeSpace, domainSpace, baseOp);
+   Teuchos::RCP<const Thyra::LinearOpBase<double> > thyraA = Teuchos::rcp_dynamic_cast<const Thyra::LinearOpBase<double>>(tLinearOp);
+//	 Xpetra::ThyraUtils<Scalar,LocalOrdinal,GlobalOrdinal,Node>::toThyra(xpCrsA->getCrsMatrix());
+	 //out << assert(Teuchos::is_null(th_A)) << " aaafaa/n";
+ //  RCP<Thyra::LinearOpWithSolveBase<double> > lows = Thyra::linearOpWithSolve(*lowsFactory, thyraA);out << " aaacaa/n";
+ /*  Thyra::solve<double>(*lows, Thyra::NOTRANS, *th_f, th_x.ptr());out << " aaaaa/n";
 
    if(false) {
-      EpetraExt::RowMatrixToMatrixMarketFile("a_op.mm",*container->get_A());
-      EpetraExt::VectorToMatrixMarketFile("x_vec.mm",*container->get_x());
-      EpetraExt::VectorToMatrixMarketFile("b_vec.mm",*container->get_f());
+	   Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeSparseFile("a_op.mm",*container->get_A());
+	   Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("x_vec.mm",*container->get_x());
+	   Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("b_vec.mm",*container->get_f());
    }
 
    out << "WRITE" << std::endl;
 
    // redistribute solution vector
-   linObjFactory->globalToGhostContainer(*container,*ghostCont,panzer::EpetraLinearObjContainer::X | panzer::EpetraLinearObjContainer::DxDt); 
+   linObjFactory->globalToGhostContainer(*container,*ghostCont,LOC::X | LOC::DxDt); 
 
    panzer_stk::write_solution_data(*dofManager,*mesh,*ghostCont->get_x());
-   mesh->writeToExodus("output.exo");
+   mesh->writeToExodus("output.exo");*/
 
    return 0;
 }
