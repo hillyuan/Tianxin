@@ -31,8 +31,6 @@
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// http://derydoca.com/2019/03/c-tutorial-auto-registering-factory/
-// https://irgb.github.io/C++/%20C++%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F/
 // ***********************************************************************
 // @HEADER
 
@@ -85,12 +83,6 @@ namespace TianXin {
 		template<typename Derived>
 		bool Register(const IdentifierType& id) {
 			return this->Register(id, DerivedCreator<Derived>);
-		//	ProductCreator creator_func = static_cast<AbstractProduct*(*)(CreatorParmTList&)>(Creator<Derived>);
-		//	ProductCreator creator_func = Creator<Derived>;
-		//	auto ret = associations_.insert(std::make_pair(id, creator_func));
-		//	return ret.second;
-		//	return this->Register(id, [](const CreatorParmTList&) 
-		//		{ return static_cast<AbstractProduct*>(new Derived()); } );
 		}
 
         bool Unregister(const IdentifierType& id)

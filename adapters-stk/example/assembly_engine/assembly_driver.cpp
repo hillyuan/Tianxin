@@ -122,7 +122,46 @@ int main(int argc,char * argv[])
    pl->set("Y Elements",10);
    mesh_factory.setParameterList(pl);
    mesh = mesh_factory.buildUncommitedMesh(MPI_COMM_WORLD);
-
+   
+   // construct Dirichlet boundary condition
+   ////////////////////////////////////////////////////////
+   out << "BUILD DIRICHELET BC" << std::endl;
+   Teuchos::ParameterList pldiric;
+   {
+	   Teuchos::ParameterList& p0 = pldiric.sublist("a");  // noname sublist
+	   p0.set("NodeSet Name","left");
+	   p0.set("Value Type","Constant");
+       p0.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub("Constant");
+	   pl_sub.set("Value",5.0);
+	   p0.set("Constant",pl_sub);
+	   
+	   Teuchos::ParameterList& p1 = pldiric.sublist("b");  // noname sublist
+	   p1.set("NodeSet Name","top");
+	   p1.set("Value Type","Constant");
+       p1.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub1("Constant");
+	   pl_sub1.set("Value",-5.0);
+	   p1.set("Constant",pl_sub1);
+	   
+	   Teuchos::ParameterList& p2 = pldiric.sublist("c");  // noname sublist
+	   p2.set("NodeSet Name","top");
+	   p2.set("Value Type","Constant");
+       p2.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "ION_TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub2("Constant");
+	   pl_sub2.set("Value",20.0);
+	   p2.set("Constant",pl_sub2);
+	   
+	   Teuchos::ParameterList& p3 = pldiric.sublist("d");  // noname sublist
+	   p3.set("NodeSet Name","right");
+	   p3.set("Value Type","Constant");
+       p3.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "ION_TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub3("Constant");
+	   pl_sub3.set("Value",-10.0);
+	   p3.set("Constant",pl_sub3);
+   }
+   //pldiric->print();
+  
    // construct input physics and physics block
    ////////////////////////////////////////////////////////
 
@@ -174,7 +213,6 @@ int main(int argc,char * argv[])
          // add basis to DOF manager: block specific
          std::set<StrPureBasisPair,StrPureBasisComp>::const_iterator fieldItr;
          for (fieldItr=fieldNames.begin();fieldItr!=fieldNames.end();++fieldItr) {
-
             mesh->addSolutionField(fieldItr->first,pb->elementBlockID());
          }
       }
@@ -245,7 +283,8 @@ int main(int argc,char * argv[])
 
     fmb->setWorksetContainer(wkstContainer);
     fmb->setupVolumeFieldManagers(physicsBlocks,cm_factory,closure_models,*linObjFactory,user_data);
-    fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory,user_data);
+    //fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory,user_data);
+	fmb->setupDiricheltFieldManagers(pldiric,mesh,dofManager);
 
    // setup assembly engine
    /////////////////////////////////////////////////////////////
@@ -279,8 +318,8 @@ int main(int argc,char * argv[])
 
    // evaluate physics
    out << "EVALUTE" << std::endl;
-   ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
    ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
+   ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
 
    out << "RAN SUCCESSFULLY!" << std::endl;
 

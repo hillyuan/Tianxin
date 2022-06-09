@@ -385,18 +385,18 @@ void panzer::FieldManagerBuilder::
 setupDiricheltFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
 {
-	if( phx_dirichlet_field_manager_ )
+	if( !phx_dirichlet_field_manager_ )
 		 phx_dirichlet_field_manager_ = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
-	 
+
 	std::size_t bc_index = 0;
     for (Teuchos::ParameterList::ConstIterator bc_pl=pl.begin(); bc_pl != pl.end(); ++bc_pl,++bc_index) {
 		TEUCHOS_TEST_FOR_EXCEPTION( !(bc_pl->second.isList()), std::logic_error,
 				"Error - All objects in the Dirichlet Conditions sublist must be sublists!" );
 		Teuchos::ParameterList& sublist = Teuchos::getValue<Teuchos::ParameterList>(bc_pl->second);
-    
+
 		Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Residual, panzer::Traits> > re =
 			Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Residual, panzer::Traits>(sublist, mesh, indexer) );
-		phx_dirichlet_field_manager_->registerEvaluator<panzer::Traits::Residual>(re);
+		phx_dirichlet_field_manager_->template registerEvaluator<panzer::Traits::Residual>(re);
 		phx_dirichlet_field_manager_->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
 
 		Teuchos::RCP< TianXin::DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits> > je =
@@ -404,7 +404,7 @@ setupDiricheltFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP
 		phx_dirichlet_field_manager_->registerEvaluator<panzer::Traits::Jacobian>(je);
 		phx_dirichlet_field_manager_->requireField<panzer::Traits::Jacobian>(*je->evaluatedFields()[0]);
 	}
-	
+
 	panzer::Traits::SD setupData;
 
 	std::vector<PHX::index_size_type> derivative_dimensions;

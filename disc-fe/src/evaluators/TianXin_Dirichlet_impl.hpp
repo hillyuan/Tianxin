@@ -109,7 +109,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 		for(auto myname: m_dof_name) {
 			int fdnum = indexer->getFieldNum(myname);
 			for ( auto nd: entities ) {
-				auto b = indexer->getNodalLDofOfField( fdnum, nd );
+				auto b = indexer->getNodalLDofOfField( fdnum, nd );std::cout << myname << ", " << fdnum << ", " << b << std::endl;
 				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
 					TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
 				    "Error - Cannot find dof of Nodeset!" );
