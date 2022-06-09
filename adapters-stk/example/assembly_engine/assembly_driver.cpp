@@ -272,15 +272,6 @@ int main(int argc,char * argv[])
                                               panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::DxDt |
                                               panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::F |
                                               panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::Mat,*ghostCont);
-   //ghostCont = container->buildGhostedLinearObjContainer();
-   // setup factory
-   //RCP<LinearObjContainer> container = linObjFactory->buildLinearObjContainer();
-   //RCP<LinearObjContainer> ghostedContainer = linObjFactory->buildGhostedLinearObjContainer();
-
-   //RCP<TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> > tContainer = rcp_dynamic_cast<TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> >(container);
-   //RCP<TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> > tGhostedContainer = rcp_dynamic_cast<TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal> >(ghostedContainer);
-//TEST_ASSERT(container->get_x()!=Teuchos::null);
-//TEST_ASSERT(ghostCont->get_x()!=Teuchos::null);
 
    panzer::AssemblyEngineInArgs input(ghostCont,container);
    input.alpha = 0;
@@ -293,7 +284,7 @@ int main(int argc,char * argv[])
 
    out << "RAN SUCCESSFULLY!" << std::endl;
 
-   out << "SOLVE-a" << std::endl;
+   out << "SOLVE" << std::endl;
 
    // notice that this should be called by the assembly driver!
    // linObjFactory->ghostToGlobalContainer(*ghostCont,*container);
@@ -306,18 +297,14 @@ int main(int argc,char * argv[])
    Teuchos::RCP<Teuchos::ParameterList> validList = Teuchos::rcp(new Teuchos::ParameterList(*solverBuilder.getValidParameters()));
    solverBuilder.setParameterList(validList);
   
-   RCP<Thyra::LinearOpWithSolveFactoryBase<double> > lowsFactory = solverBuilder.createLinearSolveStrategy("Amesos");
-   out << " aaabaa/n";
-  // thyraA = Xpetra::ThyraUtils<Scalar,LocalOrdinal,GlobalOrdinal,Node>::toThyra(xpCrsA->getCrsMatrix());
+   RCP<Thyra::LinearOpWithSolveFactoryBase<double> > lowsFactory = solverBuilder.createLinearSolveStrategy("Amesos2");
    const Teuchos::RCP<Tpetra::Operator<double,int,panzer::GlobalOrdinal> > baseOp = container->get_A();
    const Teuchos::RCP<const Thyra::VectorSpaceBase<double> > rangeSpace = Thyra::createVectorSpace<double>(baseOp->getRangeMap());
    const Teuchos::RCP<const Thyra::VectorSpaceBase<double> > domainSpace = Thyra::createVectorSpace<double>(baseOp->getDomainMap());
    Teuchos::RCP<Thyra::TpetraLinearOp<double,int,panzer::GlobalOrdinal> > tLinearOp = Thyra::tpetraLinearOp(rangeSpace, domainSpace, baseOp);
    Teuchos::RCP<const Thyra::LinearOpBase<double> > thyraA = Teuchos::rcp_dynamic_cast<const Thyra::LinearOpBase<double>>(tLinearOp);
-//	 Xpetra::ThyraUtils<Scalar,LocalOrdinal,GlobalOrdinal,Node>::toThyra(xpCrsA->getCrsMatrix());
-	 //out << assert(Teuchos::is_null(th_A)) << " aaafaa/n";
- //  RCP<Thyra::LinearOpWithSolveBase<double> > lows = Thyra::linearOpWithSolve(*lowsFactory, thyraA);out << " aaacaa/n";
- /*  Thyra::solve<double>(*lows, Thyra::NOTRANS, *th_f, th_x.ptr());out << " aaaaa/n";
+   RCP<Thyra::LinearOpWithSolveBase<double> > lows = Thyra::linearOpWithSolve(*lowsFactory, thyraA);
+   Thyra::solve<double>(*lows, Thyra::NOTRANS, *th_f, th_x.ptr());
 
    if(false) {
 	   Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeSparseFile("a_op.mm",*container->get_A());
@@ -331,7 +318,7 @@ int main(int argc,char * argv[])
    linObjFactory->globalToGhostContainer(*container,*ghostCont,LOC::X | LOC::DxDt); 
 
    panzer_stk::write_solution_data(*dofManager,*mesh,*ghostCont->get_x());
-   mesh->writeToExodus("output.exo");*/
+   mesh->writeToExodus("output.exo");
 
    return 0;
 }
