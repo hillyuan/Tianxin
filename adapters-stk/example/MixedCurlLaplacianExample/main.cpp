@@ -78,7 +78,6 @@
 #include "Panzer_STK_SquareTriMeshFactory.hpp"
 #include "Panzer_STK_CubeHexMeshFactory.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
-#include "Panzer_STK_Utilities.hpp"
 #include "Panzer_STK_ResponseEvaluatorFactory_SolutionWriter.hpp"
 
 #include "Epetra_MpiComm.h"

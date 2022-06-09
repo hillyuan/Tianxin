@@ -78,7 +78,7 @@
 #include "Panzer_STK_CubeHexMeshFactory.hpp"
 #include "Panzer_STK_ExodusReaderFactory.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
-#include "Panzer_STK_Utilities.hpp"
+#include "TianXin_STK_Utilities.hpp"
 
 #include "EpetraExt_RowMatrixOut.h"
 #include "EpetraExt_VectorOut.h"
@@ -814,7 +814,7 @@ int main (int argc, char* argv[])
       // get X Epetra_Vector from ghosted container
       RCP<panzer::EpetraLinearObjContainer> ep_ghost_container =
         rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(ghost_container);
-      panzer_stk::write_solution_data(*dofManager,*mesh,*ep_ghost_container->get_x());
+      TianXin::write_solution_data(*dofManager,*mesh,*ep_ghost_container->get_x());
       mesh->writeToExodus("output.exo");
     }
 

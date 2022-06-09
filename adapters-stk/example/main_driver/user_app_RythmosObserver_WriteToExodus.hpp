@@ -53,7 +53,6 @@
 #include "Panzer_GlobalIndexer.hpp"
 #include "Panzer_STK_ResponseEvaluatorFactory_SolutionWriter.hpp"
 
-#include "Panzer_STK_Utilities.hpp"
 
 namespace user_app {
 

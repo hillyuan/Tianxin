@@ -78,7 +78,7 @@
 #include "Panzer_STK_CubeHexMeshFactory.hpp"
 #include "Panzer_STK_ExodusReaderFactory.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
-#include "Panzer_STK_Utilities.hpp"
+#include "TianXin_STK_Utilities.hpp"
 
 #include "TpetraExt_MatrixMatrix.hpp"
 #include "MatrixMarket_Tpetra.hpp"
@@ -821,26 +821,14 @@ int main (int argc, char* argv[])
     // Write solution except in the special case of a generated 3D mesh and #rank
     // > 1. In that case, something in the mesh-gen and rebalance code is causing
     // a failure in IossBridge::write_side_data_to_ioss.
-    /*
-
-      NOTE: Refactor to tpetra: there are no coresponding functions
-      for tpetra for write_solution_data(). The "output.exo" file is
-      not used in testing, so maybe it was only used for visualization
-      during debugging? Leaving this section here but commenting out.
-
     if ( ! (po.is3d && mpiSession.getNProc() > 1 && po.mesh_filename.empty())) {
       // redistribute solution vector to ghosted vector
       linObjFactory->globalToGhostContainer(*ep_container,*ghost_container,
-                                            panzer::EpetraLinearObjContainer::X
-                                            | panzer::EpetraLinearObjContainer::DxDt);
-
-      // get X Epetra_Vector from ghosted container
-      RCP<panzer::EpetraLinearObjContainer> ep_ghost_container =
-        rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(ghost_container);
-      panzer_stk::write_solution_data(*dofManager,*mesh,*ep_ghost_container->get_x());
+                                            TpetraLOC::X | TpetraLOC::DxDt);
+      TianXin::write_solution_data(*dofManager,*mesh,*(Teuchos::rcp_dynamic_cast<TpetraLOC>(ghost_container)->get_x()));
       mesh->writeToExodus("output.exo");
     }
-    */
+
     // all done!
     /////////////////////////////////////////////////////////////
     out << (pass ? "PASS" : "FAIL") << " BASICS\n";

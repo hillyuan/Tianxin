@@ -53,7 +53,7 @@
 #include "Panzer_GlobalIndexer.hpp"
 #include "Panzer_BlockedEpetraLinearObjFactory.hpp"
 
-#include "Panzer_STK_Utilities.hpp"
+#include "TianXin_STK_Utilities.hpp"
 
 #include "Thyra_EpetraThyraWrappers.hpp"
 
@@ -97,7 +97,7 @@ namespace user_app {
       ghosted_solution.PutScalar(0.0);
       ghosted_solution.Import(*ep_solution,*importer,Insert);
 
-      panzer_stk::write_solution_data(*m_dof_manager,*m_mesh,ghosted_solution);
+      TianXin::write_solution_data(*m_dof_manager,*m_mesh,ghosted_solution);
       
       m_mesh->writeToExodus(stepper.getStepStatus().time);
     }

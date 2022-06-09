@@ -1,12 +1,9 @@
 // @HEADER
 // ***********************************************************************
 //
-//           Panzer: A partial differential equation assembly
+//           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2011) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
+//                 Copyright (2022) Xi Yuan
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -23,10 +20,10 @@
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// THIS SOFTWARE IS PROVIDED THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR THE
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -35,57 +32,33 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Questions? Contact Roger P. Pawlowski (rppawlo@sandia.gov) and
-// Eric C. Cyr (eccyr@sandia.gov)
 // ***********************************************************************
 // @HEADER
 
 #include "PanzerAdaptersSTK_config.hpp"
 
-#ifdef PANZER_HAVE_EPETRA
-
-#include "Panzer_STK_Utilities.hpp"
+#include "TianXin_STK_Utilities.hpp"
 #include "Panzer_GlobalIndexer.hpp"
 
 #include "Kokkos_DynRankView.hpp"
 
 #include <stk_mesh/base/FieldBase.hpp>
 
-namespace panzer_stk {
+namespace TianXin {
 
+#ifdef PANZER_HAVE_EPETRA
 static void gather_in_block(const std::string & blockId, const panzer::GlobalIndexer& dofMngr,
                             const Epetra_Vector & x,const std::vector<std::size_t> & localCellIds,
                             std::map<std::string,Kokkos::DynRankView<double,PHX::Device> > & fc);
-static void gather_in_block_1(const std::string & blockId, const panzer::GlobalIndexer& dofMngr,
+#endif
+static void gather_in_block_tpetra(const std::string & blockId, const panzer::GlobalIndexer& dofMngr,
                             const Tpetra::Vector<double,int,panzer::GlobalOrdinal>& x,const std::vector<std::size_t> & localCellIds,
                             std::map<std::string,Kokkos::DynRankView<double,PHX::Device> > & fc);
 
 static void build_local_ids(const panzer_stk::STK_Interface & mesh,
                             std::map<std::string,Teuchos::RCP<std::vector<std::size_t> > > & localIds);
 
-void write_cell_data(panzer_stk::STK_Interface & mesh,const std::vector<double> & data,const std::string & fieldName)
-{
-   std::vector<std::string> blocks;
-   mesh.getElementBlockNames(blocks);
-
-   // loop over element blocks
-   for(std::size_t eb=0;eb<blocks.size();eb++) {
-      const std::string & blockId = blocks[eb];
-      panzer_stk::STK_Interface::SolutionFieldType * field = mesh.getCellField(fieldName,blockId);
-
-      std::vector<stk::mesh::Entity> elements;
-      mesh.getMyElements(blockId,elements);
-
-      // loop over elements in this block
-      for(std::size_t el=0;el<elements.size();el++) {
-         std::size_t localId = mesh.elementLocalId(elements[el]);
-         double * solnData = stk::mesh::field_data(*field,elements[el]);
-         TEUCHOS_ASSERT(solnData!=0); // sanity check
-         solnData[0] = data[localId];
-      }
-   }
-}
-
+#ifdef PANZER_HAVE_EPETRA
 void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_Interface & mesh,const Epetra_MultiVector & x,const std::string & prefix,const std::string & postfix)
 {
    write_solution_data(dofMngr,mesh,*x(0),prefix,postfix);
@@ -108,30 +81,6 @@ void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_In
 
       // get all solution data for this block
       gather_in_block(blockId,dofMngr,x,localCellIds,data);
-
-      // write out to stk mesh
-      for(const auto & dataItr : data)
-         mesh.setSolutionFieldData(prefix+dataItr.first+postfix,blockId,localCellIds,dataItr.second);
-   }
-}
-
-void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_Interface & mesh,const Tpetra::Vector<double,int,panzer::GlobalOrdinal>& x,const std::string & prefix,const std::string & postfix)
-{
-   typedef Kokkos::DynRankView<double,PHX::Device> FieldContainer;
-
-   // get local IDs
-   std::map<std::string,Teuchos::RCP<std::vector<std::size_t> > > localIds;
-   build_local_ids(mesh,localIds);
-
-   // loop over all element blocks
-   for(const auto & itr : localIds) {
-      const auto blockId = itr.first;
-      const auto & localCellIds = *(itr.second);
-
-      std::map<std::string,FieldContainer> data;
-
-      // get all solution data for this block
-      gather_in_block_1(blockId,dofMngr,x,localCellIds,data);
 
       // write out to stk mesh
       for(const auto & dataItr : data)
@@ -178,8 +127,33 @@ void gather_in_block(const std::string & blockId, const panzer::GlobalIndexer& d
       Kokkos::deep_copy(fc[fieldStr], field);
    }
 }
+#endif
 
-void gather_in_block_1(const std::string & blockId, const panzer::GlobalIndexer& dofMngr,
+void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_Interface & mesh,const Tpetra::Vector<double,panzer::LocalOrdinal,panzer::GlobalOrdinal>& x,const std::string & prefix,const std::string & postfix)
+{
+   typedef Kokkos::DynRankView<double,PHX::Device> FieldContainer;
+
+   // get local IDs
+   std::map<std::string,Teuchos::RCP<std::vector<std::size_t> > > localIds;
+   build_local_ids(mesh,localIds);
+
+   // loop over all element blocks
+   for(const auto & itr : localIds) {
+      const auto blockId = itr.first;
+      const auto & localCellIds = *(itr.second);
+
+      std::map<std::string,FieldContainer> data;
+
+      // get all solution data for this block
+      gather_in_block_tpetra(blockId,dofMngr,x,localCellIds,data);
+
+      // write out to stk mesh
+      for(const auto & dataItr : data)
+         mesh.setSolutionFieldData(prefix+dataItr.first+postfix,blockId,localCellIds,dataItr.second);
+   }
+}
+
+void gather_in_block_tpetra(const std::string & blockId, const panzer::GlobalIndexer& dofMngr,
                      const Tpetra::Vector<double,int,panzer::GlobalOrdinal>& xvec,
 					 const std::vector<std::size_t> & localCellIds,
                      std::map<std::string,Kokkos::DynRankView<double,PHX::Device> > & fc)
@@ -248,5 +222,3 @@ void build_local_ids(const panzer_stk::STK_Interface & mesh,
 }
 
 }
-
-#endif // PANZER_HAVE_EPETRA

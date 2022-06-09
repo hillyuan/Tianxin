@@ -74,7 +74,7 @@
 #include "Panzer_STK_SquareQuadMeshFactory.hpp"
 #include "Panzer_STK_SquareTriMeshFactory.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
-#include "Panzer_STK_Utilities.hpp"
+#include "TianXin_STK_Utilities.hpp"
 
 #include "EpetraExt_RowMatrixOut.h"
 #include "EpetraExt_VectorOut.h"
@@ -398,7 +398,7 @@ int main(int argc,char * argv[])
 
       // get X Epetra_Vector from ghosted container
       RCP<panzer::EpetraLinearObjContainer> ep_ghostCont = rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(ghostCont);
-      panzer_stk::write_solution_data(*dofManager,*mesh,*ep_ghostCont->get_x());
+      TianXin::write_solution_data(*dofManager,*mesh,*ep_ghostCont->get_x());
       // Due to multiple instances of this test being run at the same
       // time (one for each celltype and each order), we need to
       // differentiate output to prevent race conditions on output

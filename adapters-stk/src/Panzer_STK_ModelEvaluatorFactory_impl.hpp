@@ -84,7 +84,6 @@
 #include "Panzer_STK_MultiBlockMeshFactory.hpp"
 #include "Panzer_STK_CustomMeshFactory.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
-#include "Panzer_STK_Utilities.hpp"
 #include "Panzer_STK_WorksetFactory.hpp"
 #include "Panzer_STKConnManager.hpp"
 #include "Panzer_STK_NOXObserverFactory.hpp"

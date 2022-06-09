@@ -83,7 +83,6 @@
 #include "Epetra_MpiComm.h"
 #include "EpetraExt_RowMatrixOut.h"
 #include "EpetraExt_VectorOut.h"
-#include "Panzer_STK_Utilities.hpp"
 #include "AztecOO.h"
 #endif
 

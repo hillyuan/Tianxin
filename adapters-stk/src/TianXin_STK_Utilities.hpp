@@ -1,12 +1,9 @@
 // @HEADER
 // ***********************************************************************
 //
-//           Panzer: A partial differential equation assembly
+//           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2011) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
+//                 Copyright (2022) Xi Yuan
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -23,10 +20,10 @@
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// THIS SOFTWARE IS PROVIDED THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR THE
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -35,39 +32,32 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Questions? Contact Roger P. Pawlowski (rppawlo@sandia.gov) and
-// Eric C. Cyr (eccyr@sandia.gov)
 // ***********************************************************************
 // @HEADER
 
-#ifndef PANZER_STK_TEMPUS_OBSERVER_FACTORY_HPP
-#define PANZER_STK_TEMPUS_OBSERVER_FACTORY_HPP
-
-#include "Tempus_IntegratorObserver.hpp"
-
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_Assert.hpp"
+#ifndef __TianXin_STK_Utilities_hpp__
+#define __TianXin_STK_Utilities_hpp__
 
 #include "Panzer_STK_Interface.hpp"
-#include "Panzer_GlobalIndexer.hpp"
-#include "Panzer_LinearObjFactory.hpp"
 
-namespace panzer_stk {
+#ifdef PANZER_HAVE_EPETRA
+#include "Epetra_Vector.h"
+#include "Epetra_MultiVector.h"
+#endif
 
-  class TempusObserverFactory {
+#include "Tpetra_Vector.hpp"
 
-  public:
+namespace panzer {
+  class GlobalIndexer;
+}
 
-    virtual ~TempusObserverFactory() {}
+namespace TianXin {
 
-    //! Use the NOX observer as well?
-    virtual bool useNOXObserver() const = 0;
-
-    virtual Teuchos::RCP<Tempus::IntegratorObserver<double> >
-    buildTempusObserver(const Teuchos::RCP<panzer_stk::STK_Interface>& mesh,
-                        const Teuchos::RCP<const panzer::GlobalIndexer> & dof_manager,
-                        const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> >& lof) const = 0;
-  };
+#ifdef PANZER_HAVE_EPETRA
+void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_Interface & mesh,const Epetra_MultiVector & x,const std::string & prefx="",const std::string & postfix="");
+void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_Interface & mesh,const Epetra_Vector & x,const std::string & prefix="",const std::string & postfix="");
+#endif 
+void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_Interface & mesh,const Tpetra::Vector<double,panzer::LocalOrdinal,panzer::GlobalOrdinal>& x,const std::string & prefix="",const std::string & postfix="");
 
 }
 

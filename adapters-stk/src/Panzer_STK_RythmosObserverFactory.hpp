@@ -51,8 +51,6 @@
 #include "Panzer_GlobalIndexer.hpp"
 #include "Panzer_LinearObjFactory.hpp"
 
-#include "Panzer_STK_Utilities.hpp"
-
 namespace panzer_stk {
 
   class RythmosObserverFactory {
