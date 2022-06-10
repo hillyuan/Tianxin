@@ -230,8 +230,7 @@ void LineMeshFactory::buildBlock(stk::ParallelMachine /* parallelMach */, int xB
       nodes[0] = nx+1;
       nodes[1] = nodes[0]+1;
 
-      RCP<ElementDescriptor> ed = rcp(new ElementDescriptor(gid,nodes));
-      mesh.addElement(ed,block);
+      mesh.addElement(gid,nodes,block);
    }
 }
 

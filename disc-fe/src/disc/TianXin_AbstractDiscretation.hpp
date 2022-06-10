@@ -43,6 +43,7 @@
 namespace TianXin {
 
 struct AbstractDiscretation {
+	virtual unsigned getDimension() const = 0;
 	virtual const double* getNodeCoordinates(std::size_t) const = 0;
 	virtual void getAllEdgeSetIds(const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getAllEdgeSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
@@ -50,6 +51,8 @@ struct AbstractDiscretation {
 	virtual void getAllNodeSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getAllFaceSetIds(const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getAllFaceSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
+	virtual void getAllSideSetIds(const std::string&, std::vector<std::size_t>&) const=0;
+	virtual void getAllSideSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
 };
 
 }

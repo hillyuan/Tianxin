@@ -84,28 +84,6 @@ namespace panzer_stk {
 
 class PeriodicBC_MatcherBase;
 
-/** Pure virtial base class that builds a basic element. To be
-  * overidden with several types of elements.
-  */
-class ElementDescriptor {
-public:
-   ElementDescriptor(stk::mesh::EntityId gid,const std::vector<stk::mesh::EntityId> & nodes);
-   virtual ~ElementDescriptor();
-
-   stk::mesh::EntityId getGID() const { return gid_; }
-   const std::vector<stk::mesh::EntityId> & getNodes() const { return nodes_; }
-protected:
-   stk::mesh::EntityId gid_;
-   std::vector<stk::mesh::EntityId> nodes_;
-
-   ElementDescriptor();
-};
-
-/** Constructor function for building the element descriptors.
-  */
-Teuchos::RCP<ElementDescriptor>
-buildElementDescriptor(stk::mesh::EntityId elmtId,std::vector<stk::mesh::EntityId> & nodes);
-
 class STK_Interface : public TianXin::AbstractDiscretation {
 public:
    typedef double ProcIdData; // ECC: Not sure why?
@@ -245,7 +223,7 @@ public:
      */
    void addNode(stk::mesh::EntityId gid, const std::vector<double> & coord);
 
-   void addElement(const Teuchos::RCP<ElementDescriptor> & ed,stk::mesh::Part * block);
+   void addElement(const stk::mesh::EntityId&, const std::vector<stk::mesh::EntityId>& ,stk::mesh::Part* block);
 
    void addEdges();
 
@@ -440,6 +418,7 @@ public:
      */
    void getAllSides(std::vector<stk::mesh::Entity> & sides) const;
    void getAllSides(const std::string & sideName,std::vector<stk::mesh::Entity> & sides) const;
+   void getAllSideSetIds(const std::string & sideName,std::vector<std::size_t>& sideIds) const;
 
    /** Get Entities corresponding to the side set requested. This also limits the entities
      * to be in a particular element block. The Entites in the vector should be a dimension
@@ -450,6 +429,7 @@ public:
      * \param[in,out] sides Vector of entities containing the requested sides.
      */
    void getAllSides(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & sides) const;
+   void getAllSideSetIds(const std::string & sideName,const std::string & blockName,std::vector<std::size_t> & sides) const;
 
    /** Get Edegs global Id inside the side set requested.
      * The Entites in the sideset should be a dimension greater/equal to 2.
@@ -517,8 +497,7 @@ public:
    *  \param[in] append If set to true, the output will be appended to the output Exodus file. If set to false, output file will be overwritten. Default is false.
    */
   void
-  writeToExodus(const std::string& filename,
-                const bool append = false);
+  writeToExodus(const std::string& filename, const bool append = false);
 
   /**
    *  \brief Set up an output Exodus file for writing results.

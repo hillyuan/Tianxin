@@ -386,8 +386,7 @@ void SquareQuadMeshFactory::buildBlock(stk::ParallelMachine /* parallelMach */,i
          for (int i=0; i < 4; ++i)
            nodes[i] += offset_;
 
-         RCP<ElementDescriptor> ed = rcp(new ElementDescriptor(gid,nodes));
-         mesh.addElement(ed,block);
+         mesh.addElement(gid,nodes,block);
       }
    }
 }

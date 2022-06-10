@@ -213,8 +213,7 @@ void MultiBlockMeshFactory::buildBlock(stk::ParallelMachine /* parallelMach */, 
          nodes[2] = nodes[1]+(totalXElems+1);
          nodes[3] = nodes[2]-1;
 
-         RCP<ElementDescriptor> ed = rcp(new ElementDescriptor(gid,nodes));
-         mesh.addElement(ed,block);
+         mesh.addElement(gid,nodes,block);
       }
    }
 }

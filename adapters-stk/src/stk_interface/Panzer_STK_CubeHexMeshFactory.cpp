@@ -447,8 +447,7 @@ void CubeHexMeshFactory::buildBlock(stk::ParallelMachine /* parallelMach */,int 
             nodes[6] = nodes[2]+(totalYElems+1)*(totalXElems+1);
             nodes[7] = nodes[3]+(totalYElems+1)*(totalXElems+1);
 
-            RCP<ElementDescriptor> ed = rcp(new ElementDescriptor(gid,nodes));
-            mesh.addElement(ed,block);
+            mesh.addElement(gid,nodes,block);
          }
       }
    }

@@ -353,9 +353,7 @@ void QuadTriMeshFactory::buildBlock(stk::ParallelMachine /* parallelMach */, int
          nodes[2] = nodes[1]+(totalXElems+1);
          nodes[3] = nodes[2]-1;
 
-         RCP<ElementDescriptor> ed = rcp(new ElementDescriptor(gid,nodes));
-		   
-         mesh.addElement(ed,block);
+         mesh.addElement(gid,nodes,block);
        }
      }
    } else { //tri
@@ -373,13 +371,13 @@ void QuadTriMeshFactory::buildBlock(stk::ParallelMachine /* parallelMach */, int
          nodes[1] = se;
          nodes[2] = ne;
 		 ++gid;
-         mesh.addElement(rcp(new ElementDescriptor(gid,nodes)),block);
+         mesh.addElement(gid,nodes,block);
 
          nodes[0] = sw;
          nodes[1] = ne;
          nodes[2] = nw;
 		 ++gid;
-         mesh.addElement(rcp(new ElementDescriptor(gid,nodes)),block);
+         mesh.addElement(gid,nodes,block);
        }
      }
    }

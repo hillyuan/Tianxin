@@ -388,8 +388,7 @@ setupDiricheltFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP
 	if( !phx_dirichlet_field_manager_ )
 		 phx_dirichlet_field_manager_ = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
 
-	std::size_t bc_index = 0;
-    for (Teuchos::ParameterList::ConstIterator bc_pl=pl.begin(); bc_pl != pl.end(); ++bc_pl,++bc_index) {
+    for (Teuchos::ParameterList::ConstIterator bc_pl=pl.begin(); bc_pl != pl.end(); ++bc_pl) {
 		TEUCHOS_TEST_FOR_EXCEPTION( !(bc_pl->second.isList()), std::logic_error,
 				"Error - All objects in the Dirichlet Conditions sublist must be sublists!" );
 		Teuchos::ParameterList& sublist = Teuchos::getValue<Teuchos::ParameterList>(bc_pl->second);

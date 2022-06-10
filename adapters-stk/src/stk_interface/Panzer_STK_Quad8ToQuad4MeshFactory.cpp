@@ -344,9 +344,8 @@ void Quad8ToQuad4MeshFactory::buildElements(stk::ParallelMachine parallelMach,ST
        }
 
        // Register element with the element block
-       auto element_descriptor = panzer_stk::buildElementDescriptor(element_gid,nodes);
        auto element_block_part = mesh.getMetaData()->get_part(block_name);
-       mesh.addElement(element_descriptor,element_block_part);
+       mesh.addElement(element_gid,nodes,element_block_part);
      }
    }
    mesh.endModification();

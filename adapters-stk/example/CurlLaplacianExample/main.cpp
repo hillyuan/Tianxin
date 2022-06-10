@@ -80,12 +80,6 @@
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "Panzer_STK_ResponseEvaluatorFactory_SolutionWriter.hpp"
 
-#ifdef PANZER_HAVE_EPETRA
-#include "Panzer_BlockedEpetraLinearObjFactory.hpp"
-#include "EpetraExt_RowMatrixOut.h"
-#include "EpetraExt_VectorOut.h"
-#endif
-
 #include "BelosPseudoBlockGmresSolMgr.hpp"
 #include "BelosTpetraAdapter.hpp"
 
@@ -146,13 +140,11 @@ void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
                         const std::vector<std::string>& eBlockNames,
                         int basis_order);
 
-void solveEpetraSystem(panzer::LinearObjContainer & container);
 void solveTpetraSystem(panzer::LinearObjContainer & container);
 
 // calls MPI_Init and MPI_Finalize
 int main(int argc,char * argv[])
 {
-   using std::endl;
    using Teuchos::RCP;
    using Teuchos::rcp_dynamic_cast;
    using panzer::StrPureBasisPair;
@@ -199,12 +191,6 @@ int main(int argc,char * argv[])
    clp.setOption("basis-order",&basis_order);
    clp.setOption("output-filename",&output_filename);
 
-#ifndef PANZER_HAVE_EPETRA
-  if(!useTpetra) {
-    throw std::runtime_error("Panzer is built without Epetra! Either use Panzer_ENABLE_Epetra=ON or run this example with `use-tpetra` flag");
-  }
-#endif
-
    // parse commandline argument
    Teuchos::CommandLineProcessor::EParseCommandLineReturn r_parse= clp.parse( argc, argv );
    if (r_parse == Teuchos::CommandLineProcessor::PARSE_HELP_PRINTED) return  0;
@@ -236,6 +222,7 @@ int main(int argc,char * argv[])
      pl->set("Xf",x_size);
      pl->set("Yf",y_size);
      pl->set("Zf",z_size);
+	 pl->set("Create Edge Blocks",true);
      mesh_factory->setParameterList(pl);
    }
    else {
@@ -252,10 +239,45 @@ int main(int argc,char * argv[])
      pl->set("Y Elements",y_elements);
      pl->set("Xf",x_size);
      pl->set("Yf",y_size);
+	 pl->set("Create Edge Blocks",true);
      mesh_factory->setParameterList(pl);
    }
 
    RCP<panzer_stk::STK_Interface> mesh = mesh_factory->buildUncommitedMesh(MPI_COMM_WORLD);
+   std::vector<std::string> egnames;
+   mesh->getEdgeBlockNames(egnames);
+   for( auto& aa : egnames )
+	   std::cout << aa << std::endl;
+   
+   Teuchos::ParameterList pldiric;
+   {	
+	   Teuchos::ParameterList& p0 = pldiric.sublist("a");  // noname sublist
+	   p0.set("EdgeSet Name","line_2_edge_block");
+	   p0.set("Value Type","Constant");
+       p0.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
+	   Teuchos::ParameterList pl_sub("Constant");
+	   pl_sub.set("Value",0.0);
+	   p0.set("Constant",pl_sub);
+	   
+	/*   Teuchos::ParameterList& p1 = pldiric.sublist("a");  // noname sublist
+	   p1.set("EdgeSet Name","top");
+	   p1.set("Value Type","Constant");
+       p1.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
+	   p1.set("Constant",pl_sub);
+	   
+	   Teuchos::ParameterList& p2 = pldiric.sublist("a");  // noname sublist
+	   p2.set("EdgeSet Name","right");
+	   p2.set("Value Type","Constant");
+       p2.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
+	   p2.set("Constant",pl_sub);
+	   
+	   Teuchos::ParameterList& p3 = pldiric.sublist("a");  // noname sublist
+	   p3.set("EdgeSet Name","bottom");
+	   p3.set("Value Type","Constant");
+       p3.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
+	   p3.set("Constant",pl_sub);*/
+   }
+   //pldiric->print();
 
    // other declarations
    const std::size_t workset_size = 8;
@@ -342,31 +364,16 @@ int main(int argc,char * argv[])
    Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > linObjFactory;
 
    // build the connection manager
-   if(!useTpetra) {
-#ifdef PANZER_HAVE_EPETRA
-     const Teuchos::RCP<panzer::ConnManager> conn_manager = Teuchos::rcp(new panzer_stk::STKConnManager(mesh));
-
-     panzer::DOFManagerFactory globalIndexerFactory;
-     RCP<panzer::GlobalIndexer> dofManager_int
-           = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);
-     dofManager = dofManager_int;
-
-     // construct some linear algebra object, build object to pass to evaluators
-     linObjFactory = Teuchos::rcp(new panzer::BlockedEpetraLinearObjFactory<panzer::Traits,int>(comm.getConst(),dofManager_int));
-#endif // PANZER_HAVE_EPETRA
-   }
-   else {
-     const Teuchos::RCP<panzer::ConnManager> conn_manager
+   const Teuchos::RCP<panzer::ConnManager> conn_manager
          = Teuchos::rcp(new panzer_stk::STKConnManager(mesh));
 
-     panzer::DOFManagerFactory globalIndexerFactory;
-     RCP<panzer::GlobalIndexer> dofManager_long
+   panzer::DOFManagerFactory globalIndexerFactory;
+   RCP<panzer::GlobalIndexer> dofManager_long
            = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);
-     dofManager = dofManager_long;
+   dofManager = dofManager_long;
 
-     // construct some linear algebra object, build object to pass to evaluators
-     linObjFactory = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(comm,dofManager_long));
-   }
+   // construct some linear algebra object, build object to pass to evaluators
+   linObjFactory = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(comm,dofManager_long));
 
    // build worksets
    ////////////////////////////////////////////////////////
@@ -466,9 +473,10 @@ int main(int argc,char * argv[])
    fmb->setupVolumeFieldManagers(physicsBlocks,cm_factory,closure_models,*linObjFactory,user_data);
    fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,
                              *linObjFactory,user_data);
+   //fmb->setupDiricheltFieldManagers(pldiric,mesh,dofManager);
 
    fmb->writeVolumeGraphvizDependencyFiles("volume",physicsBlocks);
-   fmb->writeBCGraphvizDependencyFiles("saucy");
+   //fmb->writeBCGraphvizDependencyFiles("saucy");
 
    // setup assembly engine
    /////////////////////////////////////////////////////////////
@@ -527,11 +535,7 @@ int main(int argc,char * argv[])
 
    // solve linear system
    /////////////////////////////////////////////////////////////
-
-   if(useTpetra)
-      solveTpetraSystem(*container);
-   else
-      solveEpetraSystem(*container);
+   solveTpetraSystem(*container);
 
    // output data (optional)
    /////////////////////////////////////////////////////////////
@@ -599,45 +603,8 @@ int main(int argc,char * argv[])
 
    // all done!
    /////////////////////////////////////////////////////////////
-
-   if(useTpetra)
-      out << "ALL PASSED: Tpetra" << std::endl;
-   else
-      out << "ALL PASSED: Epetra" << std::endl;
-
+   out << "ALL PASSED: Tpetra" << std::endl;
    return 0;
-}
-
-void solveEpetraSystem(panzer::LinearObjContainer & container)
-{
-#ifdef PANZER_HAVE_EPETRA
-   // convert generic linear object container to epetra container
-   panzer::EpetraLinearObjContainer & ep_container
-         = Teuchos::dyn_cast<panzer::EpetraLinearObjContainer>(container);
-
-   ep_container.get_x()->PutScalar(0.0);
-
-   // Setup the linear solve: notice A is used directly
-   Epetra_LinearProblem problem(&*ep_container.get_A(),&*ep_container.get_x(),&*ep_container.get_f());
-
-   // build the solver
-   AztecOO solver(problem);
-   solver.SetAztecOption(AZ_solver,AZ_gmres); // we don't push out dirichlet conditions
-   solver.SetAztecOption(AZ_precond,AZ_none);
-   solver.SetAztecOption(AZ_kspace,1000);
-   solver.SetAztecOption(AZ_output,1);
-   solver.SetAztecOption(AZ_precond,AZ_Jacobi);
-
-   // solve the linear system
-   solver.Iterate(5000,1e-9);
-
-   // we have now solved for the residual correction from
-   // zero in the context of a Newton solve.
-   //     J*e = -r = -(f - J*0) where f = J*u
-   // Therefore we have  J*e=-J*u which implies e = -u
-   // thus we will scale the solution vector
-   ep_container.get_x()->Scale(-1.0);
-#endif // PANZER_HAVE_EPETRA
 }
 
 void solveTpetraSystem(panzer::LinearObjContainer & container)

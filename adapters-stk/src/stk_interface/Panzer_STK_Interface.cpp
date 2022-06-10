@@ -83,19 +83,6 @@ using Teuchos::rcp;
 
 namespace panzer_stk {
 
-ElementDescriptor::ElementDescriptor() {}
-ElementDescriptor::ElementDescriptor(stk::mesh::EntityId gid,const std::vector<stk::mesh::EntityId> & nodes)
-   : gid_(gid), nodes_(nodes) {}
-ElementDescriptor::~ElementDescriptor() {}
-
-/** Constructor function for building the element descriptors.
-  */
-Teuchos::RCP<ElementDescriptor>
-buildElementDescriptor(stk::mesh::EntityId elmtId,std::vector<stk::mesh::EntityId> & nodes)
-{
-   return Teuchos::rcp(new ElementDescriptor(elmtId,nodes));
-}
-
 const std::string STK_Interface::coordsString = "coordinates";
 const std::string STK_Interface::nodesString = "nodes";
 const std::string STK_Interface::edgesString = "edges";
@@ -559,17 +546,16 @@ void STK_Interface::addEntitiesToFaceBlock(std::vector<stk::mesh::Entity> entiti
    }
 }
 
-void STK_Interface::addElement(const Teuchos::RCP<ElementDescriptor> & ed,stk::mesh::Part * block)
+void STK_Interface::addElement(const stk::mesh::EntityId& gid, const std::vector<stk::mesh::EntityId>& nodes,stk::mesh::Part* block)
 {
    std::vector<stk::mesh::Part*> blockVec;
    blockVec.push_back(block);
 
    stk::mesh::EntityRank elementRank = getElementRank();
    stk::mesh::EntityRank nodeRank = getNodeRank();
-   stk::mesh::Entity element = bulkData_->declare_entity(elementRank,ed->getGID(),blockVec);
+   stk::mesh::Entity element = bulkData_->declare_entity(elementRank,gid,blockVec);
 
    // build relations that give the mesh structure
-   const std::vector<stk::mesh::EntityId> & nodes = ed->getNodes();
    for(std::size_t i=0;i<nodes.size();++i) {
       // add element->node relation
       stk::mesh::Entity node = bulkData_->get_entity(nodeRank,nodes[i]);
@@ -1580,6 +1566,25 @@ void STK_Interface::getAllSides(const std::string & sideName,std::vector<stk::me
    stk::mesh::get_selected_entities(side,bulkData_->buckets(getSideRank()),sides);
 }
 
+void STK_Interface::getAllSideSetIds(const std::string & sideName,std::vector<std::size_t>& sideIds) const
+{
+   stk::mesh::Part * sidePart = getSideset(sideName);
+   TEUCHOS_TEST_FOR_EXCEPTION(sidePart==0,std::logic_error,
+                      "Unknown side set \"" << sideName << "\"");
+
+   stk::mesh::Selector side = *sidePart;
+
+   // grab elements
+   std::vector<stk::mesh::Entity> sides;
+   stk::mesh::get_selected_entities(side,bulkData_->buckets(getSideRank()),sides);
+   
+   sideIds.clear();
+   for( const auto n: sides )
+   {
+	   sideIds.emplace_back( bulkData_->identifier(n) );
+   }
+}
+
 void STK_Interface::getAllSides(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & sides) const
 {
    stk::mesh::Part * sidePart = getSideset(sideName);
@@ -1595,6 +1600,30 @@ void STK_Interface::getAllSides(const std::string & sideName,const std::string &
 
    // grab elements
    stk::mesh::get_selected_entities(sideBlock,bulkData_->buckets(getSideRank()),sides);
+}
+
+void STK_Interface::getAllSideSetIds(const std::string & sideName,const std::string & blockName,std::vector<std::size_t> & sideIds) const
+{
+   stk::mesh::Part * sidePart = getSideset(sideName);
+   stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
+   TEUCHOS_TEST_FOR_EXCEPTION(sidePart==0,SidesetException,
+                      "Unknown side set \"" << sideName << "\"");
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+                      "Unknown element block \"" << blockName << "\"");
+
+   stk::mesh::Selector side = *sidePart;
+   stk::mesh::Selector block = *elmtPart;
+   stk::mesh::Selector sideBlock = block & side;
+
+   // grab elements
+   std::vector<stk::mesh::Entity> sides;
+   stk::mesh::get_selected_entities(sideBlock,bulkData_->buckets(getSideRank()),sides);
+   
+   sideIds.clear();
+   for( const auto n: sides )
+   {
+	   sideIds.emplace_back( bulkData_->identifier(n) );
+   }
 }
 
 /*void STK_Interface::getAllSideEdgesId(const std::string & sideName,std::vector<stk::mesh::EntityId> & edgesIds) const

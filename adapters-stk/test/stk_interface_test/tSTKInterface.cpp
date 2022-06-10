@@ -98,8 +98,7 @@ Teuchos::RCP<STK_Interface> build2DMesh()
          for(std::size_t i=1;i<5;i++)
             nodes.push_back(i);
 
-         Teuchos::RCP<ElementDescriptor> ed = buildElementDescriptor(1,nodes);
-         mesh.addElement(ed,block);
+         mesh.addElement(1,nodes,block);
       }
 
       {
@@ -124,8 +123,7 @@ Teuchos::RCP<STK_Interface> build2DMesh()
          nodes[2] = 3;
          nodes[3] = 2;
 
-         Teuchos::RCP<ElementDescriptor> ed = buildElementDescriptor(2,nodes);
-         mesh.addElement(ed,block);
+         mesh.addElement(2,nodes,block);
       }
 
       {
@@ -150,8 +148,7 @@ Teuchos::RCP<STK_Interface> build2DMesh()
          nodes[2] = 7;
          nodes[3] = 8;
 
-         Teuchos::RCP<ElementDescriptor> ed = buildElementDescriptor(3,nodes);
-         mesh.addElement(ed,block);
+         mesh.addElement(3,nodes,block);
       }
 
    mesh.endModification();
@@ -226,8 +223,7 @@ TEUCHOS_UNIT_TEST(tSTKInterface, interface_test)
          for(std::size_t i=1;i<5;i++)
             nodes.push_back(i);
 
-         Teuchos::RCP<ElementDescriptor> ed = buildElementDescriptor(1,nodes);
-         mesh.addElement(ed,block);
+         mesh.addElement(1,nodes,block);
       }
 
       {
@@ -252,8 +248,7 @@ TEUCHOS_UNIT_TEST(tSTKInterface, interface_test)
          nodes[2] = 3;
          nodes[3] = 2;
 
-         Teuchos::RCP<ElementDescriptor> ed = buildElementDescriptor(2,nodes);
-         mesh.addElement(ed,block);
+         mesh.addElement(2,nodes,block);
       }
 
    mesh.endModification();

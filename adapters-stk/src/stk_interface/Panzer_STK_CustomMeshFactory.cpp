@@ -264,8 +264,7 @@ namespace panzer_stk {
       for (int k=0;k<8;++k)
         elt2nodes[k] = Element2Nodes_[i*8+k];
 
-      RCP<ElementDescriptor> ed = rcp(new ElementDescriptor(elt,elt2nodes));
-      mesh.addElement(ed,block);
+      mesh.addElement(elt,elt2nodes,block);
     }
 
     mesh.endModification();

@@ -353,12 +353,12 @@ void SquareTriMeshFactory::buildBlock(stk::ParallelMachine /* parallelMach */, i
          nodes[0] = sw;
          nodes[1] = se;
          nodes[2] = ne;
-         mesh.addElement(rcp(new ElementDescriptor(gid_a,nodes)),block);
+         mesh.addElement(gid_a,nodes,block);
 
          nodes[0] = sw;
          nodes[1] = ne;
          nodes[2] = nw;
-         mesh.addElement(rcp(new ElementDescriptor(gid_b,nodes)),block);
+         mesh.addElement(gid_b,nodes,block);
       }
    }
 }

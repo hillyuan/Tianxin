@@ -454,7 +454,7 @@ void CubeTetMeshFactory::buildTetsOnHex(const Teuchos::Tuple<int,3> & meshDesc,
       nodes[3] = centroid;
 
       // add element to mesh
-      mesh.addElement(rcp(new ElementDescriptor(gid_0+i,nodes)),block);
+      mesh.addElement(gid_0+i,nodes,block);
    }
 }
 
