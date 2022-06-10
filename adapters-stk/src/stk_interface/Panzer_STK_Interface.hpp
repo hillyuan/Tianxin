@@ -398,6 +398,7 @@ public:
      * \param[in,out] faces Vector of entities containing the requested faces.
      */
    void getAllFaces(const std::string & faceBlockName,std::vector<stk::mesh::Entity> & faces) const;
+   void getAllFaceSetIds(const std::string & faceBlockName,std::vector<std::size_t>& faceIds) const;
 
    /** Get Entities corresponding to the face block requested. This also limits the entities
      * to be in a particular element block. The Entites in the vector should be a dimension
@@ -408,6 +409,7 @@ public:
      * \param[in,out] faces Vector of entities containing the requested faces.
      */
    void getAllFaces(const std::string & faceBlockName,const std::string & blockName,std::vector<stk::mesh::Entity> & faces) const;
+   void getAllFaceSetIds(const std::string & faceBlockName,const std::string & blockName,std::vector<std::size_t> & faces) const;
 
    /** Get Entities corresponding to the side set requested.
      * The Entites in the vector should be a dimension
@@ -457,6 +459,7 @@ public:
      */
    //void getAllSideEdgesId(const std::string & sideName,std::vector<stk::mesh::EntityId> & edges) const;
    void getAllEdgeSetIds(const std::string&, std::vector<std::size_t>& edges) const;
+   void getAllEdgeSetIds(const std::string&, const std::string&, std::vector<std::size_t>& edges) const;
 
    /** Get Entities corresponding to the node set requested. This also limits the entities
      * to be in a particular element block. The Entites in the vector should be of dimension
@@ -491,6 +494,7 @@ public:
    //void getAllNodeSetIds(const std::string & nodesetName, std::vector<stk::mesh::EntityId> & nodeIds) const;
    void getAllNodeSetIds(const std::string & nodesetName, std::vector<panzer::GlobalOrdinal> & nodeIds) const;
    void getAllNodeSetIds(const std::string&, std::vector<std::size_t>&) const;
+   void getAllNodeSetIds(const std::string & nodesetName,const std::string & blockName, std::vector<std::size_t>&) const;
    /**
     * Searches for connected entity by rank and relation id. Returns
     * invalid entity on failure.

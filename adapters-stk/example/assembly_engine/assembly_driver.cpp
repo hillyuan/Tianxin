@@ -65,7 +65,6 @@ using Teuchos::rcp;
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "user_app_EquationSetFactory.hpp"
 #include "user_app_ClosureModel_Factory_TemplateBuilder.hpp"
-#include "user_app_BCStrategy_Factory.hpp"
 
 #include "MatrixMarket_Tpetra.hpp"
 
@@ -77,9 +76,6 @@ using Teuchos::rcp;
 #include "TianXin_STK_Utilities.hpp"
 
 #include "Stratimikos_DefaultLinearSolverBuilder.hpp"
-
-void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-		       std::vector<panzer::BC>& bcs);
 
 // calls MPI_Init and MPI_Finalize
 int main(int argc,char * argv[])
@@ -102,7 +98,6 @@ int main(int argc,char * argv[])
    // factory definitions
    Teuchos::RCP<user_app::MyFactory> eqset_factory = Teuchos::rcp(new user_app::MyFactory);
    panzer_stk::SquareQuadMeshFactory mesh_factory;
-   user_app::BCFactory bc_factory;
 
    // other declarations
    const std::size_t workset_size = 20;
@@ -129,6 +124,7 @@ int main(int argc,char * argv[])
    Teuchos::ParameterList pldiric;
    {
 	   Teuchos::ParameterList& p0 = pldiric.sublist("a");  // noname sublist
+	   p0.set("ElementSet Name","eblock-0_0");
 	   p0.set("NodeSet Name","left");
 	   p0.set("Value Type","Constant");
        p0.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
@@ -137,6 +133,7 @@ int main(int argc,char * argv[])
 	   p0.set("Constant",pl_sub);
 	   
 	   Teuchos::ParameterList& p1 = pldiric.sublist("b");  // noname sublist
+	   p1.set("ElementSet Name","eblock-0_0");
 	   p1.set("NodeSet Name","top");
 	   p1.set("Value Type","Constant");
        p1.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
@@ -145,6 +142,7 @@ int main(int argc,char * argv[])
 	   p1.set("Constant",pl_sub1);
 	   
 	   Teuchos::ParameterList& p2 = pldiric.sublist("c");  // noname sublist
+	   p2.set("ElementSet Name","eblock-1_0");
 	   p2.set("NodeSet Name","top");
 	   p2.set("Value Type","Constant");
        p2.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "ION_TEMPERATURE" ));
@@ -153,6 +151,7 @@ int main(int argc,char * argv[])
 	   p2.set("Constant",pl_sub2);
 	   
 	   Teuchos::ParameterList& p3 = pldiric.sublist("d");  // noname sublist
+	   p3.set("ElementSet Name","eblock-1_0");
 	   p3.set("NodeSet Name","right");
 	   p3.set("Value Type","Constant");
        p3.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "ION_TEMPERATURE" ));
@@ -167,13 +166,31 @@ int main(int argc,char * argv[])
 
    out << "BUILD PHYSICS" << std::endl;
    Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
-   std::vector<panzer::BC> bcs;
    std::vector<Teuchos::RCP<panzer::PhysicsBlock> > physicsBlocks;
    {
       std::map<std::string,std::string> block_ids_to_physics_ids;
       std::map<std::string,Teuchos::RCP<const shards::CellTopology> > block_ids_to_cell_topo;
 
-      testInitialzation(ipb, bcs);
+	  // Physics block
+	  Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
+	  {
+		Teuchos::ParameterList& p = physics_block.sublist("a");
+		p.set("Type","Energy");
+		p.set("Prefix","");
+		p.set("Model ID","solid");
+		p.set("Basis Type","HGrad");
+		p.set("Basis Order",2);
+		p.set("Integration Order",2);
+      }
+	  {
+		Teuchos::ParameterList& p = physics_block.sublist("b");
+		p.set("Type","Energy");
+		p.set("Prefix","ION_");
+		p.set("Model ID","ion solid");
+		p.set("Basis Type","HGrad");
+		p.set("Basis Order",1);
+		p.set("Integration Order",2);
+	  }
 
       block_ids_to_physics_ids["eblock-0_0"] = "test physics";
       block_ids_to_physics_ids["eblock-1_0"] = "test physics";
@@ -318,8 +335,8 @@ int main(int argc,char * argv[])
 
    // evaluate physics
    out << "EVALUTE" << std::endl;
-   ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
    ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
+   ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
 
    out << "RAN SUCCESSFULLY!" << std::endl;
 
@@ -360,89 +377,4 @@ int main(int argc,char * argv[])
    mesh->writeToExodus("output.exo");
 
    return 0;
-}
-
-void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-		       std::vector<panzer::BC>& bcs)
-{
-  // Physics block
-  Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
-  {
-    Teuchos::ParameterList& p = physics_block.sublist("a");
-    p.set("Type","Energy");
-    p.set("Prefix","");
-    p.set("Model ID","solid");
-    p.set("Basis Type","HGrad");
-    p.set("Basis Order",2);
-    p.set("Integration Order",2);
-  }
-  {
-    Teuchos::ParameterList& p = physics_block.sublist("b");
-    p.set("Type","Energy");
-    p.set("Prefix","ION_");
-    p.set("Model ID","ion solid");
-    p.set("Basis Type","HGrad");
-    p.set("Basis Order",1);
-    p.set("Integration Order",2);
-  }
-  
-  {
-    std::size_t bc_id = 0;
-    panzer::BCType neumann = panzer::BCT_Dirichlet;
-    std::string sideset_id = "left";
-    std::string element_block_id = "eblock-0_0";
-    std::string dof_name = "TEMPERATURE";
-    std::string strategy = "Constant";
-    double value = 5.0;
-    Teuchos::ParameterList p;
-    p.set("Value",value);
-    panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name, 
-		  strategy, p);
-    bcs.push_back(bc);
-  }    
-  
-  {
-    std::size_t bc_id = 1;
-    panzer::BCType neumann = panzer::BCT_Dirichlet;
-    std::string sideset_id = "top";
-    std::string element_block_id = "eblock-0_0";
-    std::string dof_name = "TEMPERATURE";
-    std::string strategy = "Constant";
-    double value = -5.0;
-    Teuchos::ParameterList p;
-    p.set("Value",value);
-    panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name, 
-		  strategy, p);
-    bcs.push_back(bc);
-  }    
-  
-  {
-    std::size_t bc_id = 2;
-    panzer::BCType neumann = panzer::BCT_Dirichlet;
-    std::string sideset_id = "top";
-    std::string element_block_id = "eblock-1_0";
-    std::string dof_name = "ION_TEMPERATURE";
-    std::string strategy = "Constant";
-    double value = 20.0;
-    Teuchos::ParameterList p;
-    p.set("Value",value);
-    panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name, 
-		  strategy, p);
-    bcs.push_back(bc);
-  }   
-
-  {
-    std::size_t bc_id = 3;
-    panzer::BCType neumann = panzer::BCT_Dirichlet;
-    std::string sideset_id = "right";
-    std::string element_block_id = "eblock-1_0";
-    std::string dof_name = "ION_TEMPERATURE";
-    std::string strategy = "Constant";
-    double value = -10.0;
-    Teuchos::ParameterList p;
-    p.set("Value",value);
-    panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name, 
-		  strategy, p);
-    bcs.push_back(bc);
-  }
 }

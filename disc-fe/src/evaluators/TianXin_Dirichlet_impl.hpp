@@ -51,7 +51,8 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 : PHX::EvaluatorWithBaseImpl<Traits>("Dirichlet Boundary Conditions")
 {
     Teuchos::ParameterList params(p);
-  
+
+    std::string eval_name = params.get< std::string >("Dirichlet Name","DIRICHLET_");
 	m_dof_name = params.get< Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>(""));
 	try {
 		if( m_dof_name.empty() )
@@ -76,7 +77,9 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 	const auto& n_set_name = params.get<std::string>("NodeSet Name","");
 	const auto& e_set_name = params.get<std::string>("EdgeSet Name","");
 	const auto& f_set_name = params.get<std::string>("FaceSet Name","");
-	
+	const auto& eblock_name = params.get<std::string>("ElementSet Name","");
+
+    m_sideset_rank = 3;	
 	try {
 		if( !s_set_name.empty() ) {
 			m_sideset_name=s_set_name; m_sideset_rank =-1;
@@ -97,6 +100,9 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 	catch (std::exception& e) {
 		 std::cout << e.what() << std::endl;
 	}
+	for(const auto& myname: m_dof_name )
+		eval_name = eval_name+myname;
+	eval_name = eval_name+m_sideset_name;
     
     m_penalty = params.get<double>("Penalty",1.e30);
     m_group_id = params.get<int>("Group ID",0);
@@ -104,12 +110,15 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
     std::set< panzer::LocalOrdinal > localIDs;
 	std::vector<std::size_t> entities;
     if( m_sideset_rank==0 ) {
-        mesh->getAllNodeSetIds(m_sideset_name,entities);
+		if( eblock_name.empty() )
+			mesh->getAllNodeSetIds(m_sideset_name,entities);
+		else
+			mesh->getAllNodeSetIds(m_sideset_name,eblock_name,entities);
 		
 		for(auto myname: m_dof_name) {
 			int fdnum = indexer->getFieldNum(myname);
 			for ( auto nd: entities ) {
-				auto b = indexer->getNodalLDofOfField( fdnum, nd );std::cout << myname << ", " << fdnum << ", " << b << std::endl;
+				auto b = indexer->getNodalLDofOfField( fdnum, nd );
 				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
 					TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
 				    "Error - Cannot find dof of Nodeset!" );
@@ -117,7 +126,10 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 			}
 		}
 	} else if( m_sideset_rank==1 ) {
-		mesh->getAllEdgeSetIds(m_sideset_name,entities); 
+		if( eblock_name.empty() )
+			mesh->getAllEdgeSetIds(m_sideset_name,entities);
+		else
+			mesh->getAllEdgeSetIds(m_sideset_name,eblock_name,entities);
 		for(auto myname: m_dof_name) {
 			int fdnum = indexer->getFieldNum(myname);
 			for ( auto nd: entities ) {
@@ -148,12 +160,11 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 
 	m_values = Kokkos::View<RealType*,Kokkos::HostSpace>("Dirichelt::Value_",m_ndofs);
 
-    std::string name = params.get< std::string >("Dirichlet Name","DIRICHLET");
     Teuchos::RCP<PHX::DataLayout> dummy = Teuchos::rcp(new PHX::MDALayout<void>(0));
-    const PHX::Tag<ScalarT> fieldTag(name, dummy);
+    const PHX::Tag<ScalarT> fieldTag(eval_name, dummy);
 
     this->addEvaluatedField(fieldTag);
-    this->setName(name+PHX::print<EvalT>());
+    this->setName(eval_name+PHX::print<EvalT>());
 }
 
 template<typename EvalT,typename Traits>

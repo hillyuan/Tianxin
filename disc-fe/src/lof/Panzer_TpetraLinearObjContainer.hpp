@@ -299,17 +299,18 @@ public:
 	   LocalOrdinalT numDofs = local_dofs.extent(0);
 	   Kokkos::parallel_for( numDofs, KOKKOS_LAMBDA (const LocalOrdinalT lclRow) {
 			//double a = xview(local_dofs(lclRow),0) - values(lclRow);
-			//std::cout << lclRow << " ,,, " << local_dofs(lclRow) << " ,,, " << a << std::endl;
+			//std::cout << lclRow << " ,,, " << local_dofs(lclRow) << " ,,, " << values(lclRow) << std::endl;
 			fview(local_dofs(lclRow),0) = xview(local_dofs(lclRow),0) - values(lclRow);
 			//Kokkos::atomic_assign(&fview(local_dofs(lclRow),0), a);
        } );
-	/*  Teuchos::ArrayRCP<const ScalarT> x_1dview = x->get1dView();
+	  /*Teuchos::ArrayRCP<const ScalarT> x_1dview = x->get1dView();
 	  Teuchos::ArrayRCP<double> f_1dview = f->get1dViewNonConst();
 	  LocalOrdinalT numDofs = local_dofs.extent(0);
       for( std::size_t i=0; i<numDofs; ++i )
       {
-		  auto lid = local_dofs(i);
+		auto lid = local_dofs(i);
 	  	double a = x_1dview[lid] - values(i);
+		std::cout << i << " ,,, " << lid << " ,,, " << values(i)  << " ,,, " << x_1dview[lid] << std::endl;
 		f_1dview[lid] = a;
       }*/
    }
