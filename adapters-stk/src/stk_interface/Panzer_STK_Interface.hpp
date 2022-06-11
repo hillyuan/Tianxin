@@ -93,19 +93,6 @@ public:
    typedef stk::mesh::GetCoordinates<VectorFieldType> CoordinateFunctor;
    typedef stk::mesh::PeriodicBoundarySearch<CoordinateFunctor> PeriodicSearch;
 
-   // some simple exception classes
-   struct ElementBlockException : public std::logic_error
-   { ElementBlockException(const std::string & what) : std::logic_error(what) {} };
-
-   struct SidesetException : public std::logic_error
-   { SidesetException(const std::string & what) : std::logic_error(what) {} };
-
-   struct EdgeBlockException : public std::logic_error
-   { EdgeBlockException(const std::string & what) : std::logic_error(what) {} };
-
-   struct FaceBlockException : public std::logic_error
-   { FaceBlockException(const std::string & what) : std::logic_error(what) {} };
-
    STK_Interface();
 
    /** Default constructor

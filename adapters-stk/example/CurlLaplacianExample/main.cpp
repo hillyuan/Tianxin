@@ -222,7 +222,6 @@ int main(int argc,char * argv[])
      pl->set("Xf",x_size);
      pl->set("Yf",y_size);
      pl->set("Zf",z_size);
-	 pl->set("Create Edge Blocks",true);
      mesh_factory->setParameterList(pl);
    }
    else {
@@ -239,45 +238,48 @@ int main(int argc,char * argv[])
      pl->set("Y Elements",y_elements);
      pl->set("Xf",x_size);
      pl->set("Yf",y_size);
-	 pl->set("Create Edge Blocks",true);
      mesh_factory->setParameterList(pl);
    }
 
    RCP<panzer_stk::STK_Interface> mesh = mesh_factory->buildUncommitedMesh(MPI_COMM_WORLD);
    std::vector<std::string> egnames;
-   mesh->getEdgeBlockNames(egnames);
+   mesh->getElementBlockNames(egnames);
    for( auto& aa : egnames )
 	   std::cout << aa << std::endl;
    
    Teuchos::ParameterList pldiric;
    {	
 	   Teuchos::ParameterList& p0 = pldiric.sublist("a");  // noname sublist
-	   p0.set("EdgeSet Name","line_2_edge_block");
+	   p0.set("ElementSet Name","eblock-0_0");
+	   p0.set("SideSet Name","left");
 	   p0.set("Value Type","Constant");
        p0.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
 	   Teuchos::ParameterList pl_sub("Constant");
 	   pl_sub.set("Value",0.0);
 	   p0.set("Constant",pl_sub);
 	   
-	/*   Teuchos::ParameterList& p1 = pldiric.sublist("a");  // noname sublist
-	   p1.set("EdgeSet Name","top");
+	   Teuchos::ParameterList& p1 = pldiric.sublist("b");  // noname sublist
+	   p1.set("ElementSet Name","eblock-0_0");
+	   p1.set("SideSet Name","top");
 	   p1.set("Value Type","Constant");
        p1.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
 	   p1.set("Constant",pl_sub);
 	   
-	   Teuchos::ParameterList& p2 = pldiric.sublist("a");  // noname sublist
-	   p2.set("EdgeSet Name","right");
+	   Teuchos::ParameterList& p2 = pldiric.sublist("c");  // noname sublist
+	   p2.set("ElementSet Name","eblock-0_0");
+	   p2.set("SideSet Name","right");
 	   p2.set("Value Type","Constant");
        p2.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
 	   p2.set("Constant",pl_sub);
 	   
-	   Teuchos::ParameterList& p3 = pldiric.sublist("a");  // noname sublist
-	   p3.set("EdgeSet Name","bottom");
+	   Teuchos::ParameterList& p3 = pldiric.sublist("d");  // noname sublist
+	   p3.set("ElementSet Name","eblock-0_0");
+	   p3.set("SideSet Name","bottom");
 	   p3.set("Value Type","Constant");
        p3.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
-	   p3.set("Constant",pl_sub);*/
+	   p3.set("Constant",pl_sub);
    }
-   //pldiric->print();
+   pldiric.print();
 
    // other declarations
    const std::size_t workset_size = 8;

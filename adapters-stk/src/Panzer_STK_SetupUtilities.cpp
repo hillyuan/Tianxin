@@ -90,33 +90,11 @@ buildWorksets(const panzer_stk::STK_Interface & mesh,
      else
         mesh.getAllSides(sideset,eBlock,sideEntities);
   } 
-  catch(STK_Interface::SidesetException & e) {
-     std::stringstream ss;
-     std::vector<std::string> sideSets; 
-     mesh.getSidesetNames(sideSets);
- 
-     // build an error message
-     ss << e.what() << "\nChoose one of:\n";
-     for(std::size_t i=0;i<sideSets.size();i++) 
-        ss << "\"" << sideSets[i] << "\"\n";
-
-     TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
-  }
-  catch(STK_Interface::ElementBlockException & e) {
-     std::stringstream ss;
-     std::vector<std::string> elementBlocks; 
-     mesh.getElementBlockNames(elementBlocks);
-
-     // build an error message
-     ss << e.what() << "\nChoose one of:\n";
-     for(std::size_t i=0;i<elementBlocks.size();i++) 
-        ss << "\"" << elementBlocks[i] << "\"\n";
-
-     TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
-  }
   catch(std::logic_error & e) {
      std::stringstream ss;
-     ss << e.what() << "\nUnrecognized logic error.\n";
+     ss << e.what() << "Element/Sideset block exception, could not finalize the mesh, printing block and sideset information:\n";
+     mesh.printMetaData(ss);
+     ss << std::endl;
 
      TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
   }
@@ -220,21 +198,11 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
      // grab elements
      stk::mesh::get_selected_entities(side,mesh.getBulkData()->buckets(mesh.getSideRank()),sideEntities);
   } 
-  catch(STK_Interface::ElementBlockException & e) {
-     std::stringstream ss;
-     std::vector<std::string> elementBlocks; 
-     mesh.getElementBlockNames(elementBlocks);
-
-     // build an error message
-     ss << e.what() << "\nChoose one of:\n";
-     for(std::size_t i=0;i<elementBlocks.size();i++) 
-        ss << "\"" << elementBlocks[i] << "\"\n";
-
-     TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
-  }
   catch(std::logic_error & e) {
      std::stringstream ss;
-     ss << e.what() << "\nUnrecognized logic error.\n";
+     ss << e.what() << "Element/Sideset block exception, could not finalize the mesh, printing block and sideset information:\n";
+     mesh.printMetaData(ss);
+     ss << std::endl;
 
      TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
   }
@@ -294,33 +262,11 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
      // ...catch any failure...primarily wrong side set and element block info
      mesh.getMySides(sidesetID,eblockID,sideEntities);
   } 
-  catch(STK_Interface::SidesetException & e) {
-     std::stringstream ss;
-     std::vector<std::string> sideSets; 
-     mesh.getSidesetNames(sideSets);
- 
-     // build an error message
-     ss << e.what() << "\nChoose one of:\n";
-     for(std::size_t i=0;i<sideSets.size();i++) 
-        ss << "\"" << sideSets[i] << "\"\n";
-
-     TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
-  }
-  catch(STK_Interface::ElementBlockException & e) {
-     std::stringstream ss;
-     std::vector<std::string> elementBlocks; 
-     mesh.getElementBlockNames(elementBlocks);
-
-     // build an error message
-     ss << e.what() << "\nChoose one of:\n";
-     for(std::size_t i=0;i<elementBlocks.size();i++) 
-        ss << "\"" << elementBlocks[i] << "\"\n";
-
-     TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
-  }
   catch(std::logic_error & e) {
      std::stringstream ss;
-     ss << e.what() << "\nUnrecognized logic error.\n";
+     ss << e.what() << "Element/Sideset block exception, could not finalize the mesh, printing block and sideset information:\n";
+     mesh.printMetaData(ss);
+     ss << std::endl;
 
      TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
   }

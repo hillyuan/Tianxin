@@ -375,24 +375,15 @@ namespace panzer_stk {
     try {
        // this throws some exceptions, catch them as neccessary
        this->finalizeMeshConstruction(*mesh_factory,physicsBlocks,*mpi_comm,*mesh);
-    } catch(const panzer_stk::STK_Interface::ElementBlockException & ebexp) {
+    } catch(const std::logic_error & ebexp) {
        fout << "*****************************************\n\n";
-       fout << "Element block exception, could not finalize the mesh, printing block and sideset information:\n";
+       fout << "Element/Sideset block exception, could not finalize the mesh, printing block and sideset information:\n";
        fout.pushTab(3);
        mesh->printMetaData(fout);
        fout.popTab();
        fout << std::endl;
 
        throw ebexp;
-    } catch(const panzer_stk::STK_Interface::SidesetException & ssexp) {
-       fout << "*****************************************\n\n";
-       fout << "Sideset exception, could not finalize the mesh, printing block and sideset information:\n";
-       fout.pushTab(3);
-       mesh->printMetaData(fout);
-       fout.popTab();
-       fout << std::endl;
-
-       throw ssexp;
     }
 
     mesh->print(fout);

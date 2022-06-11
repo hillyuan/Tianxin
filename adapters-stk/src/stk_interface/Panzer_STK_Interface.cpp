@@ -141,7 +141,7 @@ void STK_Interface::addNodeset(const std::string & name)
 
 void STK_Interface::addSolutionField(const std::string & fieldName,const std::string & blockId)
 {
-   TEUCHOS_TEST_FOR_EXCEPTION(!validBlockId(blockId),ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(!validBlockId(blockId),std::logic_error,
                       "Unknown element block \"" << blockId << "\"");
    std::pair<std::string,std::string> key = std::make_pair(fieldName,blockId);
 
@@ -161,7 +161,7 @@ void STK_Interface::addSolutionField(const std::string & fieldName,const std::st
 
 void STK_Interface::addCellField(const std::string & fieldName,const std::string & blockId)
 {
-   TEUCHOS_TEST_FOR_EXCEPTION(!validBlockId(blockId),ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(!validBlockId(blockId),std::logic_error,
                       "Unknown element block \"" << blockId << "\"");
    std::pair<std::string,std::string> key = std::make_pair(fieldName,blockId);
 
@@ -182,7 +182,7 @@ void STK_Interface::addCellField(const std::string & fieldName,const std::string
 
 void STK_Interface::addEdgeField(const std::string & fieldName,const std::string & blockId)
 {
-   TEUCHOS_TEST_FOR_EXCEPTION(!validBlockId(blockId),ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(!validBlockId(blockId),std::logic_error,
                       "Unknown element block \"" << blockId << "\"");
    std::pair<std::string,std::string> key = std::make_pair(fieldName,blockId);
 
@@ -204,7 +204,7 @@ void STK_Interface::addEdgeField(const std::string & fieldName,const std::string
 
 void STK_Interface::addFaceField(const std::string & fieldName,const std::string & blockId)
 {
-   TEUCHOS_TEST_FOR_EXCEPTION(!validBlockId(blockId),ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(!validBlockId(blockId),std::logic_error,
                       "Unknown element block \"" << blockId << "\"");
    std::pair<std::string,std::string> key = std::make_pair(fieldName,blockId);
 
@@ -231,7 +231,7 @@ void STK_Interface::addMeshCoordFields(const std::string & blockId,
    TEUCHOS_ASSERT(dimension_!=0);
    TEUCHOS_ASSERT(dimension_==coordNames.size());
    TEUCHOS_ASSERT(not initialized_);
-   TEUCHOS_TEST_FOR_EXCEPTION(!validBlockId(blockId),ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(!validBlockId(blockId),std::logic_error,
                       "Unknown element block \"" << blockId << "\"");
 
    // we only allow one alternative coordinate field
@@ -1310,9 +1310,9 @@ void STK_Interface::getMyEdges(const std::string & edgeBlockName,const std::stri
 {
    stk::mesh::Part * edgeBlockPart = getEdgeBlock(edgeBlockName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(edgeBlockPart==0,EdgeBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(edgeBlockPart==0,std::logic_error,
                       "Unknown edge block \"" << edgeBlockName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector edge_block = *edgeBlockPart;
@@ -1379,9 +1379,9 @@ void STK_Interface::getAllEdges(const std::string & edgeBlockName,const std::str
 {
    stk::mesh::Part * edgeBlockPart = getEdgeBlock(edgeBlockName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(edgeBlockPart==0,EdgeBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(edgeBlockPart==0,std::logic_error,
                       "Unknown edge block \"" << edgeBlockName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector edge_block = *edgeBlockPart;
@@ -1439,9 +1439,9 @@ void STK_Interface::getMyFaces(const std::string & faceBlockName,const std::stri
 {
    stk::mesh::Part * faceBlockPart = getFaceBlock(faceBlockName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(faceBlockPart==0,FaceBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(faceBlockPart==0,std::logic_error,
                       "Unknown face block \"" << faceBlockName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector face_block = *faceBlockPart;
@@ -1487,9 +1487,9 @@ void STK_Interface::getAllFaces(const std::string & faceBlockName,const std::str
 {
    stk::mesh::Part * faceBlockPart = getFaceBlock(faceBlockName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(faceBlockPart==0,FaceBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(faceBlockPart==0,std::logic_error,
                       "Unknown face block \"" << faceBlockName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector face_block = *faceBlockPart;
@@ -1504,9 +1504,9 @@ void STK_Interface::getAllFaceSetIds(const std::string & faceBlockName,const std
 {
    stk::mesh::Part * faceBlockPart = getFaceBlock(faceBlockName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(faceBlockPart==0,FaceBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(faceBlockPart==0,std::logic_error,
                       "Unknown face block \"" << faceBlockName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector face_block = *faceBlockPart;
@@ -1541,9 +1541,9 @@ void STK_Interface::getMySides(const std::string & sideName,const std::string & 
 {
    stk::mesh::Part * sidePart = getSideset(sideName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(sidePart==0,SidesetException,
+   TEUCHOS_TEST_FOR_EXCEPTION(sidePart==0,std::logic_error,
                       "Unknown side set \"" << sideName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector side = *sidePart;
@@ -1589,9 +1589,9 @@ void STK_Interface::getAllSides(const std::string & sideName,const std::string &
 {
    stk::mesh::Part * sidePart = getSideset(sideName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(sidePart==0,SidesetException,
+   TEUCHOS_TEST_FOR_EXCEPTION(sidePart==0,std::logic_error,
                       "Unknown side set \"" << sideName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector side = *sidePart;
@@ -1606,9 +1606,9 @@ void STK_Interface::getAllSideSetIds(const std::string & sideName,const std::str
 {
    stk::mesh::Part * sidePart = getSideset(sideName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(sidePart==0,SidesetException,
+   TEUCHOS_TEST_FOR_EXCEPTION(sidePart==0,std::logic_error,
                       "Unknown side set \"" << sideName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector side = *sidePart;
@@ -1694,9 +1694,9 @@ void STK_Interface::getMyNodes(const std::string & nodesetName,const std::string
 {
    stk::mesh::Part * nodePart = getNodeset(nodesetName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,SidesetException,
+   TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,std::logic_error,
                       "Unknown node set \"" << nodesetName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector nodeset = *nodePart;
@@ -1711,9 +1711,9 @@ void STK_Interface::getMyNodeSetIds(const std::string & nodesetName,const std::s
 {
    stk::mesh::Part * nodePart = getNodeset(nodesetName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,SidesetException,
+   TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,std::logic_error,
                       "Unknown node set \"" << nodesetName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector nodeset = *nodePart;
@@ -1735,9 +1735,9 @@ void STK_Interface::getAllNodeSetIds(const std::string & nodesetName,const std::
 {
    stk::mesh::Part * nodePart = getNodeset(nodesetName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,SidesetException,
+   TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,std::logic_error,
                       "Unknown node set \"" << nodesetName << "\"");
-   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,ElementBlockException,
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
                       "Unknown element block \"" << blockName << "\"");
 
    stk::mesh::Selector nodeset = *nodePart;

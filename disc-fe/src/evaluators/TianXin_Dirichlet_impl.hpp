@@ -140,6 +140,27 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 				localIDs.insert(b);
 			}
 		}
+	} else if( m_sideset_rank==-1 ) {
+		if( eblock_name.empty() )
+			mesh->getAllSideSetIds(m_sideset_name,entities);
+		else
+			mesh->getAllSideSetIds(m_sideset_name,eblock_name,entities);
+		auto dim = mesh->getDimension();
+		panzer::LocalOrdinal b;
+		for(auto myname: m_dof_name) {
+			int fdnum = indexer->getFieldNum(myname);
+			for ( auto nd: entities ) {
+				b=-1;
+				if( dim==2 )
+					b = indexer->getEdgeLDofOfField( fdnum, nd );
+				else if( dim==1 )
+					b = indexer->getNodalLDofOfField( fdnum, nd );
+				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
+				TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
+				    "Error - Cannot find dof of Edgeset!" );
+				localIDs.insert(b);
+			}
+		}
 	}
 	m_ndofs = localIDs.size();
 	
