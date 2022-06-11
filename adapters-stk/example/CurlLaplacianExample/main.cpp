@@ -83,6 +83,8 @@
 #include "BelosPseudoBlockGmresSolMgr.hpp"
 #include "BelosTpetraAdapter.hpp"
 
+#include "MatrixMarket_Tpetra.hpp"
+
 #include "Example_BCStrategy_Factory.hpp"
 #include "Example_ClosureModel_Factory_TemplateBuilder.hpp"
 #include "Example_EquationSetFactory.hpp"
@@ -149,6 +151,7 @@ int main(int argc,char * argv[])
    using Teuchos::rcp_dynamic_cast;
    using panzer::StrPureBasisPair;
    using panzer::StrPureBasisComp;
+   using TpetraCrsMatrix = Tpetra::CrsMatrix<double,int,panzer::GlobalOrdinal>;
 
    Teuchos::GlobalMPISession mpiSession(&argc,&argv);
    Kokkos::initialize(argc,argv);
@@ -279,7 +282,7 @@ int main(int argc,char * argv[])
        p3.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
 	   p3.set("Constant",pl_sub);
    }
-   pldiric.print();
+   //pldiric.print();
 
    // other declarations
    const std::size_t workset_size = 8;
@@ -473,9 +476,9 @@ int main(int argc,char * argv[])
          Teuchos::rcp(new panzer::FieldManagerBuilder);
    fmb->setWorksetContainer(wkstContainer);
    fmb->setupVolumeFieldManagers(physicsBlocks,cm_factory,closure_models,*linObjFactory,user_data);
-   fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,
-                             *linObjFactory,user_data);
-   //fmb->setupDiricheltFieldManagers(pldiric,mesh,dofManager);
+   //fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,
+   //                          *linObjFactory,user_data);
+   fmb->setupDiricheltFieldManagers(pldiric,mesh,dofManager);
 
    fmb->writeVolumeGraphvizDependencyFiles("volume",physicsBlocks);
    //fmb->writeBCGraphvizDependencyFiles("saucy");
@@ -534,6 +537,12 @@ int main(int argc,char * argv[])
 
    // evaluate physics: This does both the Jacobian and residual at once
    ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
+   ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
+   
+   /*Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeSparseFile("a_op.mm",
+	*(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_A()));
+   Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("b_vec.mm",
+	*(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_f()));*/
 
    // solve linear system
    /////////////////////////////////////////////////////////////
