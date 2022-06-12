@@ -245,15 +245,10 @@ int main(int argc,char * argv[])
    }
 
    RCP<panzer_stk::STK_Interface> mesh = mesh_factory->buildUncommitedMesh(MPI_COMM_WORLD);
-   std::vector<std::string> egnames;
-   mesh->getElementBlockNames(egnames);
-   for( auto& aa : egnames )
-	   std::cout << aa << std::endl;
    
    Teuchos::ParameterList pldiric;
    {	
 	   Teuchos::ParameterList& p0 = pldiric.sublist("a");  // noname sublist
-	   p0.set("ElementSet Name","eblock-0_0");
 	   p0.set("SideSet Name","left");
 	   p0.set("Value Type","Constant");
        p0.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
@@ -262,21 +257,18 @@ int main(int argc,char * argv[])
 	   p0.set("Constant",pl_sub);
 	   
 	   Teuchos::ParameterList& p1 = pldiric.sublist("b");  // noname sublist
-	   p1.set("ElementSet Name","eblock-0_0");
 	   p1.set("SideSet Name","top");
 	   p1.set("Value Type","Constant");
        p1.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
 	   p1.set("Constant",pl_sub);
 	   
 	   Teuchos::ParameterList& p2 = pldiric.sublist("c");  // noname sublist
-	   p2.set("ElementSet Name","eblock-0_0");
 	   p2.set("SideSet Name","right");
 	   p2.set("Value Type","Constant");
        p2.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
 	   p2.set("Constant",pl_sub);
 	   
 	   Teuchos::ParameterList& p3 = pldiric.sublist("d");  // noname sublist
-	   p3.set("ElementSet Name","eblock-0_0");
 	   p3.set("SideSet Name","bottom");
 	   p3.set("Value Type","Constant");
        p3.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "EFIELD" ));
@@ -538,6 +530,8 @@ int main(int argc,char * argv[])
    // evaluate physics: This does both the Jacobian and residual at once
    ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
    ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
+   //int flags = panzer::AssemblyEngine<panzer::Traits::Residual>::EvaluationFlags::BoundaryFill;
+   //ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input, panzer::AssemblyEngine<panzer::Traits::Residual>::EvaluationFlags(flags));
    
    /*Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeSparseFile("a_op.mm",
 	*(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_A()));

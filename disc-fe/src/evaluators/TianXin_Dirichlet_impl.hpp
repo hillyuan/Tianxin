@@ -151,10 +151,12 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 			int fdnum = indexer->getFieldNum(myname);
 			for ( auto nd: entities ) {
 				b=-1;
+				//std::cout << fdnum << ", " << nd << std::endl;
 				if( dim==2 )
 					b = indexer->getEdgeLDofOfField( fdnum, nd );
 				else if( dim==1 )
 					b = indexer->getNodalLDofOfField( fdnum, nd );
+				//std::cout << fdnum << ", " << nd << ", " << b << std::endl;
 				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
 				TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
 				    "Error - Cannot find dof of Edgeset!" );

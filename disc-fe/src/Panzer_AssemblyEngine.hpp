@@ -76,6 +76,7 @@ namespace panzer {
       static constexpr int Initialize=1;
       static constexpr int VolumetricFill=2;
       static constexpr int BoundaryFill=4;
+	  static constexpr int DirichletFill=6;
       static constexpr int Scatter=8;
       static constexpr int All=15;
       int getValue() const {return value_;}
