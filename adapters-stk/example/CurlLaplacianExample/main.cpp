@@ -1,12 +1,9 @@
 // @HEADER
 // ***********************************************************************
 //
-//           Panzer: A partial differential equation assembly
+//           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2011) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
+//                 Copyright (2022) Xi Yuan
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -23,10 +20,10 @@
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// THIS SOFTWARE IS PROVIDED THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR THE
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -35,8 +32,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Questions? Contact Roger P. Pawlowski (rppawlo@sandia.gov) and
-// Eric C. Cyr (eccyr@sandia.gov)
 // ***********************************************************************
 // @HEADER
 
@@ -85,7 +80,6 @@
 
 #include "MatrixMarket_Tpetra.hpp"
 
-#include "Example_BCStrategy_Factory.hpp"
 #include "Example_ClosureModel_Factory_TemplateBuilder.hpp"
 #include "Example_EquationSetFactory.hpp"
 
@@ -136,11 +130,6 @@ using Teuchos::rcp;
 //      Out[144]= {-(-1+y) y,-(-1+x) x,0}
 //      Out[145]= {2+y-y^2,2+x-x^2,0}
 //
-
-void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-		        std::vector<panzer::BC>& bcs,
-                        const std::vector<std::string>& eBlockNames,
-                        int basis_order);
 
 void solveTpetraSystem(panzer::LinearObjContainer & container);
 
@@ -205,7 +194,6 @@ int main(int argc,char * argv[])
    // factory definitions
    Teuchos::RCP<Example::EquationSetFactory> eqset_factory =
      Teuchos::rcp(new Example::EquationSetFactory); // where poison equation is defined
-   Example::BCStrategyFactory bc_factory;    // where boundary conditions are defined
 
    // construction of uncommitted (no elements) mesh
    ////////////////////////////////////////////////////////
@@ -283,14 +271,20 @@ int main(int argc,char * argv[])
    ////////////////////////////////////////////////////////
 
    Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
-   std::vector<panzer::BC> bcs;
    std::vector<RCP<panzer::PhysicsBlock> > physicsBlocks;
    {
       bool build_transient_support = false;
 
       std::vector<std::string> eBlockNames;
       mesh->getElementBlockNames(eBlockNames);
-      testInitialization(ipb, bcs, eBlockNames, basis_order);
+      {
+		Teuchos::ParameterList& p = ipb->sublist("CurlLapacian Physics");
+		p.set("Type","CurlLaplacian");
+		p.set("Model ID","solid");
+		p.set("Basis Type","HCurl");
+		p.set("Basis Order",basis_order);
+		p.set("Integration Order",10);
+	  }
 
       const panzer::CellData volume_cell_data(workset_size, mesh->getCellTopology(eBlockNames[0]));
 
@@ -351,7 +345,6 @@ int main(int argc,char * argv[])
      mesh->getElementBlockNames(eBlockNames);
      std::vector<std::string> sidesetNames;
      mesh->getSidesetNames(sidesetNames);
-     panzer::checkBCConsistency(eBlockNames,sidesetNames,bcs);
    }
 
    // build DOF Manager and linear object factory
@@ -655,79 +648,4 @@ void solveTpetraSystem(panzer::LinearObjContainer & container)
   tp_container.get_x()->scale(-1.0);
 
   tp_container.get_A()->resumeFill(); // where does this go?
-}
-
-void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-		        std::vector<panzer::BC>& bcs,
-                        const std::vector<std::string>& eBlockNames,
-                        int basis_order)
-{
-  {
-    Teuchos::ParameterList& p = ipb->sublist("CurlLapacian Physics");
-    p.set("Type","CurlLaplacian");
-    p.set("Model ID","solid");
-    p.set("Basis Type","HCurl");
-    p.set("Basis Order",basis_order);
-    p.set("Integration Order",10);
-  }
-
-  std::size_t bc_id = 0;
-  for (const auto& block : eBlockNames) {
-    panzer::BCType bctype = panzer::BCT_Dirichlet;
-    std::string sideset_id = "left";
-    std::string element_block_id = block;
-    std::string dof_name = "EFIELD";
-    std::string strategy = "Constant";
-    double value = 0.0;
-    Teuchos::ParameterList p;
-    p.set("Value",value);
-    panzer::BC bc(bc_id++, bctype, sideset_id, element_block_id, dof_name,
-		  strategy, p);
-    bcs.push_back(bc);
-  }
-
-  // multiblock splits on x only
-  for (const auto& block : eBlockNames) {
-    panzer::BCType bctype = panzer::BCT_Dirichlet;
-    std::string sideset_id = "top";
-    std::string element_block_id = block;
-    std::string dof_name = "EFIELD";
-    std::string strategy = "Constant";
-    double value = 0.0;
-    Teuchos::ParameterList p;
-    p.set("Value",value);
-    panzer::BC bc(bc_id++, bctype, sideset_id, element_block_id, dof_name,
-		  strategy, p);
-    bcs.push_back(bc);
-  }
-
-  for (const auto& block : eBlockNames) {
-    panzer::BCType bctype = panzer::BCT_Dirichlet;
-    std::string sideset_id = "right";
-    std::string element_block_id = block;
-    std::string dof_name = "EFIELD";
-    std::string strategy = "Constant";
-    double value = 0.0;
-    Teuchos::ParameterList p;
-    p.set("Value",value);
-    panzer::BC bc(bc_id++, bctype, sideset_id, element_block_id, dof_name,
-		  strategy, p);
-    bcs.push_back(bc);
-  }
-
-  // multiblock splits on x only
-  for (const auto& block : eBlockNames) {
-    panzer::BCType bctype = panzer::BCT_Dirichlet;
-    std::string sideset_id = "bottom";
-    std::string element_block_id = block;
-    std::string dof_name = "EFIELD";
-    std::string strategy = "Constant";
-    double value = 0.0;
-    Teuchos::ParameterList p;
-    p.set("Value",value);
-    panzer::BC bc(bc_id++, bctype, sideset_id, element_block_id, dof_name,
-		  strategy, p);
-    bcs.push_back(bc);
-  }
-
 }

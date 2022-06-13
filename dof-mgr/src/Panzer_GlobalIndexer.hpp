@@ -385,14 +385,15 @@ public:
 	for( auto nd: edgeset )
 	{
 		auto a = localmap.at( nd );
-		ldofs.emplace_back( a );
+		for( auto ab : a )
+			ldofs.emplace_back( ab );
 	}
    }
 	
    std::vector<panzer::LocalOrdinal> getEdgeLDofOfField(int f, panzer::GlobalOrdinal nd) const
    {
-	   if( aedgeLIDMap_.empty() ) return std::vector<panzer::LocalOrdinal>();
-	   auto localmap = aedgeLIDMap_.at( f );
+	   if( edgeLIDMap_.empty() ) return std::vector<panzer::LocalOrdinal>();
+	   auto localmap = edgeLIDMap_.at( f );
 	   std::vector<panzer::LocalOrdinal> ldof;
 	   try {
 	      ldof = localmap.at(nd);
@@ -403,7 +404,7 @@ public:
 	   return ldof; 
    }
 	
-   panzer::GlobalOrdinal getEdgeGDofOfField(int f, panzer::GlobalOrdinal nd) const
+   std::vector<panzer::GlobalOrdinal> getEdgeGDofOfField(int f, panzer::GlobalOrdinal nd) const
    { return edgeGIDMap_.at(f).at(nd); }
 
    
@@ -434,21 +435,23 @@ public:
 	 for( auto edmap: edgeLIDMap_ )
 	 {
 		os << "Field: " << getFieldString(edmap.first) << "  with field number " << edmap.first << std::endl;
-		std::size_t c =0;
 		for( auto b: edmap.second )
 		{
-			std::cout << "  Edge gid:" << b.first << "  with local index=" << b.second << std::endl;
-			c++;
+			std::cout << "  Edge gid:" << b.first << "  with local index=";
+			for( const auto bb: b.second )
+				std::cout << bb << "  ";
+			std::cout << std::endl;
 		}
 	 }
 	 for( auto edmap: edgeGIDMap_ )
 	 {
 		os << "Field: " << getFieldString(edmap.first) << "  with field number " << edmap.first << std::endl;
-		std::size_t c =0;
 		for( auto b: edmap.second )
 		{
-			std::cout << "  Edge gid:" << b.first << "  with global index=" << b.second << std::endl;
-			c++;
+			std::cout << "  Edge gid:" << b.first << "  with global index=";
+			for( const auto bb: b.second )
+				std::cout << bb << "  ";
+			std::cout << std::endl;
 		}
 	 }
 	
@@ -486,10 +489,8 @@ protected:
    std::map< int, std::map<panzer::GlobalOrdinal, panzer::GlobalOrdinal> > nodeGIDMap_;
 
    // field ID -> edge global index -> local & global index of dof
-   std::map< int, std::map<panzer::GlobalOrdinal, panzer::LocalOrdinal> > edgeLIDMap_;
-   std::map< int, std::map<panzer::GlobalOrdinal, panzer::GlobalOrdinal> > edgeGIDMap_;
-   std::map< int, std::map<panzer::GlobalOrdinal, std::vector<panzer::LocalOrdinal>> > aedgeLIDMap_;
-   std::map< int, std::map<panzer::GlobalOrdinal, std::vector<panzer::GlobalOrdinal>> > aedgeGIDMap_;
+   std::map< int, std::map<panzer::GlobalOrdinal, std::vector<panzer::LocalOrdinal>> > edgeLIDMap_;
+   std::map< int, std::map<panzer::GlobalOrdinal, std::vector<panzer::GlobalOrdinal>> > edgeGIDMap_;
 
    // field ID -> face global index -> local & global index of dof
    std::map< int, std::map<panzer::GlobalOrdinal, panzer::LocalOrdinal> > faceLIDMap_;

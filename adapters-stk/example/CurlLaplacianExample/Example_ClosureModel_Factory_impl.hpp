@@ -54,6 +54,7 @@
 #include "Panzer_Sum.hpp"
 #include "Panzer_DotProduct.hpp"
 #include "Panzer_Product.hpp"
+#include "Panzer_Constant.hpp"
 
 #include "Phalanx_FieldTag_Tag.hpp"
 #include "Teuchos_ParameterEntry.hpp"
