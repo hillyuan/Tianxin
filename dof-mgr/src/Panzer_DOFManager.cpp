@@ -1360,6 +1360,8 @@ void DOFManager::buildDofsInfo()
 
 //	std::vector< std::map< panzer::GlobalOrdinal, panzer::LocalOrdinal > > LidMaps;
 //  std::vector< std::map< panzer::GlobalOrdinal, panzer::GlobalOrdinal > > GidMaps;
+  std::vector< std::tuple<int, panzer::GlobalOrdinal, std::vector<panzer::LocalOrdinal> > > aLidTuple_ed;   // field id, edge id, dof offset
+  std::vector< std::tuple<int, panzer::GlobalOrdinal, std::vector<panzer::GlobalOrdinal> > > aGidTuple_ed;  // field id, edge id, dof offset
   std::vector< std::tuple<int, panzer::GlobalOrdinal, panzer::LocalOrdinal > > LidTuple_ed;   // field id, edge id, dof offset
   std::vector< std::tuple<int, panzer::GlobalOrdinal, panzer::GlobalOrdinal > > GidTuple_ed;  // field id, edge id, dof offset
   std::vector< std::tuple<int, panzer::GlobalOrdinal, panzer::LocalOrdinal > > LidTuple_nd;   // field id, node id, dof offset
@@ -1369,6 +1371,10 @@ void DOFManager::buildDofsInfo()
 
   std::set<int> fieldids, total_fieldids;
   std::set<int> lid_defined;
+  std::vector<panzer::LocalOrdinal> lids;
+  std::vector<panzer::GlobalOrdinal> gids;
+  panzer::GlobalOrdinal gid;
+  panzer::LocalOrdinal  lid;
   for( auto blockId : elementBlockIds )
   {
 	  const std::vector<int>& fields = this->getBlockFieldNumbers(blockId);
@@ -1406,8 +1412,8 @@ void DOFManager::buildDofsInfo()
 				if( offsets.empty() ) break;
 				++dofcount;
 			
-				auto gid = GIDs[offsets[0]];
-				auto lid = LIDs[offsets[0]];
+				gid = GIDs[offsets[0]];
+				lid = LIDs[offsets[0]];
 				auto itr_find = lid_defined.find(lid);
 				if( itr_find != lid_defined.end() ) continue;  // emblaced already!
 				lid_defined.emplace(lid);
@@ -1426,16 +1432,28 @@ void DOFManager::buildDofsInfo()
 				const auto& offsetPair = getGIDFieldOffsets_closure(blockId, fd1, erank, i);
 				const auto& offsets =  offsetPair.first;
 				if( offsets.empty() ) break;
-				++dofcount;
-			
-				auto gid = GIDs[offsets[0]];
-				auto lid = LIDs[offsets[0]];
-				auto itr_find = lid_defined.find(lid);
-				if( itr_find != lid_defined.end() ) continue;  // emblaced already!
-				lid_defined.emplace(lid);
+				
+				std::size_t nids = offsets.size();
+				lids.resize(nids);
+				gids.resize(nids);
 				auto& ndgid = edgeGIDs[i];
+				
+				for( std::size_t j=0; j<nids; ++j )
+				{
+					++dofcount;
+			
+					gid = GIDs[offsets[j]];
+					lid = LIDs[offsets[j]];
+					lids[j] = lid;
+					gids[j] = gid;
+					auto itr_find = lid_defined.find(lid);
+					if( itr_find != lid_defined.end() ) continue;  // emblaced already!
+					lid_defined.emplace(lid);
+				}
 				LidTuple_ed.emplace_back( std::make_tuple(fd1, ndgid, lid) );
 				GidTuple_ed.emplace_back( std::make_tuple(fd1, ndgid, gid) );
+				aLidTuple_ed.emplace_back( std::make_tuple(fd1, ndgid, lids) );
+				aGidTuple_ed.emplace_back( std::make_tuple(fd1, ndgid, gids) );
 			}
 		}
         if( dofcount>=fields.size() ) continue;  // no face dofs
@@ -1450,8 +1468,8 @@ void DOFManager::buildDofsInfo()
 				if( offsets.empty() ) break;
 				++dofcount;
 			
-				auto gid = GIDs[offsets[0]];
-				auto lid = LIDs[offsets[0]];
+				gid = GIDs[offsets[0]];
+				lid = LIDs[offsets[0]];
 				auto itr_find = lid_defined.find(lid);
 				if( itr_find != lid_defined.end() ) continue;  // emblaced already!
 				lid_defined.emplace(lid);
