@@ -389,11 +389,11 @@ public:
 	}
    }
 	
-   panzer::LocalOrdinal getEdgeLDofOfField(int f, panzer::GlobalOrdinal nd) const
+   std::vector<panzer::LocalOrdinal> getEdgeLDofOfField(int f, panzer::GlobalOrdinal nd) const
    {
-	   if( edgeLIDMap_.empty() ) return -1;
-	   auto localmap = edgeLIDMap_.at( f );
-	   panzer::LocalOrdinal ldof;
+	   if( aedgeLIDMap_.empty() ) return std::vector<panzer::LocalOrdinal>();
+	   auto localmap = aedgeLIDMap_.at( f );
+	   std::vector<panzer::LocalOrdinal> ldof;
 	   try {
 	      ldof = localmap.at(nd);
 	   }
@@ -488,6 +488,8 @@ protected:
    // field ID -> edge global index -> local & global index of dof
    std::map< int, std::map<panzer::GlobalOrdinal, panzer::LocalOrdinal> > edgeLIDMap_;
    std::map< int, std::map<panzer::GlobalOrdinal, panzer::GlobalOrdinal> > edgeGIDMap_;
+   std::map< int, std::map<panzer::GlobalOrdinal, std::vector<panzer::LocalOrdinal>> > aedgeLIDMap_;
+   std::map< int, std::map<panzer::GlobalOrdinal, std::vector<panzer::GlobalOrdinal>> > aedgeGIDMap_;
 
    // field ID -> face global index -> local & global index of dof
    std::map< int, std::map<panzer::GlobalOrdinal, panzer::LocalOrdinal> > faceLIDMap_;

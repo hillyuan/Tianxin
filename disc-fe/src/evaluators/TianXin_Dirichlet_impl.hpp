@@ -134,10 +134,11 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 			int fdnum = indexer->getFieldNum(myname);
 			for ( auto nd: entities ) {
 				auto b = indexer->getEdgeLDofOfField( fdnum, nd );
-				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
-				TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
+				if( b.empty() ) std::cout << fdnum << ", " << nd <<std::endl;
+				TEUCHOS_TEST_FOR_EXCEPTION( (b.empty()), std::logic_error,
 				    "Error - Cannot find dof of Edgeset!" );
-				localIDs.insert(b);
+				for( const auto ab: b )
+					localIDs.insert(ab);
 			}
 		}
 	} else if( m_sideset_rank==-1 ) {
@@ -146,21 +147,25 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 		else
 			mesh->getMySideSetIds(m_sideset_name,eblock_name,entities);
 		auto dim = mesh->getDimension();
-		panzer::LocalOrdinal b;
 		for(auto myname: m_dof_name) {
 			int fdnum = indexer->getFieldNum(myname);
 			for ( auto nd: entities ) {
-				b=-1;
 				//std::cout << indexer->getComm()->getRank()<< "," << fdnum << ", " << nd << std::endl;
-				if( dim==2 )
-					b = indexer->getEdgeLDofOfField( fdnum, nd );
-				else if( dim==1 )
-					b = indexer->getNodalLDofOfField( fdnum, nd );
-				//std::cout << indexer->getComm()->getRank()<< "," << fdnum << ", " << nd << ", " << b << std::endl;
-				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
-				TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
-				    "Error - Cannot find dof of Edgeset!" );
-				localIDs.insert(b);
+				if( dim==2 ) {
+					std::vector<panzer::LocalOrdinal> vecb = indexer->getEdgeLDofOfField( fdnum, nd );
+					if( vecb.empty() ) std::cout << fdnum << ", " << nd <<std::endl;
+						TEUCHOS_TEST_FOR_EXCEPTION( (vecb.empty()), std::logic_error,
+						"Error - Cannot find dof of Edgeset!" );
+					for( const auto ab : vecb )
+						localIDs.insert(ab);	
+				}
+				else if( dim==1 ) {
+					const auto b = indexer->getNodalLDofOfField( fdnum, nd );
+					if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
+						TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
+						"Error - Cannot find dof of Edgeset!" );
+					localIDs.insert(b);
+				}
 			}
 		}
 	}

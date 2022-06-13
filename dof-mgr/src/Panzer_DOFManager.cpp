@@ -1514,6 +1514,21 @@ void DOFManager::buildDofsInfo()
 	  edgeLIDMap_.insert( std::make_pair(fd, LidMap) );
 	  edgeGIDMap_.insert( std::make_pair(fd, GidMap) );
 	}
+	
+	for(auto fd : total_fieldids) {
+	  std::map< panzer::GlobalOrdinal, std::vector<panzer::LocalOrdinal> > LidMap;
+	  for( auto lids: aLidTuple_ed ) {
+		  if( std::get<0>(lids) != fd ) continue;
+		  LidMap.insert( std::make_pair(std::get<1>(lids), std::get<2>(lids)) );
+	  }
+	  std::map< panzer::GlobalOrdinal, std::vector<panzer::GlobalOrdinal> > GidMap;
+	  for( auto gids: aGidTuple_ed ) {
+		  if( std::get<0>(gids) != fd ) continue;
+		  GidMap.insert( std::make_pair(std::get<1>(gids), std::get<2>(gids)) );
+	  }
+	  aedgeLIDMap_.insert( std::make_pair(fd, LidMap) );
+	  aedgeGIDMap_.insert( std::make_pair(fd, GidMap) );
+	}
   }
 	
 }
