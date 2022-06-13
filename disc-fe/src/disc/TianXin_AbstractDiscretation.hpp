@@ -56,6 +56,8 @@ struct AbstractDiscretation {
 	
 	virtual void getMySideSetIds(const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getMySideSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
+	virtual void getMyNodeSetIds(const std::string&, std::vector<std::size_t>&) const=0;
+	virtual void getMyNodeSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
 };
 
 }

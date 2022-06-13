@@ -1774,7 +1774,7 @@ void STK_Interface::getMyNodes(const std::string & nodesetName,const std::string
    stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getNodeRank()),nodes);
 }
 
-void STK_Interface::getMyNodeSetIds(const std::string & nodesetName,const std::string & blockName,std::vector<stk::mesh::EntityId> & nodeIds) const
+void STK_Interface::getMyNodeSetIds(const std::string & nodesetName,const std::string & blockName,std::vector<std::size_t> & nodeIds) const
 {
    stk::mesh::Part * nodePart = getNodeset(nodesetName);
    stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
@@ -1835,7 +1835,7 @@ void STK_Interface::getOwnedNodeSet(const std::string & nodesetName,std::vector<
    stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getNodeRank()),nodes);
 }
 
-void STK_Interface::getOwnedNodeSetIds(const std::string & nodesetName,std::vector<stk::mesh::EntityId> & nodeIds) const
+void STK_Interface::getMyNodeSetIds(const std::string & nodesetName,std::vector<std::size_t> & nodeIds) const
 {
    stk::mesh::Part * nodePart = getNodeset(nodesetName);
    TEUCHOS_TEST_FOR_EXCEPTION(nodePart==0,std::logic_error,
