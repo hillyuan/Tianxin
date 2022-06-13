@@ -277,6 +277,7 @@ public:
    /** Get a vector of elements owned by this processor on a particular block ID
      */
    void getMyElements(const std::string & blockID,std::vector<stk::mesh::Entity> & elements) const;
+   void getAllElementIDs(const std::string & blockID,std::vector<panzer::LocalOrdinal> & elements) const;
 
    Kokkos::View<panzer::GlobalOrdinal*> getOwnedGlobalCellIDs() const;
    Kokkos::View<panzer::GlobalOrdinal*> getGhostGlobalCellIDs() const;
@@ -385,6 +386,7 @@ public:
      */
    void getMySides(std::vector<stk::mesh::Entity> & sides) const;
    void getMySides(const std::string & sideName,std::vector<stk::mesh::Entity> & sides) const;
+   void getMySideSetIds(const std::string & sideName,std::vector<std::size_t> & sides) const;
 
    /** Get Entities corresponding to the locally owned part of the side set requested. This also limits
      * the entities to be in a particular element block. The Entites in the vector should be a dimension
@@ -395,6 +397,7 @@ public:
      * \param[in,out] sides Vector of entities containing the requested sides.
      */
    void getMySides(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & sides) const;
+   void getMySideSetIds(const std::string & sideName,const std::string & blockName,std::vector<std::size_t> & sides) const;
 
    /** Get Entities corresponding to the locally owned part of the side set requested.
      * The Entites in the vector should be a dimension
@@ -1353,6 +1356,7 @@ protected:
 #endif
 	
    std::vector<stk::mesh::Entity> ownedElements_;
+   std::vector<stk::mesh::Entity> allElements_;
 
    std::map<std::string, stk::mesh::Part*> elementBlocks_;  // Element blocks
    std::map<std::string, stk::mesh::Part*> sidesets_;       // Side sets

@@ -407,7 +407,7 @@ CartesianConnManager::getElementBlockTopologies(std::vector<shards::CellTopology
 
 }
 
-  const std::vector<ConnManager::LocalOrdinal> &
+const std::vector<ConnManager::LocalOrdinal> &
 CartesianConnManager::getElementBlock(const std::string & blockId) const
 {
   // find the element block

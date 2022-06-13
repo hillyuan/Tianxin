@@ -183,6 +183,7 @@ public:
      * \returns Vector of local element IDs.
      */
    virtual const std::vector<LocalOrdinal> & getElementBlock(const std::string & blockID) const;
+   virtual void getElementBlockAll(const std::string& blockId, std::vector<LocalOrdinal>& elementLid) const {};
 
    void setBuildConnectivityCallback(const Teuchos::RCP<ConnCallback> & callback)
    { callback_ = callback; }

@@ -53,6 +53,9 @@ struct AbstractDiscretation {
 	virtual void getAllFaceSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getAllSideSetIds(const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getAllSideSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
+	
+	virtual void getMySideSetIds(const std::string&, std::vector<std::size_t>&) const=0;
+	virtual void getMySideSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
 };
 
 }

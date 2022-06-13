@@ -241,6 +241,7 @@ public:
      * \returns Vector of local element IDs.
      */
    virtual const std::vector<LocalOrdinal> & getElementBlock(const std::string & blockId) const;
+   virtual void getElementBlockAll(const std::string & blockId, std::vector<LocalOrdinal>& elementLid) const {;}
 
    virtual const std::vector<LocalOrdinal> & getNeighborElementBlock(const std::string & /* s */) const
    { return emptyVector_; }

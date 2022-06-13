@@ -393,11 +393,18 @@ public:
    {
 	   if( edgeLIDMap_.empty() ) return -1;
 	   auto localmap = edgeLIDMap_.at( f );
-	   return localmap.at(nd); 
+	   panzer::LocalOrdinal ldof;
+	   try {
+	      ldof = localmap.at(nd);
+	   }
+	   catch(std::out_of_range&) {
+			std::cout << "Cannot find field " << f << " of edge " << nd << " in cpu " << this->getComm()->getRank() << std::endl;
+	   }
+	   return ldof; 
    }
 	
    panzer::GlobalOrdinal getEdgeGDofOfField(int f, panzer::GlobalOrdinal nd) const
-   { return edgeLIDMap_.at(f).at(nd); }
+   { return edgeGIDMap_.at(f).at(nd); }
 
    
    void print_DOFInfo(std::ostream &os) const

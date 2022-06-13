@@ -1379,8 +1379,11 @@ void DOFManager::buildDofsInfo()
             fieldids.emplace(fieldNum); 
 		  total_fieldids.emplace(fieldNum); 
       }
-	  const std::vector<panzer::LocalOrdinal>& elements = connMngr_->getElementBlock(blockId);
-	  
+	  const std::vector<LocalOrdinal>& elements = connMngr_->getElementBlock(blockId);
+	  // Can only consider owned element only. It is a BIG problem !!!
+	  //std::vector<panzer::LocalOrdinal> elements;
+	  //connMngr_->getElementBlockAll(blockId, elements);
+
 	  std::map<std::string,int>::const_iterator bitr = blockNameToID_.find(blockId);
   	  if(bitr==blockNameToID_.end()) return;    // block not in FieldAggPattern manager
 	  

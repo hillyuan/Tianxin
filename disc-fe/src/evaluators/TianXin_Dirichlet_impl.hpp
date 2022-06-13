@@ -51,7 +51,7 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 : PHX::EvaluatorWithBaseImpl<Traits>("Dirichlet Boundary Conditions")
 {
     Teuchos::ParameterList params(p);
-
+//indexer->print_DOFInfo(std::cout);
     std::string eval_name = params.get< std::string >("Dirichlet Name","DIRICHLET_");
 	m_dof_name = params.get< Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>(""));
 	try {
@@ -142,21 +142,21 @@ DirichletBase<EvalT, Traits>::DirichletBase(const Teuchos::ParameterList& p, con
 		}
 	} else if( m_sideset_rank==-1 ) {
 		if( eblock_name.empty() )
-			mesh->getAllSideSetIds(m_sideset_name,entities);
+			mesh->getMySideSetIds(m_sideset_name,entities);
 		else
-			mesh->getAllSideSetIds(m_sideset_name,eblock_name,entities);
+			mesh->getMySideSetIds(m_sideset_name,eblock_name,entities);
 		auto dim = mesh->getDimension();
 		panzer::LocalOrdinal b;
 		for(auto myname: m_dof_name) {
 			int fdnum = indexer->getFieldNum(myname);
 			for ( auto nd: entities ) {
 				b=-1;
-				//std::cout << fdnum << ", " << nd << std::endl;
+				//std::cout << indexer->getComm()->getRank()<< "," << fdnum << ", " << nd << std::endl;
 				if( dim==2 )
 					b = indexer->getEdgeLDofOfField( fdnum, nd );
 				else if( dim==1 )
 					b = indexer->getNodalLDofOfField( fdnum, nd );
-				//std::cout << fdnum << ", " << nd << ", " << b << std::endl;
+				//std::cout << indexer->getComm()->getRank()<< "," << fdnum << ", " << nd << ", " << b << std::endl;
 				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
 				TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
 				    "Error - Cannot find dof of Edgeset!" );

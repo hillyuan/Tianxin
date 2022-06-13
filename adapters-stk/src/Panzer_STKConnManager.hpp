@@ -139,6 +139,22 @@ public:
      */
    virtual const std::vector<LocalOrdinal> & getElementBlock(const std::string & blockId) const
    { return *(elementBlocks_.find(blockId)->second); }
+   
+   /** Get the local element IDs for a paricular element block. 
+     *
+     * \param[in] blockIndex Block Index
+     *
+     * \returns Vector of local element IDs.
+     */
+   virtual void getElementBlockAll(const std::string & blockId, std::vector<LocalOrdinal>& elementLid) const final
+   {
+	/*    auto& owned = *(elementBlocks_.find(blockId)->second);
+		auto& ghosted = *(neighborElementBlocks_.find(blockId)->second);
+		std::cout << owned.size() << ", " << ghosted.size() << " ********\n";
+		owned.insert(owned.end(), ghosted.begin(), ghosted.end());std::cout << owned.size() << " ********\n";
+		return  owned;*/
+		stkMeshDB_ -> getAllElementIDs(blockId, elementLid);
+	}
 
    /** Get the local element IDs for a paricular element
      * block. These element ids are not owned, and the element
@@ -214,7 +230,7 @@ public:
      *
      * \param[in] elmtLid elemental local index
      *
-     * \param[out] nodesgid Vector of global nodes IDs.
+     * \param[out] nodesgid Vector of global edges IDs.
      */
     void getElementalEdges(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const;
     int getEdgeRank() const final {return stkMeshDB_->getEdgeRank();}
@@ -223,7 +239,7 @@ public:
      *
      * \param[in] elmtLid elemental local index
      *
-     * \param[out] nodesgid Vector of global nodes IDs.
+     * \param[out] nodesgid Vector of global faces IDs.
      */
     void getElementalFaces(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const;
     int getFaceRank() const final {return stkMeshDB_->getFaceRank();}

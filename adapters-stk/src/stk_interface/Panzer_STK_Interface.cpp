@@ -1221,6 +1221,29 @@ void STK_Interface::getMyElements(const std::string & blockID,std::vector<stk::m
    stk::mesh::EntityRank elementRank = getElementRank();
    stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(elementRank),elements);
 }
+
+void STK_Interface::getAllElementIDs(const std::string & blockID,std::vector<panzer::LocalOrdinal> & elementLids) const
+{
+   stk::mesh::Part * elementBlock = getElementBlockPart(blockID);
+
+   TEUCHOS_TEST_FOR_EXCEPTION(elementBlock==0,std::logic_error,"Could not find element block \"" << blockID << "\"");
+
+   // setup local ownership
+    stk::mesh::Selector block = *elementBlock;
+   //stk::mesh::Selector ownedBlock = (metaData_->locally_owned_part() | metaData_->globally_shared_part()) & (*elementBlock);
+
+   // grab elements
+   std::vector<stk::mesh::Entity> elements;
+   stk::mesh::EntityRank elementRank = getElementRank();
+   stk::mesh::get_selected_entities(block,bulkData_->buckets(elementRank),elements);
+   
+   elementLids.clear();
+   for(const auto& ele : elements)
+   {
+	   const auto lid = elementLocalId(ele);
+	   elementLids.emplace_back(lid);
+   }
+}
 	
 
 Kokkos::View<panzer::GlobalOrdinal*> STK_Interface::getOwnedGlobalCellIDs() const
@@ -1537,6 +1560,26 @@ void STK_Interface::getMySides(const std::string & sideName,std::vector<stk::mes
    stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getSideRank()),sides);
 }
 
+void STK_Interface::getMySideSetIds(const std::string & sideName,std::vector<std::size_t>& sideIds) const
+{
+   stk::mesh::Part * sidePart = getSideset(sideName);
+   TEUCHOS_TEST_FOR_EXCEPTION(sidePart==0,std::logic_error,
+                      "Unknown side set \"" << sideName << "\"");
+
+   stk::mesh::Selector side = *sidePart;
+   stk::mesh::Selector ownedBlock = metaData_->locally_owned_part() & side;
+
+   // grab elements
+   std::vector<stk::mesh::Entity> sides;
+   stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getSideRank()),sides);
+   
+   sideIds.clear();
+   for( const auto n: sides )
+   {
+	   sideIds.emplace_back( bulkData_->identifier(n) );
+   }
+}
+
 void STK_Interface::getMySides(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & sides) const
 {
    stk::mesh::Part * sidePart = getSideset(sideName);
@@ -1552,6 +1595,30 @@ void STK_Interface::getMySides(const std::string & sideName,const std::string & 
 
    // grab elements
    stk::mesh::get_selected_entities(ownedBlock,bulkData_->buckets(getSideRank()),sides);
+}
+
+void STK_Interface::getMySideSetIds(const std::string & sideName,const std::string & blockName,std::vector<std::size_t> & sideIds) const
+{
+   stk::mesh::Part * sidePart = getSideset(sideName);
+   stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
+   TEUCHOS_TEST_FOR_EXCEPTION(sidePart==0,std::logic_error,
+                      "Unknown side set \"" << sideName << "\"");
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
+                      "Unknown element block \"" << blockName << "\"");
+
+   stk::mesh::Selector side = *sidePart;
+   stk::mesh::Selector block = *elmtPart;
+   stk::mesh::Selector sideBlock = metaData_->locally_owned_part() & block & side;
+
+   // grab elements
+   std::vector<stk::mesh::Entity> sides;
+   stk::mesh::get_selected_entities(sideBlock,bulkData_->buckets(getSideRank()),sides);
+   
+   sideIds.clear();
+   for( const auto n: sides )
+   {
+	   sideIds.emplace_back( bulkData_->identifier(n) );
+   }
 }
 
 void STK_Interface::getAllSides(const std::string & sideName,std::vector<stk::mesh::Entity> & sides) const
