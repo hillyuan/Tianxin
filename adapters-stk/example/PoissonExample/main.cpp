@@ -161,6 +161,35 @@ int main(int argc,char * argv[])
    mesh_factory->setParameterList(pl);
 
    RCP<panzer_stk::STK_Interface> mesh = mesh_factory->buildUncommitedMesh(MPI_COMM_WORLD);
+   
+   Teuchos::ParameterList pldiric("Dirichlet");
+   {	
+	   Teuchos::ParameterList& p0 = pldiric.sublist("a");  // noname sublist
+	   p0.set("NodeSet Name","left");
+	   p0.set("Value Type","Constant");
+       p0.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub("Constant");
+	   pl_sub.set("Value",0.0);
+	   p0.set("Constant",pl_sub);
+	   
+	   Teuchos::ParameterList& p1 = pldiric.sublist("b");  // noname sublist
+	   p1.set("NodeSet Name","top");
+	   p1.set("Value Type","Constant");
+       p1.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	   p1.set("Constant",pl_sub);
+	   
+	   Teuchos::ParameterList& p2 = pldiric.sublist("c");  // noname sublist
+	   p2.set("NodeSet Name","right");
+	   p2.set("Value Type","Constant");
+       p2.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	   p2.set("Constant",pl_sub);
+	   
+	   Teuchos::ParameterList& p3 = pldiric.sublist("d");  // noname sublist
+	   p3.set("NodeSet Name","bottom");
+	   p3.set("Value Type","Constant");
+       p3.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	   p3.set("Constant",pl_sub);
+   }
 
    // construct input physics and physics block
    ////////////////////////////////////////////////////////
@@ -305,8 +334,9 @@ int main(int argc,char * argv[])
          Teuchos::rcp(new panzer::FieldManagerBuilder);
    fmb->setWorksetContainer(wkstContainer);
    fmb->setupVolumeFieldManagers(physicsBlocks,cm_factory,closure_models,*linObjFactory,user_data);
-   fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,
-                             *linObjFactory,user_data);
+   //fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,
+   //                          *linObjFactory,user_data);
+   fmb->setupDiricheltFieldManagers(pldiric,mesh,dofManager);
 
    fmb->writeVolumeGraphvizDependencyFiles("Poisson", physicsBlocks);
 
@@ -354,6 +384,7 @@ int main(int argc,char * argv[])
    input.beta = 1;
 
    // evaluate physics: This does both the Jacobian and residual at once
+   ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
    ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
 
    // solve linear system
