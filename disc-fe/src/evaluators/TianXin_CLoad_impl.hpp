@@ -35,62 +35,61 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _TIANXIN_DIRICHLET_HPP
-#define _TIANXIN_DIRICHLET_HPP
+#ifndef _TIANXIN_CLOAD_DIRICHLET_IMPL_HPP
+#define _TIANXIN_CLOAD_DIRICHLET_IMPL_HPP
 
-#include "TianXin_PointEvaluator.hpp"
-//#include "Xpetra_CrsMatrix.hpp"
-
+#include <set>
+#include <stdexcept>
 
 namespace TianXin {
-
-/* This class define Dirichlet boundary conditions */
-template<typename EvalT, typename Traits> class DirichletEvalautor;
-
-// **************************************************************
-// **************************************************************
-// * Specializations
-// **************************************************************
-// **************************************************************
 
 // **************************************************************
 // Residual
 // **************************************************************
+
 template<typename Traits>
-class DirichletEvalautor<panzer::Traits::Residual,Traits>
-   : public PointEvaluatorBase<panzer::Traits::Residual, Traits> {
-public:
-  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
-      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
-  void evaluateFields(typename Traits::EvalData d);
-};
+CLoadEvalautor<panzer::Traits::Residual,Traits>::CLoadEvalautor(const Teuchos::ParameterList& params, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
+: PointEvaluatorBase<panzer::Traits::Residual,Traits>(params, mesh, indexer )
+{}
+
+template<typename Traits>
+void CLoadEvalautor<panzer::Traits::Residual, Traits> :: evaluateFields(typename Traits::EvalData d)
+{
+	this->setValues(d);
+	this->m_GhostedContainer->evalDirichletResidual(this->m_local_dofs, this->m_values);
+}
 
 // **************************************************************
 // Jacobian
 // **************************************************************
+
 template<typename Traits>
-class DirichletEvalautor<panzer::Traits::Jacobian,Traits>
-   : public PointEvaluatorBase<panzer::Traits::Jacobian, Traits> {
-public:
-  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
-      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
-  void evaluateFields(typename Traits::EvalData d);
-};
+CLoadEvalautor<panzer::Traits::Jacobian,Traits>::CLoadEvalautor(const Teuchos::ParameterList& params, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
+: PointEvaluatorBase<panzer::Traits::Jacobian,Traits>(params, mesh, indexer )
+{}
+
+template<typename Traits>
+void CLoadEvalautor<panzer::Traits::Jacobian, Traits> :: evaluateFields(typename Traits::EvalData d)
+{
+	// Do something here when DOF-dependent concerntrated load
+}
 
 // **************************************************************
 // Tangent
 // **************************************************************
+
 template<typename Traits>
-class DirichletEvalautor<panzer::Traits::Tangent,Traits>
-   : public PointEvaluatorBase<panzer::Traits::Tangent, Traits> {
-public:
-  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
-      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
-  void evaluateFields(typename Traits::EvalData d);
-};
+CLoadEvalautor<panzer::Traits::Tangent,Traits>::CLoadEvalautor(const Teuchos::ParameterList& params, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+      const Teuchos::RCP<const panzer::GlobalIndexer> & indexer )
+: PointEvaluatorBase<panzer::Traits::Tangent,Traits>(params, mesh, indexer )
+{}
+
+template<typename Traits>
+void CLoadEvalautor<panzer::Traits::Tangent, Traits> :: evaluateFields(typename Traits::EvalData d)
+{}
 
 }
-
-#include "TianXin_Dirichlet_impl.hpp"
 
 #endif

@@ -234,7 +234,7 @@ int main(int argc,char * argv[])
 
    RCP<panzer_stk::STK_Interface> mesh = mesh_factory->buildUncommitedMesh(MPI_COMM_WORLD);
    
-   Teuchos::ParameterList pldiric;
+   Teuchos::ParameterList pldiric("Dirichlet");
    {	
 	   Teuchos::ParameterList& p0 = pldiric.sublist("a");  // noname sublist
 	   p0.set("SideSet Name","left");

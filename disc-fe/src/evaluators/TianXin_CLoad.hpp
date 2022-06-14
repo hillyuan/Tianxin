@@ -35,17 +35,15 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _TIANXIN_DIRICHLET_HPP
-#define _TIANXIN_DIRICHLET_HPP
+#ifndef _TIANXIN_CLOAD_HPP
+#define _TIANXIN_CLOAD_HPP
 
 #include "TianXin_PointEvaluator.hpp"
-//#include "Xpetra_CrsMatrix.hpp"
-
 
 namespace TianXin {
 
-/* This class define Dirichlet boundary conditions */
-template<typename EvalT, typename Traits> class DirichletEvalautor;
+/* This class define concerntrated rhs */
+template<typename EvalT, typename Traits> class CLoadEvalautor;
 
 // **************************************************************
 // **************************************************************
@@ -57,10 +55,10 @@ template<typename EvalT, typename Traits> class DirichletEvalautor;
 // Residual
 // **************************************************************
 template<typename Traits>
-class DirichletEvalautor<panzer::Traits::Residual,Traits>
+class CLoadEvalautor<panzer::Traits::Residual,Traits>
    : public PointEvaluatorBase<panzer::Traits::Residual, Traits> {
 public:
-  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+  CLoadEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
   void evaluateFields(typename Traits::EvalData d);
 };
@@ -69,10 +67,10 @@ public:
 // Jacobian
 // **************************************************************
 template<typename Traits>
-class DirichletEvalautor<panzer::Traits::Jacobian,Traits>
+class CLoadEvalautor<panzer::Traits::Jacobian,Traits>
    : public PointEvaluatorBase<panzer::Traits::Jacobian, Traits> {
 public:
-  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+  CLoadEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
   void evaluateFields(typename Traits::EvalData d);
 };
@@ -81,16 +79,16 @@ public:
 // Tangent
 // **************************************************************
 template<typename Traits>
-class DirichletEvalautor<panzer::Traits::Tangent,Traits>
+class CLoadEvalautor<panzer::Traits::Tangent,Traits>
    : public PointEvaluatorBase<panzer::Traits::Tangent, Traits> {
 public:
-  DirichletEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+  CLoadEvalautor(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer> & indexer);
   void evaluateFields(typename Traits::EvalData d);
 };
 
 }
 
-#include "TianXin_Dirichlet_impl.hpp"
+#include "TianXin_CLoad_impl.hpp"
 
 #endif

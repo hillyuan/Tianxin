@@ -467,7 +467,6 @@ int main(int argc,char * argv[])
                              *linObjFactory,user_data);
 
    fmb->writeVolumeGraphvizDependencyFiles("volume",physicsBlocks);
-   fmb->writeBCGraphvizDependencyFiles("saucy");
 
    // setup assembly engine
    /////////////////////////////////////////////////////////////
