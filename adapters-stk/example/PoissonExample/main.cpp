@@ -58,7 +58,7 @@
 #include "Panzer_AssemblyEngine_TemplateManager.hpp"
 #include "Panzer_AssemblyEngine_TemplateBuilder.hpp"
 #include "Panzer_LinearObjFactory.hpp"
-#include "Panzer_BlockedEpetraLinearObjFactory.hpp"
+#include "Panzer_TpetraLinearObjFactory.hpp"
 #include "Panzer_DOFManagerFactory.hpp"
 #include "Panzer_FieldManagerBuilder.hpp"
 #include "Panzer_PureBasis.hpp"
@@ -76,14 +76,15 @@
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "TianXin_STK_Utilities.hpp"
 
-#include "EpetraExt_RowMatrixOut.h"
-#include "EpetraExt_VectorOut.h"
-
 #include "Example_BCStrategy_Factory.hpp"
 #include "Example_ClosureModel_Factory_TemplateBuilder.hpp"
 #include "Example_EquationSetFactory.hpp"
 
-#include "AztecOO.h"
+#include "MatrixMarket_Tpetra.hpp"
+
+#include "BelosLinearProblem.hpp"
+#include "BelosTpetraAdapter.hpp"
+#include "BelosPseudoBlockGmresSolMgr.hpp"
 
 #include <sstream>
 
@@ -101,6 +102,9 @@ int main(int argc,char * argv[])
    using Teuchos::rcp_dynamic_cast;
    using panzer::StrPureBasisPair;
    using panzer::StrPureBasisComp;
+   typedef Tpetra::MultiVector<double,int,panzer::GlobalOrdinal> MV;
+   typedef Tpetra::Operator<double,int,panzer::GlobalOrdinal> OP;
+   using TpetraCrsMatrix = Tpetra::CrsMatrix<double,int,panzer::GlobalOrdinal>;
 
    Teuchos::GlobalMPISession mpiSession(&argc,&argv);
    Kokkos::initialize(argc,argv);
@@ -224,7 +228,7 @@ int main(int argc,char * argv[])
 
    // construct some linear algebra object, build object to pass to evaluators
    Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > linObjFactory
-         = Teuchos::rcp(new panzer::BlockedEpetraLinearObjFactory<panzer::Traits,int>(tComm.getConst(),dofManager));
+         = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(tComm.getConst(),dofManager));
 
    // build worksets
    ////////////////////////////////////////////////////////
@@ -356,48 +360,64 @@ int main(int argc,char * argv[])
    /////////////////////////////////////////////////////////////
 
    // convert generic linear object container to epetra container
-   RCP<panzer::EpetraLinearObjContainer> ep_container 
-         = rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(container);
+   RCP<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>> ep_container 
+         = rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container);
 
    // Setup the linear solve: notice A is used directly 
-   Epetra_LinearProblem problem(&*ep_container->get_A(),&*ep_container->get_x(),&*ep_container->get_f()); 
+   //Epetra_LinearProblem problem(&*ep_container->get_A(),&*ep_container->get_x(),&*ep_container->get_f()); 
+   Belos::LinearProblem<double,MV,OP> problem(ep_container->get_A(), ep_container->get_x(), ep_container->get_f());
+   TEUCHOS_ASSERT(problem.setProblem());
 
-   // build the solver
-   AztecOO solver(problem);
-   solver.SetAztecOption(AZ_solver,AZ_gmres); // we don't push out dirichlet conditions
-   solver.SetAztecOption(AZ_precond,AZ_none);
-   solver.SetAztecOption(AZ_kspace,300);
-   solver.SetAztecOption(AZ_output,10);
-   solver.SetAztecOption(AZ_precond,AZ_Jacobi);
+   typedef Belos::PseudoBlockGmresSolMgr<double,MV,OP> SolverType;
 
-   // solve the linear system
-   solver.Iterate(1000,1e-9);
+   Teuchos::ParameterList belosList;
+   belosList.set( "Num Blocks", 3000 );            // Maximum number of blocks in Krylov factorization
+   belosList.set( "Block Size", 1 );              // Blocksize to be used by iterative solver
+   belosList.set( "Maximum Iterations", 50000 );       // Maximum number of iterations allowed
+   belosList.set( "Maximum Restarts", 20 );      // Maximum number of restarts allowed
+   belosList.set( "Convergence Tolerance", 1e-9 );         // Relative convergence tolerance requested
+   belosList.set( "Verbosity", Belos::Errors + Belos::Warnings + Belos::TimingDetails + Belos::StatusTestDetails );
+   belosList.set( "Output Frequency", 1 );
+   belosList.set( "Output Style", 1 );
+
+   SolverType solver(Teuchos::rcpFromRef(problem), Teuchos::rcpFromRef(belosList));
+
+   Belos::ReturnType result = solver.solve();
+   if (result == Belos::Converged)
+     std::cout << "Result: Converged." << std::endl;
+   else {
+    TEUCHOS_ASSERT(false); // FAILURE!
+   }
 
    // we have now solved for the residual correction from
    // zero in the context of a Newton solve.
    //     J*e = -r = -(f - J*0) where f = J*u
    // Therefore we have  J*e=-J*u which implies e = -u
    // thus we will scale the solution vector 
-   ep_container->get_x()->Scale(-1.0);
+   ep_container->get_x()->scale(-1.0);
   
    // output data (optional)
    /////////////////////////////////////////////////////////////
 
    // write out linear system
    if(false) {
-      EpetraExt::RowMatrixToMatrixMarketFile("a_op.mm",*ep_container->get_A());
-      EpetraExt::VectorToMatrixMarketFile("x_vec.mm",*ep_container->get_x());
-      EpetraExt::VectorToMatrixMarketFile("b_vec.mm",*ep_container->get_f());
+      Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeSparseFile("a_op.mm",
+	    *(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_A()));
+      Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("b_vec.mm",
+	    *(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_f()));
+      Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("x_vec.mm",
+	    *(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_x()));
    }
 
    // write out solution to matrix
    if(true) {
       // redistribute solution vector to ghosted vector
-      linObjFactory->globalToGhostContainer(*container,*ghostCont, panzer::EpetraLinearObjContainer::X 
-                                                                 | panzer::EpetraLinearObjContainer::DxDt); 
+      linObjFactory->globalToGhostContainer(*container,*ghostCont, panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::X 
+                                                                 | panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::DxDt); 
 
       // get X Epetra_Vector from ghosted container
-      RCP<panzer::EpetraLinearObjContainer> ep_ghostCont = rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(ghostCont);
+      RCP<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>> ep_ghostCont = 
+		rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(ghostCont);
       TianXin::write_solution_data(*dofManager,*mesh,*ep_ghostCont->get_x());
       // Due to multiple instances of this test being run at the same
       // time (one for each celltype and each order), we need to

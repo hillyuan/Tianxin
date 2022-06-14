@@ -1,12 +1,8 @@
-IF(PANZER_HAVE_EPETRA)
-  ADD_SUBDIRECTORY(PoissonExample)
-  ADD_SUBDIRECTORY(PoissonInterfaceExample)
-ENDIF(PANZER_HAVE_EPETRA)
-
 ADD_SUBDIRECTORY(square_mesh)
 ADD_SUBDIRECTORY(assembly_engine)
 ADD_SUBDIRECTORY(CurlLaplacianExample)
 ADD_SUBDIRECTORY(MixedCurlLaplacianExample)
+ADD_SUBDIRECTORY(PoissonExample)
 ADD_SUBDIRECTORY(MixedPoissonExample)
 ADD_SUBDIRECTORY(PoissonInterfaceTpetra)
 ADD_SUBDIRECTORY(main_driver)

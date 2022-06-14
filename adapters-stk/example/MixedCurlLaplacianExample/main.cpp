@@ -80,8 +80,6 @@
 #include "Example_ClosureModel_Factory_TemplateBuilder.hpp"
 #include "Example_EquationSetFactory.hpp"
 
-#include "AztecOO.h"
-
 #include <sstream>
 
 using Teuchos::RCP;
