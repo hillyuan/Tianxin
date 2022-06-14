@@ -57,7 +57,7 @@ template<typename Traits>
 void CLoadEvalautor<panzer::Traits::Residual, Traits> :: evaluateFields(typename Traits::EvalData d)
 {
 	this->setValues(d);
-	this->m_GhostedContainer->evalDirichletResidual(this->m_local_dofs, this->m_values);
+	this->m_GhostedContainer->applyConcentratedLoad(this->m_local_dofs, this->m_values);
 }
 
 // **************************************************************

@@ -183,6 +183,11 @@ public:
    {
       TEUCHOS_ASSERT(false); // not yet implemented
    }
+   void applyConcentratedLoad( Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs,
+		Kokkos::View<double*, Kokkos::HostSpace>& values ) final
+   {
+      TEUCHOS_ASSERT(false); // not yet implemented
+   }
    
    void writeMatrixMarket(const std::string& filename) const override
    {

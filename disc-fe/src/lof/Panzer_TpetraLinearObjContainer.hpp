@@ -323,6 +323,27 @@ public:
       }
    }
    
+   void applyConcentratedLoad( Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs,
+		Kokkos::View<double*, Kokkos::HostSpace>& values) final
+   {
+	   const auto& fview = f->getLocalViewDevice(Tpetra::Access::ReadWrite);
+	   LocalOrdinalT numDofs = local_dofs.extent(0);
+	   Kokkos::parallel_for( numDofs, KOKKOS_LAMBDA (const LocalOrdinalT lclRow) {
+			//std::cout << lclRow << " ,,, " << local_dofs(lclRow) << " ,,, " << values(lclRow) << std::endl;
+			fview(local_dofs(lclRow),0) += values(lclRow);
+			//Kokkos::atomic_add(&fview(local_dofs(lclRow),0), values(lclRow));
+       } );
+	  /*
+	  Teuchos::ArrayRCP<double> f_1dview = f->get1dViewNonConst();
+	  LocalOrdinalT numDofs = local_dofs.extent(0);
+      for( std::size_t i=0; i<numDofs; ++i )
+      {
+		auto lid = local_dofs(i);
+		std::cout << i << " ,,, " << lid << " ,,, " << values(i)  << std::endl;
+		f_1dview[lid] += values(i);
+      }*/
+   }
+   
    void writeMatrixMarket(const std::string& filename) const override
    {
 	  Tpetra::MatrixMarket::Writer<Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>>
