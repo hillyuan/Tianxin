@@ -303,6 +303,7 @@ public:
      * \param[in,out] edges Vector of entities containing the requested edges.
      */
    void getMyEdges(const std::string & edgeBlockName,std::vector<stk::mesh::Entity> & edges) const;
+   void getMyEdgeSetIds(const std::string & sideName,std::vector<std::size_t> & sides) const;
 
    /** Get Entities corresponding to the locally owned part of the edge block requested. This also limits
      * the entities to be in a particular element block. The Entites in the vector should be a dimension
@@ -313,6 +314,7 @@ public:
      * \param[in,out] edges Vector of entities containing the requested edges.
      */
    void getMyEdges(const std::string & edgeBlockName,const std::string & blockName,std::vector<stk::mesh::Entity> & edges) const;
+   void getMyEdgeSetIds(const std::string & sideName,const std::string & blockName,std::vector<std::size_t> & sides) const;
 
    /** Get Entities corresponding to the locally owned part of the edge block requested.
      * The Entites in the vector should be a dimension
@@ -332,7 +334,6 @@ public:
      * \param[in,out] edges Vector of entities containing the requested edges.
      */
    void getAllEdges(const std::string & edgeBlockName,const std::string & blockName,std::vector<stk::mesh::Entity> & edges) const;
-   void getEdgeSetInfo(const std::string&, std::vector<std::size_t>& id, std::vector<int>& orient) const;
    /** Get a vector of faces owned by this processor
      */
    void getMyFaces(std::vector<stk::mesh::Entity> & faces) const;
@@ -345,6 +346,7 @@ public:
      * \param[in,out] faces Vector of entities containing the requested faces.
      */
    void getMyFaces(const std::string & faceBlockName,std::vector<stk::mesh::Entity> & faces) const;
+   void getMyFaceSetIds(const std::string & sideName,std::vector<std::size_t> & sides) const;
 
    /** Get Entities corresponding to the locally owned part of the face block requested. This also limits
      * the entities to be in a particular element block. The Entites in the vector should be a dimension
@@ -355,6 +357,7 @@ public:
      * \param[in,out] faces Vector of entities containing the requested faces.
      */
    void getMyFaces(const std::string & faceBlockName,const std::string & blockName,std::vector<stk::mesh::Entity> & faces) const;
+   void getMyFaceSetIds(const std::string & sideName,const std::string & blockName,std::vector<std::size_t> & sides) const;
 
    /** Get Entities corresponding to the locally owned part of the face block requested.
      * The Entites in the vector should be a dimension

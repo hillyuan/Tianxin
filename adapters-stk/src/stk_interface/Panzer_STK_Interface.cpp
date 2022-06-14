@@ -1329,6 +1329,26 @@ void STK_Interface::getMyEdges(const std::string & edgeBlockName,std::vector<stk
    stk::mesh::get_selected_entities(owned_block,bulkData_->buckets(getEdgeRank()),edges);
 }
 
+void STK_Interface::getMyEdgeSetIds(const std::string & edgeBlockName,std::vector<std::size_t> & edgeIds) const
+{
+   stk::mesh::Part * edgeBlockPart = getEdgeBlock(edgeBlockName);
+   TEUCHOS_TEST_FOR_EXCEPTION(edgeBlockPart==0,std::logic_error,
+                      "Unknown edge block \"" << edgeBlockName << "\"");
+
+   stk::mesh::Selector edge_block = *edgeBlockPart;
+   stk::mesh::Selector owned_block = metaData_->locally_owned_part() & edge_block;
+
+   // grab elements
+   std::vector<stk::mesh::Entity> edges;
+   stk::mesh::get_selected_entities(owned_block,bulkData_->buckets(getEdgeRank()),edges);
+   
+   edgeIds.clear();
+   for( const auto n: edges )
+   {
+	   edgeIds.emplace_back( bulkData_->identifier(n) );
+   }
+}
+
 void STK_Interface::getMyEdges(const std::string & edgeBlockName,const std::string & blockName,std::vector<stk::mesh::Entity> & edges) const
 {
    stk::mesh::Part * edgeBlockPart = getEdgeBlock(edgeBlockName);
@@ -1346,6 +1366,30 @@ void STK_Interface::getMyEdges(const std::string & edgeBlockName,const std::stri
    stk::mesh::get_selected_entities(owned_block,bulkData_->buckets(getEdgeRank()),edges);
 }
 
+void STK_Interface::getMyEdgeSetIds(const std::string & edgeBlockName,const std::string & blockName,std::vector<std::size_t> & edgeIds) const
+{
+   stk::mesh::Part * edgeBlockPart = getEdgeBlock(edgeBlockName);
+   stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
+   TEUCHOS_TEST_FOR_EXCEPTION(edgeBlockPart==0,std::logic_error,
+                      "Unknown edge block \"" << edgeBlockName << "\"");
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
+                      "Unknown element block \"" << blockName << "\"");
+
+   stk::mesh::Selector edge_block = *edgeBlockPart;
+   stk::mesh::Selector element_block = *elmtPart;
+   stk::mesh::Selector owned_block = metaData_->locally_owned_part() & element_block & edge_block;
+
+   // grab elements
+   std::vector<stk::mesh::Entity> edges;
+   stk::mesh::get_selected_entities(owned_block,bulkData_->buckets(getEdgeRank()),edges);
+   
+   edgeIds.clear();
+   for( const auto n: edges )
+   {
+	   edgeIds.emplace_back( bulkData_->identifier(n) );
+   }
+}
+
 void STK_Interface::getAllEdges(const std::string & edgeBlockName,std::vector<stk::mesh::Entity> & edges) const
 {
    stk::mesh::Part * edgeBlockPart = getEdgeBlock(edgeBlockName);
@@ -1356,46 +1400,6 @@ void STK_Interface::getAllEdges(const std::string & edgeBlockName,std::vector<st
 
    // grab elements
    stk::mesh::get_selected_entities(edge_block,bulkData_->buckets(getEdgeRank()),edges);
-}
-
-void STK_Interface::getEdgeSetInfo(const std::string & edgeBlockName,std::vector<std::size_t>& edgesIds, std::vector<int>& orient ) const
-{
-   using NodeView = Kokkos::View<panzer::GlobalOrdinal*, Kokkos::DefaultHostExecutionSpace>;
-	
-   stk::mesh::Part * edgeBlockPart = getEdgeBlock(edgeBlockName);
-   TEUCHOS_TEST_FOR_EXCEPTION(edgeBlockPart==0,std::logic_error,
-                      "Unknown edge block \"" << edgeBlockName << "\"");
-
-   //stk::mesh::Selector edge_block = *edgeBlockPart;
-   stk::mesh::Selector edge_block = (metaData_->locally_owned_part() | metaData_->globally_shared_part() | *edgeBlockPart );
-
-   // grab elements
-   std::vector<stk::mesh::Entity> edges;
-   stk::mesh::get_selected_entities(edge_block,bulkData_->buckets(getEdgeRank()),edges);
-   
-   edgesIds.clear();
-   stk::topology topo = metaData_->get_topology( *edgeBlockPart );
-   unsigned nvertices = topo.num_vertices();
-   NodeView edgesnodes("nodes",nvertices);
-   int mp, edgeOrt[1];
-   shards::CellTopology line = stk::mesh::get_cell_topology(topo);
-   for( const auto n: edges )
-   {
-	   edgesIds.emplace_back( bulkData_->identifier(n) );
-	   const size_t numNodes = bulkData_->num_connectivity(n, getNodeRank());
-	   assert( line.getNodeCount() == numNodes );
-	   
-	   stk::mesh::Entity const* nodes = bulkData_->begin(n, getNodeRank());
-	   for( std::size_t i=0; i<nvertices; ++i) {
-		   stk::mesh::Entity nd = nodes[i];
-		   edgesnodes[i] = bulkData_->identifier(nd);
-	   }
-	   auto ori = Intrepid2::Orientation::getOrientation(line,edgesnodes);
-	   ori.getEdgeOrientation(edgeOrt,1);
-	   mp = 1;
-	   if( edgeOrt[1]==1 ) mp=-1;
-	   orient.emplace_back( mp );
-   }
 }
 
 void STK_Interface::getAllEdges(const std::string & edgeBlockName,const std::string & blockName,std::vector<stk::mesh::Entity> & edges) const
@@ -1458,6 +1462,26 @@ void STK_Interface::getMyFaces(const std::string & faceBlockName,std::vector<stk
    stk::mesh::get_selected_entities(owned_block,bulkData_->buckets(getFaceRank()),faces);
 }
 
+void STK_Interface::getMyFaceSetIds(const std::string & faceBlockName,std::vector<std::size_t>& faceIds) const
+{
+   stk::mesh::Part * faceBlockPart = getFaceBlock(faceBlockName);
+   TEUCHOS_TEST_FOR_EXCEPTION(faceBlockPart==0,std::logic_error,
+                      "Unknown face block \"" << faceBlockName << "\"");
+
+   stk::mesh::Selector face_block = *faceBlockPart;
+   stk::mesh::Selector owned_block = metaData_->locally_owned_part() & face_block;
+
+   // grab elements
+   std::vector<stk::mesh::Entity> faces;
+   stk::mesh::get_selected_entities(owned_block,bulkData_->buckets(getFaceRank()),faces);
+   
+   faceIds.clear();
+   for( const auto n: faces )
+   {
+	   faceIds.emplace_back( bulkData_->identifier(n) );
+   }
+}
+
 void STK_Interface::getMyFaces(const std::string & faceBlockName,const std::string & blockName,std::vector<stk::mesh::Entity> & faces) const
 {
    stk::mesh::Part * faceBlockPart = getFaceBlock(faceBlockName);
@@ -1473,6 +1497,30 @@ void STK_Interface::getMyFaces(const std::string & faceBlockName,const std::stri
 
    // grab elements
    stk::mesh::get_selected_entities(owned_block,bulkData_->buckets(getFaceRank()),faces);
+}
+
+void STK_Interface::getMyFaceSetIds(const std::string & faceBlockName,const std::string & blockName,std::vector<std::size_t>& faceIds) const
+{
+   stk::mesh::Part * faceBlockPart = getFaceBlock(faceBlockName);
+   stk::mesh::Part * elmtPart = getElementBlockPart(blockName);
+   TEUCHOS_TEST_FOR_EXCEPTION(faceBlockPart==0,std::logic_error,
+                      "Unknown face block \"" << faceBlockName << "\"");
+   TEUCHOS_TEST_FOR_EXCEPTION(elmtPart==0,std::logic_error,
+                      "Unknown element block \"" << blockName << "\"");
+
+   stk::mesh::Selector face_block = *faceBlockPart;
+   stk::mesh::Selector element_block = *elmtPart;
+   stk::mesh::Selector owned_block = metaData_->locally_owned_part() & element_block & face_block;
+
+   // grab elements
+   std::vector<stk::mesh::Entity> faces;
+   stk::mesh::get_selected_entities(owned_block,bulkData_->buckets(getFaceRank()),faces);
+   
+   faceIds.clear();
+   for( const auto n: faces )
+   {
+	   faceIds.emplace_back( bulkData_->identifier(n) );
+   }
 }
 
 void STK_Interface::getAllFaces(const std::string & faceBlockName,std::vector<stk::mesh::Entity> & faces) const

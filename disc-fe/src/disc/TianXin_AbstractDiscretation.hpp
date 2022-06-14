@@ -38,7 +38,8 @@
 #ifndef _TIANXIN_ABSTRACTDISCRTATION_HPP
 #define _TIANXIN_ABSTRACTDISCRTATION_HPP
 
-#include <cstddef>
+#include <string>
+#include <vector>
 
 namespace TianXin {
 
@@ -58,6 +59,10 @@ struct AbstractDiscretation {
 	virtual void getMySideSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getMyNodeSetIds(const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getMyNodeSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
+	virtual void getMyEdgeSetIds(const std::string&, std::vector<std::size_t>&) const=0;
+	virtual void getMyEdgeSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
+	virtual void getMyFaceSetIds(const std::string&, std::vector<std::size_t>&) const=0;
+	virtual void getMyFaceSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
 };
 
 }
