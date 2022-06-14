@@ -133,11 +133,9 @@ using Teuchos::rcp;
 
 void solveTpetraSystem(panzer::LinearObjContainer & container);
 
-// calls MPI_Init and MPI_Finalize
 int main(int argc,char * argv[])
 {
    using Teuchos::RCP;
-   using Teuchos::rcp_dynamic_cast;
    using panzer::StrPureBasisPair;
    using panzer::StrPureBasisComp;
    using TpetraCrsMatrix = Tpetra::CrsMatrix<double,int,panzer::GlobalOrdinal>;
@@ -157,7 +155,6 @@ int main(int argc,char * argv[])
    // Build command line processor
    ////////////////////////////////////////////////////
 
-   bool useTpetra = true;
    bool threeD = false;
    int x_blocks = 1;
    int x_elements=20,y_elements=20,z_elements=20;
@@ -171,7 +168,6 @@ int main(int argc,char * argv[])
    clp.setDocString("This example solves curl laplacian problem with Hex and Tet inline mesh with high order.\n");
 
    clp.setOption("cell",&celltype);
-   clp.setOption("use-tpetra","use-epetra",&useTpetra);
    clp.setOption("use-threed","use-twod",&threeD);
    clp.setOption("x-blocks",&x_blocks);
    clp.setOption("x-elements",&x_elements);

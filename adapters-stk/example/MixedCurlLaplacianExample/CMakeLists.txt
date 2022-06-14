@@ -14,7 +14,7 @@ TRIBITS_ADD_ADVANCED_TEST(
   MixedCurlLaplacianExample
   EXCLUDE_IF_NOT_TRUE ${${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS}
   TEST_0 EXEC MixedCurlLaplacianExample
-    ARGS --use-tpetra --output-filename="base-curl-test-"
+    ARGS  --output-filename="base-curl-test-"
     PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
     NUM_MPI_PROCS 4
   COMM mpi
@@ -25,22 +25,22 @@ FOREACH( ORDER 1 2 )
     MixedCurlLaplacianExample-ConvTest-Quad-Order-${ORDER}
     EXCLUDE_IF_NOT_TRUE ${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS
     TEST_0 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Quad" --x-elements=4 --y-elements=4 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Quad" --x-elements=4 --y-elements=4 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Quad-${ORDER}-04
     TEST_1 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Quad" --x-elements=8 --y-elements=8 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Quad" --x-elements=8 --y-elements=8 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Quad-${ORDER}-08
     TEST_2 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Quad" --x-elements=16 --y-elements=16 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Quad" --x-elements=16 --y-elements=16 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Quad-${ORDER}-16
     TEST_3 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Quad" --x-elements=32 --y-elements=32 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Quad" --x-elements=32 --y-elements=32 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Quad-${ORDER}-32
@@ -62,17 +62,17 @@ FOREACH( ORDER 3 )
     MixedCurlLaplacianExample-ConvTest-Quad-Order-${ORDER}
     EXCLUDE_IF_NOT_TRUE ${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS
     TEST_0 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Quad" --x-elements=4 --y-elements=4 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Quad" --x-elements=4 --y-elements=4 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Quad-${ORDER}-04
     TEST_1 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Quad" --x-elements=8 --y-elements=8 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Quad" --x-elements=8 --y-elements=8 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Quad-${ORDER}-08
     TEST_2 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Quad" --x-elements=16 --y-elements=16 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Quad" --x-elements=16 --y-elements=16 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Quad-${ORDER}-16
@@ -93,17 +93,17 @@ FOREACH( ORDER 1 )
     MixedCurlLaplacianMultiblockExample-ConvTest-Quad-Order-${ORDER}
     EXCLUDE_IF_NOT_TRUE ${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS
     TEST_0 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --x-blocks=2 --cell="Quad" --x-elements=8 --y-elements=8 --z-elements=4 --basis-order=${ORDER} --output-filename="multiblock-"
+      ARGS  --use-twod --x-blocks=2 --cell="Quad" --x-elements=8 --y-elements=8 --z-elements=4 --basis-order=${ORDER} --output-filename="multiblock-"
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-Multiblock-ConvTest-Quad-${ORDER}-08
     TEST_1 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --x-blocks=2 --cell="Quad" --x-elements=16 --y-elements=16 --z-elements=4 --basis-order=${ORDER} --output-filename="multiblock-"
+      ARGS  --use-twod --x-blocks=2 --cell="Quad" --x-elements=16 --y-elements=16 --z-elements=4 --basis-order=${ORDER} --output-filename="multiblock-"
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-Multiblock-ConvTest-Quad-${ORDER}-16
     TEST_2 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --x-blocks=2 --cell="Quad" --x-elements=32 --y-elements=32 --z-elements=4 --basis-order=${ORDER} --output-filename="multiblock-"
+      ARGS  --use-twod --x-blocks=2 --cell="Quad" --x-elements=32 --y-elements=32 --z-elements=4 --basis-order=${ORDER} --output-filename="multiblock-"
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-Multiblock-ConvTest-Quad-${ORDER}-32
@@ -124,22 +124,22 @@ FOREACH( ORDER 1 )
     MixedCurlLaplacianExample-ConvTest-Tri-Order-${ORDER}
     EXCLUDE_IF_NOT_TRUE ${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS
     TEST_0 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Tri" --x-elements=8 --y-elements=8 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Tri" --x-elements=8 --y-elements=8 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Tri-${ORDER}-08
     TEST_1 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Tri" --x-elements=16 --y-elements=16 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Tri" --x-elements=16 --y-elements=16 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Tri-${ORDER}-16
     TEST_2 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Tri" --x-elements=32 --y-elements=32 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Tri" --x-elements=32 --y-elements=32 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Tri-${ORDER}-32
     TEST_3 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Tri" --x-elements=64 --y-elements=64 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Tri" --x-elements=64 --y-elements=64 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Tri-${ORDER}-64
@@ -161,17 +161,17 @@ FOREACH( ORDER 2 )
     MixedCurlLaplacianExample-ConvTest-Tri-Order-${ORDER}
     EXCLUDE_IF_NOT_TRUE ${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS
     TEST_0 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Tri" --x-elements=4 --y-elements=4 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Tri" --x-elements=4 --y-elements=4 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Tri-${ORDER}-04
     TEST_1 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Tri" --x-elements=8 --y-elements=8 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Tri" --x-elements=8 --y-elements=8 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Tri-${ORDER}-08
     TEST_2 EXEC MixedCurlLaplacianExample
-      ARGS --use-tpetra --use-twod --cell="Tri" --x-elements=16 --y-elements=16 --z-elements=4 --basis-order=${ORDER}
+      ARGS  --use-twod --cell="Tri" --x-elements=16 --y-elements=16 --z-elements=4 --basis-order=${ORDER}
       PASS_REGULAR_EXPRESSION "ALL PASSED: Tpetra"
       NUM_MPI_PROCS 4
       OUTPUT_FILE MPE-ConvTest-Tri-${ORDER}-16

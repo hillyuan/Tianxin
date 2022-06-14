@@ -1380,7 +1380,7 @@ void DOFManager::buildDofsInfo()
 	  lid_defined.clear();
 	  for(std::size_t f=0;f<fields.size();f++) {
             int fieldNum = fields[f];
-            fieldids.emplace(fieldNum); 
+            fieldids.emplace(fieldNum);
 		  total_fieldids.emplace(fieldNum); 
       }
 	  const std::vector<LocalOrdinal>& elements = connMngr_->getElementBlock(blockId);
@@ -1407,7 +1407,7 @@ void DOFManager::buildDofsInfo()
 			for( auto fd1 : fieldids ) {
 				const auto& offsetPair = getGIDFieldOffsets_closure(blockId, fd1, nrank, i);
 				const auto& offsets =  offsetPair.first;
-				if( offsets.empty() ) break;
+				if( offsets.empty() ) continue;
 				++dofcount;
 			
 				gid = GIDs[offsets[0]];
@@ -1429,7 +1429,7 @@ void DOFManager::buildDofsInfo()
 			for( auto fd1 : fieldids ) {
 				const auto& offsetPair = getGIDFieldOffsets_closure(blockId, fd1, erank, i);
 				const auto& offsets =  offsetPair.first;
-				if( offsets.empty() ) break;
+				if( offsets.empty() ) continue;
 				
 				std::size_t nids = offsets.size();
 				lids.resize(nids);
@@ -1461,7 +1461,7 @@ void DOFManager::buildDofsInfo()
 			 for( auto fd1 : fieldids ) {
 				const auto& offsetPair = getGIDFieldOffsets_closure(blockId, fd1, frank, i);
 				const auto& offsets =  offsetPair.first;
-				if( offsets.empty() ) break;
+				if( offsets.empty() ) continue;
 				
 				std::size_t nids = offsets.size();
 				lids.resize(nids);

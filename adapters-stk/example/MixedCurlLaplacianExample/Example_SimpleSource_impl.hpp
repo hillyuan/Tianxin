@@ -1,12 +1,9 @@
 // @HEADER
 // ***********************************************************************
 //
-//           Panzer: A partial differential equation assembly
+//           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2011) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
+//                 Copyright (2022) Xi Yuan
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -23,10 +20,10 @@
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// THIS SOFTWARE IS PROVIDED THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR THE
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -35,8 +32,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Questions? Contact Roger P. Pawlowski (rppawlo@sandia.gov) and
-// Eric C. Cyr (eccyr@sandia.gov)
 // ***********************************************************************
 // @HEADER
 
@@ -84,7 +79,7 @@ void SimpleSource<EvalT,Traits>::evaluateFields(typename Traits::EvalData workse
   using panzer::index_t;
   auto ip_coordinates = workset.int_rules[ir_index]->ip_coordinates.get_static_view();
   auto source_v = source.get_static_view();
- 
+
   Kokkos::parallel_for ("SimpleSource", workset.num_cells, KOKKOS_LAMBDA (const index_t cell) {
     for (int point = 0; point < source_v.extent_int(1); ++point) {
 
@@ -102,6 +97,56 @@ void SimpleSource<EvalT,Traits>::evaluateFields(typename Traits::EvalData workse
 }
 
 //**********************************************************************
+//**********************************************************************
+template <typename Traits>
+SimpleSource<panzer::Traits::Residual,Traits>::SimpleSource(const std::string & name,
+                                         const panzer::IntegrationRule & ir)
+{
+  using Teuchos::RCP;
+
+  Teuchos::RCP<PHX::DataLayout> data_layout = ir.dl_vector;
+  ir_degree = ir.cubature_degree;
+
+  source = PHX::MDField<double,Cell,Point,Dim>(name, data_layout);
+
+  this->addEvaluatedField(source);
+  
+  std::string n = "Simple Source";
+  this->setName(n);
+}
+
+//**********************************************************************
+template <typename Traits>
+void SimpleSource<panzer::Traits::Residual,Traits>::postRegistrationSetup(typename Traits::SetupData sd,           
+                                                       PHX::FieldManager<Traits>& /* fm */)
+{
+  ir_index = panzer::getIntegrationRuleIndex(ir_degree,(*sd.worksets_)[0], this->wda);
+}
+
+//**********************************************************************
+template <typename Traits>
+void SimpleSource<panzer::Traits::Residual,Traits>::evaluateFields(typename Traits::EvalData workset)
+{ 
+  using panzer::index_t;
+  auto ip_coordinates = workset.int_rules[ir_index]->ip_coordinates.get_static_view();
+  auto source_v = source.get_static_view();
+
+  Kokkos::parallel_for ("SimpleSource", workset.num_cells, KOKKOS_LAMBDA (const index_t cell) {
+    for (int point = 0; point < source_v.extent_int(1); ++point) {
+
+      const double & x = ip_coordinates(cell,point,0);
+      const double & y = ip_coordinates(cell,point,1);
+
+      source_v(cell,point,0) = 0.0;
+      source_v(cell,point,1) = 0.0;
+
+      // if three d
+      if(source_v.extent(2)==3)
+        source_v(cell,point,2) = 0.0;
+    }
+  });
+}
+
 }
 
 #endif

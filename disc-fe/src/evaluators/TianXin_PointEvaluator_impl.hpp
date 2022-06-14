@@ -111,7 +111,7 @@ PointEvaluatorBase<EvalT, Traits>::PointEvaluatorBase(const Teuchos::ParameterLi
 			for ( auto nd: entities ) {
 				auto b = indexer->getNodalLDofOfField( fdnum, nd );
 				if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
-					TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
+				TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
 				    "Error - Cannot find dof of Nodeset!" );
 				localIDs.insert(b);
 			}
@@ -126,7 +126,7 @@ PointEvaluatorBase<EvalT, Traits>::PointEvaluatorBase(const Teuchos::ParameterLi
 			for ( auto nd: entities ) {
 				auto b = indexer->getEdgeLDofOfField( fdnum, nd );
 				if( b.empty() ) std::cout << fdnum << ", " << nd <<std::endl;
-					TEUCHOS_TEST_FOR_EXCEPTION( (b.empty()), std::logic_error,
+				TEUCHOS_TEST_FOR_EXCEPTION( (b.empty()), std::logic_error,
 						"Error - Cannot find dof of Edgeset!" );
 				for( const auto ab: b )
 					localIDs.insert(ab);
@@ -142,7 +142,7 @@ PointEvaluatorBase<EvalT, Traits>::PointEvaluatorBase(const Teuchos::ParameterLi
 			for ( auto nd: entities ) {
 				auto b = indexer->getFaceLDofOfField( fdnum, nd );
 				if( b.empty() ) std::cout << fdnum << ", " << nd <<std::endl;
-					TEUCHOS_TEST_FOR_EXCEPTION( (b.empty()), std::logic_error,
+				TEUCHOS_TEST_FOR_EXCEPTION( (b.empty()), std::logic_error,
 						"Error - Cannot find dof of Edgeset!" );
 				for( const auto ab: b )
 					localIDs.insert(ab);
@@ -160,24 +160,24 @@ PointEvaluatorBase<EvalT, Traits>::PointEvaluatorBase(const Teuchos::ParameterLi
 				//std::cout << indexer->getComm()->getRank()<< "," << fdnum << ", " << nd << std::endl;
 				if( dim==3 ) {
 					std::vector<panzer::LocalOrdinal> vecb = indexer->getFaceLDofOfField( fdnum, nd );
-					if( vecb.empty() ) std::cout << fdnum << ", " << nd <<std::endl;
-						TEUCHOS_TEST_FOR_EXCEPTION( (vecb.empty()), std::logic_error,
+					if( vecb.empty() ) std::cout << "Error : Field " << myname << " of face " << nd <<std::endl;
+					TEUCHOS_TEST_FOR_EXCEPTION( (vecb.empty()), std::logic_error,
 						"Error - Cannot find dof of FaceSet!" );
 					for( const auto ab : vecb )
 						localIDs.insert(ab);	
 				}
 				else if( dim==2 ) {
 					std::vector<panzer::LocalOrdinal> vecb = indexer->getEdgeLDofOfField( fdnum, nd );
-					if( vecb.empty() ) std::cout << fdnum << ", " << nd <<std::endl;
-						TEUCHOS_TEST_FOR_EXCEPTION( (vecb.empty()), std::logic_error,
+					if( vecb.empty() ) std::cout << "Error : Field " << myname << " of edge " << nd <<std::endl;
+					TEUCHOS_TEST_FOR_EXCEPTION( (vecb.empty()), std::logic_error,
 						"Error - Cannot find dof of EdgeSet!" );
 					for( const auto ab : vecb )
 						localIDs.insert(ab);	
 				}
 				else if( dim==1 ) {
 					const auto b = indexer->getNodalLDofOfField( fdnum, nd );
-					if( b<0 ) std::cout << fdnum << ", " << nd <<std::endl;
-						TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
+					if( b<0 ) std::cout << "Error : Field " << myname << " of node " << nd <<std::endl;
+					TEUCHOS_TEST_FOR_EXCEPTION( (b<0), std::logic_error,
 						"Error - Cannot find dof of NodeSet!" );
 					localIDs.insert(b);
 				}
