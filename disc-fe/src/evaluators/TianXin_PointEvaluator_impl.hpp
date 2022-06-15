@@ -102,9 +102,9 @@ PointEvaluatorBase<EvalT, Traits>::PointEvaluatorBase(const Teuchos::ParameterLi
 	std::vector<std::size_t> entities;
     if( m_sideset_rank==0 ) {
 		if( eblock_name.empty() )
-			mesh->getMyNodeSetIds(m_sideset_name,entities);
+			mesh->getAllNodeSetIds(m_sideset_name,entities);
 		else
-			mesh->getMyNodeSetIds(m_sideset_name,eblock_name,entities);
+			mesh->getAllNodeSetIds(m_sideset_name,eblock_name,entities);
 		
 		for(auto myname: m_dof_name) {
 			int fdnum = indexer->getFieldNum(myname);

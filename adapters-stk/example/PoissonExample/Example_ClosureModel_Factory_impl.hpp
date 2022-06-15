@@ -56,6 +56,7 @@
 #include "Panzer_Product.hpp"
 #include "Panzer_DotProduct.hpp"
 #include "Panzer_Sum.hpp"
+#include "Panzer_Constant.hpp"
 
 #include "Example_SimpleSource.hpp"
 #include "Example_SimpleSolution.hpp"

@@ -305,7 +305,7 @@ public:
        } );
 	  /*Teuchos::ArrayRCP<const ScalarT> x_1dview = x->get1dView();
 	  Teuchos::ArrayRCP<double> f_1dview = f->get1dViewNonConst();
-	  LocalOrdinalT numDofs = local_dofs.extent(0);
+	  LocalOrdinalT numDofs = local_dofs.extent(0);std::cout << " ******************************\n";
       for( std::size_t i=0; i<numDofs; ++i )
       {
 		auto lid = local_dofs(i);

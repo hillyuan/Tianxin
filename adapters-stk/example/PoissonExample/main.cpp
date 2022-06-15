@@ -1,12 +1,9 @@
 // @HEADER
 // ***********************************************************************
 //
-//           Panzer: A partial differential equation assembly
+//           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2011) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
+//                 Copyright (2022) Xi Yuan
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -23,10 +20,10 @@
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// THIS SOFTWARE IS PROVIDED THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR THE
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -35,8 +32,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Questions? Contact Roger P. Pawlowski (rppawlo@sandia.gov) and
-// Eric C. Cyr (eccyr@sandia.gov)
 // ***********************************************************************
 // @HEADER
 
@@ -76,7 +71,6 @@
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "TianXin_STK_Utilities.hpp"
 
-#include "Example_BCStrategy_Factory.hpp"
 #include "Example_ClosureModel_Factory_TemplateBuilder.hpp"
 #include "Example_EquationSetFactory.hpp"
 
@@ -91,11 +85,6 @@
 using Teuchos::RCP;
 using Teuchos::rcp;
 
-void testInitialization(const int basis_order,
-                        const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-                        std::vector<panzer::BC>& bcs);
-
-// calls MPI_Init and MPI_Finalize
 int main(int argc,char * argv[])
 {
    using Teuchos::RCP;
@@ -138,7 +127,6 @@ int main(int argc,char * argv[])
    // factory definitions
    Teuchos::RCP<Example::EquationSetFactory> eqset_factory = 
      Teuchos::rcp(new Example::EquationSetFactory); // where poison equation is defined
-   Example::BCStrategyFactory bc_factory;    // where boundary conditions are defined 
 
    Teuchos::RCP<panzer_stk::STK_MeshFactory> mesh_factory;
    if      (celltype == "Quad") mesh_factory = Teuchos::rcp(new panzer_stk::SquareQuadMeshFactory);
@@ -195,12 +183,19 @@ int main(int argc,char * argv[])
    ////////////////////////////////////////////////////////
 
    Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
-   std::vector<panzer::BC> bcs;
    std::vector<RCP<panzer::PhysicsBlock> > physicsBlocks;
    {
       bool build_transient_support = false;
 
-      testInitialization(basis_order, ipb, bcs);
+      {
+		const int integration_order = 10;
+		Teuchos::ParameterList& p = ipb->sublist("Poisson Physics");
+		p.set("Type","Poisson");
+		p.set("Model ID","solid");
+		p.set("Basis Type","HGrad");
+		p.set("Basis Order",basis_order);
+		p.set("Integration Order",integration_order);
+	  }
       
       const panzer::CellData volume_cell_data(workset_size, mesh->getCellTopology("eblock-0_0"));
 
@@ -211,8 +206,7 @@ int main(int argc,char * argv[])
       int default_integration_order = 1;
       
       // the physics block nows how to build and register evaluator with the field manager
-      RCP<panzer::PhysicsBlock> pb 
-	= rcp(new panzer::PhysicsBlock(ipb,
+      RCP<panzer::PhysicsBlock> pb = rcp(new panzer::PhysicsBlock(ipb,
 				       "eblock-0_0", 
 				       default_integration_order,
 				       volume_cell_data,
@@ -256,7 +250,7 @@ int main(int argc,char * argv[])
          = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);
 
    // construct some linear algebra object, build object to pass to evaluators
-   Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > linObjFactory
+   Teuchos::RCP<panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal> > linObjFactory
          = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(tComm.getConst(),dofManager));
 
    // build worksets
@@ -334,9 +328,9 @@ int main(int argc,char * argv[])
          Teuchos::rcp(new panzer::FieldManagerBuilder);
    fmb->setWorksetContainer(wkstContainer);
    fmb->setupVolumeFieldManagers(physicsBlocks,cm_factory,closure_models,*linObjFactory,user_data);
-   fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,
-                             *linObjFactory,user_data);
-   //fmb->setupDiricheltFieldManagers(pldiric,mesh,dofManager);
+   //fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,
+   //                          *linObjFactory,user_data);
+   fmb->setupDiricheltFieldManagers(pldiric,mesh,dofManager);
 
    fmb->writeVolumeGraphvizDependencyFiles("Poisson", physicsBlocks);
 
@@ -386,9 +380,11 @@ int main(int argc,char * argv[])
    // evaluate physics: This does both the Jacobian and residual at once
    ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
    ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
+   //linObjFactory->ghostToGlobalContainer(*ghostCont,*container,panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::Mat 
+   //                                   | panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::F); 
    
    // write out linear system
-   if(true) {
+   if(false) {
       Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeSparseFile("a_op.mm",
 	    *(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_A()));
       Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("b_vec.mm",
@@ -439,11 +435,11 @@ int main(int argc,char * argv[])
    /////////////////////////////////////////////////////////////
 
    // write out linear system
-   if(true) {
-    /*  Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeSparseFile("a_op.mm",
+   if(false) {
+      Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeSparseFile("a_op.mm",
 	    *(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_A()));
       Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("b_vec.mm",
-	    *(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_f()));*/
+	    *(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_f()));
       Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("x_vec.mm",
 	    *(Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_x()));
    }
@@ -509,79 +505,4 @@ int main(int argc,char * argv[])
    out << "ALL PASSED" << std::endl;
 
    return 0;
-}
-
-void testInitialization(const int basis_order,
-                        const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-                        std::vector<panzer::BC>& bcs)
-{
-  {
-    const int integration_order = 10;
-    Teuchos::ParameterList& p = ipb->sublist("Poisson Physics");
-    p.set("Type","Poisson");
-    p.set("Model ID","solid");
-    p.set("Basis Type","HGrad");
-    p.set("Basis Order",basis_order);
-    p.set("Integration Order",integration_order);
-  }
-  
-   {
-      std::size_t bc_id = 0;
-      panzer::BCType bctype = panzer::BCT_Dirichlet;
-      std::string sideset_id = "left";
-      std::string element_block_id = "eblock-0_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 0.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, bctype, sideset_id, element_block_id, dof_name, 
-  		    strategy, p);
-      bcs.push_back(bc);
-   }    
-
-   {
-      std::size_t bc_id = 1;
-      panzer::BCType bctype = panzer::BCT_Dirichlet;
-      std::string sideset_id = "top";
-      std::string element_block_id = "eblock-0_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 0.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, bctype, sideset_id, element_block_id, dof_name, 
-  		    strategy, p);
-      bcs.push_back(bc);
-   }    
-
-   {
-      std::size_t bc_id = 2;
-      panzer::BCType bctype = panzer::BCT_Dirichlet;
-      std::string sideset_id = "right";
-      std::string element_block_id = "eblock-0_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 0.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, bctype, sideset_id, element_block_id, dof_name, 
-  		    strategy, p);
-      bcs.push_back(bc);
-   }    
-
-   {
-      std::size_t bc_id = 3;
-      panzer::BCType bctype = panzer::BCT_Dirichlet;
-      std::string sideset_id = "bottom";
-      std::string element_block_id = "eblock-0_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 0.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, bctype, sideset_id, element_block_id, dof_name, 
-  		    strategy, p);
-      bcs.push_back(bc);
-   }    
 }
