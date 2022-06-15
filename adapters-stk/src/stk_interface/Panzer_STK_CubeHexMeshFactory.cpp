@@ -375,6 +375,12 @@ void CubeHexMeshFactory::buildMetaData(stk::ParallelMachine /* parallelMach */, 
 
    // add nodesets
    mesh.addNodeset("origin");
+   mesh.addNodeset("left");
+   mesh.addNodeset("right");
+   mesh.addNodeset("top");
+   mesh.addNodeset("bottom");
+   mesh.addNodeset("front");
+   mesh.addNodeset("back");
 }
 
 void CubeHexMeshFactory::buildElements(stk::ParallelMachine parallelMach,STK_Interface & mesh) const
@@ -641,8 +647,7 @@ void CubeHexMeshFactory::addSideSets(STK_Interface & mesh) const
 
    // loop over elements adding sides to sidesets
    std::vector<stk::mesh::Entity>::const_iterator itr;
-   for(itr=localElmts.begin();itr!=localElmts.end();++itr) {
-      stk::mesh::Entity element = (*itr);
+   for( const auto& element : localElmts) {
       stk::mesh::EntityId gid = mesh.EntityGlobalId(element);
 
       std::size_t nx,ny,nz;
@@ -750,15 +755,129 @@ void CubeHexMeshFactory::addSideSets(STK_Interface & mesh) const
 // Post-Condition: call endModification() after exit
 void CubeHexMeshFactory::addNodeSets(STK_Interface & mesh) const
 {
+   const stk::mesh::EntityRank node_rank = mesh.getNodeRank();
+
+   std::size_t totalXElems = nXElems_*xBlocks_;
+   std::size_t totalYElems = nYElems_*yBlocks_;
+   std::size_t totalZElems = nZElems_*zBlocks_;
+
    // get all part vectors
    stk::mesh::Part * origin = mesh.getNodeset("origin");
-
    Teuchos::RCP<stk::mesh::BulkData> bulkData = mesh.getBulkData();
    if(machRank_==0)
    {
       // add zero node to origin node set
       stk::mesh::Entity node = bulkData->get_entity(mesh.getNodeRank(),1);
       mesh.addEntityToNodeset(node,origin);
+   }
+
+   stk::mesh::Part * left = mesh.getNodeset("left");
+   stk::mesh::Part * right = mesh.getNodeset("right");
+   stk::mesh::Part * top = mesh.getNodeset("top");
+   stk::mesh::Part * bottom = mesh.getNodeset("bottom");
+   stk::mesh::Part * front = mesh.getNodeset("front");
+   stk::mesh::Part * back = mesh.getNodeset("back");
+
+   std::vector<stk::mesh::Entity> localElmts;
+   mesh.getMyElements(localElmts);
+   
+   for( const auto& element: localElmts )
+   {
+	  stk::mesh::EntityId gid = mesh.EntityGlobalId(element);
+
+      std::size_t nx,ny,nz;
+      nz = (gid-1) / (totalXElems*totalYElems);
+      gid = (gid-1)-nz*(totalXElems*totalYElems);
+      ny = gid / totalXElems;
+      nx = gid-ny*totalXElems;
+	  
+        // on the back
+		if(nz==0) {
+			stk::mesh::Entity node0 = mesh.findConnectivityById(element, node_rank, 0);
+			if(mesh.entityOwnerRank(node0)==machRank_)
+				mesh.addEntityToNodeset(node0,back);
+			stk::mesh::Entity node1 = mesh.findConnectivityById(element, node_rank, 3);
+			if(mesh.entityOwnerRank(node1)==machRank_)
+				mesh.addEntityToNodeset(node1,back);
+			stk::mesh::Entity node2 = mesh.findConnectivityById(element, node_rank, 2);
+			if(mesh.entityOwnerRank(node2)==machRank_)
+				mesh.addEntityToNodeset(node2,back);
+			stk::mesh::Entity node3 = mesh.findConnectivityById(element, node_rank, 1);
+			if(mesh.entityOwnerRank(node3)==machRank_)
+				mesh.addEntityToNodeset(node3,back);
+		}
+		if(nz+1==totalZElems) {
+			stk::mesh::Entity node0 = mesh.findConnectivityById(element, node_rank, 4);
+			if(mesh.entityOwnerRank(node0)==machRank_)
+				mesh.addEntityToNodeset(node0,front);
+			stk::mesh::Entity node1 = mesh.findConnectivityById(element, node_rank, 5);
+			if(mesh.entityOwnerRank(node1)==machRank_)
+				mesh.addEntityToNodeset(node1,front);
+			stk::mesh::Entity node2 = mesh.findConnectivityById(element, node_rank, 6);
+			if(mesh.entityOwnerRank(node2)==machRank_)
+				mesh.addEntityToNodeset(node2,front);
+			stk::mesh::Entity node3 = mesh.findConnectivityById(element, node_rank, 7);
+			if(mesh.entityOwnerRank(node3)==machRank_)
+				mesh.addEntityToNodeset(node3,front);
+		}
+
+		if(ny==0) {
+			stk::mesh::Entity node0 = mesh.findConnectivityById(element, node_rank, 0);
+			if(mesh.entityOwnerRank(node0)==machRank_)
+				mesh.addEntityToNodeset(node0,bottom);
+			stk::mesh::Entity node1 = mesh.findConnectivityById(element, node_rank, 1);
+			if(mesh.entityOwnerRank(node1)==machRank_)
+				mesh.addEntityToNodeset(node1,bottom);
+			stk::mesh::Entity node2 = mesh.findConnectivityById(element, node_rank, 5);
+			if(mesh.entityOwnerRank(node2)==machRank_)
+				mesh.addEntityToNodeset(node2,bottom);
+			stk::mesh::Entity node3 = mesh.findConnectivityById(element, node_rank, 4);
+			if(mesh.entityOwnerRank(node3)==machRank_)
+				mesh.addEntityToNodeset(node3,bottom);
+		}
+		if(ny+1==totalYElems) {
+			stk::mesh::Entity node0 = mesh.findConnectivityById(element, node_rank, 2);
+			if(mesh.entityOwnerRank(node0)==machRank_)
+				mesh.addEntityToNodeset(node0,top);
+			stk::mesh::Entity node1 = mesh.findConnectivityById(element, node_rank, 3);
+			if(mesh.entityOwnerRank(node1)==machRank_)
+				mesh.addEntityToNodeset(node1,top);
+			stk::mesh::Entity node2 = mesh.findConnectivityById(element, node_rank, 6);
+			if(mesh.entityOwnerRank(node2)==machRank_)
+				mesh.addEntityToNodeset(node2,top);
+			stk::mesh::Entity node3 = mesh.findConnectivityById(element, node_rank, 7);
+			if(mesh.entityOwnerRank(node3)==machRank_)
+				mesh.addEntityToNodeset(node3,top);
+        }
+
+		if(nx==0) {
+			stk::mesh::Entity node0 = mesh.findConnectivityById(element, node_rank, 0);
+			if(mesh.entityOwnerRank(node0)==machRank_)
+				mesh.addEntityToNodeset(node0,left);
+			stk::mesh::Entity node1 = mesh.findConnectivityById(element, node_rank, 3);
+			if(mesh.entityOwnerRank(node1)==machRank_)
+				mesh.addEntityToNodeset(node1,left);
+			stk::mesh::Entity node2 = mesh.findConnectivityById(element, node_rank, 4);
+			if(mesh.entityOwnerRank(node2)==machRank_)
+				mesh.addEntityToNodeset(node2,left);
+			stk::mesh::Entity node3 = mesh.findConnectivityById(element, node_rank, 7);
+			if(mesh.entityOwnerRank(node3)==machRank_)
+				mesh.addEntityToNodeset(node3,left);
+		}
+		if(nx+1==totalZElems) {
+			stk::mesh::Entity node0 = mesh.findConnectivityById(element, node_rank, 1);
+			if(mesh.entityOwnerRank(node0)==machRank_)
+				mesh.addEntityToNodeset(node0,right);
+			stk::mesh::Entity node1 = mesh.findConnectivityById(element, node_rank, 2);
+			if(mesh.entityOwnerRank(node1)==machRank_)
+				mesh.addEntityToNodeset(node1,right);
+			stk::mesh::Entity node2 = mesh.findConnectivityById(element, node_rank, 5);
+			if(mesh.entityOwnerRank(node2)==machRank_)
+				mesh.addEntityToNodeset(node2,right);
+			stk::mesh::Entity node3 = mesh.findConnectivityById(element, node_rank, 6);
+			if(mesh.entityOwnerRank(node3)==machRank_)
+				mesh.addEntityToNodeset(node3,right);
+		}
    }
 }
 

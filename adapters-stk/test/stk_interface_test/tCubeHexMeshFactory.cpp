@@ -405,7 +405,7 @@ TEUCHOS_UNIT_TEST(tCubeHexMeshFactory, allblock)
 
    std::vector<std::string> sidesets, nodesets;
    mesh->getNodesetNames(nodesets);
-   TEST_EQUALITY(nodesets.size(),1);
+   TEST_EQUALITY(nodesets.size(),7);
 
    std::vector<stk::mesh::Entity> nodes;
    mesh->getMyNodes("origin","eblock-0_0_0",nodes);
