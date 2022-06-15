@@ -624,6 +624,82 @@ setupModel(const Teuchos::RCP<panzer::WorksetContainer> & wc,
 
 template <typename Scalar>
 void panzer::ModelEvaluator<Scalar>::
+setupModel(const Teuchos::RCP<panzer::WorksetContainer> & wc,
+           const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
+           const panzer::EquationSetFactory & eqset_factory,
+           const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& volume_cm_factory,
+           const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& bc_cm_factory,
+           Teuchos::RCP<TianXin::AbstractDiscretation> mesh,
+		   Teuchos::RCP<panzer::GlobalIndexer> dofManager,
+		   const Teuchos::ParameterList& pl_dirichlet,
+           const Teuchos::ParameterList& closure_models,
+           const Teuchos::ParameterList& user_data,
+           bool writeGraph,const std::string & graphPrefix,
+           const Teuchos::ParameterList& me_params)
+{
+  // First: build residual assembly engine
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+  PANZER_FUNC_TIME_MONITOR_DIFF("panzer::ModelEvaluator::setupModel()",setupModel);
+
+  {
+    // 1. build Field manager builder
+    /////////////////////////////////////////////////////////////////////////////////////////////////
+
+    Teuchos::RCP<panzer::FieldManagerBuilder> fmb;
+    {
+      PANZER_FUNC_TIME_MONITOR_DIFF("allocate FieldManagerBuilder",allocFMB);
+      fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
+      fmb->setActiveEvaluationTypes(active_evaluation_types_);
+    }
+    {
+      PANZER_FUNC_TIME_MONITOR_DIFF("fmb->setWorksetContainer()",setupWorksets);
+      fmb->setWorksetContainer(wc);
+    }
+    if (build_volume_field_managers_) {
+      PANZER_FUNC_TIME_MONITOR_DIFF("fmb->setupVolumeFieldManagers()",setupVolumeFieldManagers);
+      fmb->setupVolumeFieldManagers(physicsBlocks,volume_cm_factory,closure_models,*lof_,user_data);
+    }
+    if (build_bc_field_managers_) {
+      PANZER_FUNC_TIME_MONITOR_DIFF("fmb->setupBCFieldManagers()",setupBCFieldManagers);
+      fmb->setupDiricheltFieldManagers(pl_dirichlet,mesh,dofManager);
+    }
+
+    // Print Phalanx DAGs
+    if (writeGraph){
+      if (build_volume_field_managers_)
+        fmb->writeVolumeGraphvizDependencyFiles(graphPrefix, physicsBlocks);
+      if (build_bc_field_managers_)
+        fmb->writeBCGraphvizDependencyFiles(graphPrefix+"BC_");
+    }
+
+    {
+      PANZER_FUNC_TIME_MONITOR_DIFF("AssemblyEngine_TemplateBuilder::buildObjects()",AETM_BuildObjects);
+      panzer::AssemblyEngine_TemplateBuilder builder(fmb,lof_);
+      ae_tm_.buildObjects(builder);
+    }
+  }
+
+  // Second: build the responses
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  {
+    PANZER_FUNC_TIME_MONITOR_DIFF("build response library",buildResponses);
+
+    responseLibrary_->initialize(wc,lof_->getRangeGlobalIndexer(),lof_);
+
+    buildResponses(physicsBlocks,eqset_factory,volume_cm_factory,closure_models,user_data,writeGraph,graphPrefix+"Responses_");
+
+    do_fd_dfdp_ = false;
+    fd_perturb_size_ = 1.0e-7;
+    if (me_params.isParameter("FD Forward Sensitivities"))
+      do_fd_dfdp_ = me_params.get<bool>("FD Forward Sensitivities");
+    if (me_params.isParameter("FD Perturbation Size"))
+      fd_perturb_size_ = me_params.get<double>("FD Perturbation Size");
+  }
+}
+
+template <typename Scalar>
+void panzer::ModelEvaluator<Scalar>::
 setupAssemblyInArgs(const Thyra::ModelEvaluatorBase::InArgs<Scalar> & inArgs,
                     panzer::AssemblyEngineInArgs & ae_inargs) const
 {

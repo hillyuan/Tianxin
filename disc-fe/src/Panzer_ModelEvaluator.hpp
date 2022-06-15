@@ -188,6 +188,19 @@ public:
                   const Teuchos::ParameterList& user_data,
                   bool writeGraph=false,const std::string & graphPrefix="",
                   const Teuchos::ParameterList& me_params = Teuchos::ParameterList());
+				  
+	void setupModel(const Teuchos::RCP<panzer::WorksetContainer> & wc,
+                  const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
+                  const panzer::EquationSetFactory & eqset_factory,
+                  const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& volume_cm_factory,
+                  const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& bc_cm_factory,
+				  Teuchos::RCP<TianXin::AbstractDiscretation> mesh,
+				  Teuchos::RCP<panzer::GlobalIndexer> dofManager,
+				  const Teuchos::ParameterList& pl_dirichlet,
+                  const Teuchos::ParameterList& closure_models,
+                  const Teuchos::ParameterList& user_data,
+                  bool writeGraph=false,const std::string & graphPrefix="",
+                  const Teuchos::ParameterList& me_params = Teuchos::ParameterList());
 
   /** Add a simple (i.e. nondistributed) parameter to the model evaluator.
 

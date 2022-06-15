@@ -1,0 +1,134 @@
+%YAML 1.1
+---
+User_App Parameters:
+  Mesh: 
+    X Blocks: 1
+    Y Blocks: 1
+    X Elements: 20
+    Y Elements: 20
+    X0: 0.00000000000000000e+00
+    Y0: 0.00000000000000000e+00
+    Xf: 1.00000000000000000e+00
+    Yf: 1.00000000000000000e+00
+  Block ID to Physics ID Mapping: 
+    eblock-0_0: solid
+  Physics Blocks: 
+    solid: 
+      EQ 0: 
+        Type: Energy
+        Basis Type: HGrad
+        Basis Order: 1
+        Integration Order: 2
+        Model ID: fluid model
+        Prefix: ''
+  Closure Models: 
+    fluid model: 
+      Volume Integral: { }
+      SOURCE_TEMPERATURE: 
+        Value: 0.00000000000000000e+00
+      Heat Capacity: 
+        Value: 1.00000000000000000e+00
+      Thermal Conductivity: 
+        Value: 1.00000000000000000e+00
+      DENSITY: 
+        Value: 1.00000000000000000e+00
+      HEAT_CAPACITY: 
+        Value: 1.00000000000000000e+00
+  User Data: { }
+  Dirichlet Conditions: 
+    child0: 
+      NodeSet Name: left
+      DOF Names: [TEMPERATURE]
+      Value Type: Constant
+      Constant: 
+        Value: 0.00000000000000000e+00
+    child1: 
+      NodeSet Name: right
+      DOF Names: [TEMPERATURE]
+      Value Type: Constant
+      Constant: 
+        Value: 1.00000000000000000e+00
+  Boundary Conditions: 
+    child0: 
+      Type: Dirichlet
+      Sideset ID: left
+      Element Block ID: eblock-0_0
+      Equation Set Name: TEMPERATURE
+      Strategy: Constant
+      Data: 
+        Value: 0.00000000000000000e+00
+    child1: 
+      Type: Dirichlet
+      Sideset ID: right
+      Element Block ID: eblock-0_0
+      Equation Set Name: TEMPERATURE
+      Strategy: Constant
+      Data: 
+        Value: 1.00000000000000000e+00
+  Linear Solver: 
+    Linear Solver Type: Amesos
+    Preconditioner Type: None
+    Linear Solver Types: 
+      AztecOO: 
+        Forward Solve: 
+          AztecOO Settings: 
+            Aztec Solver: GMRES
+            Convergence Test: r0
+            Size of Krylov Subspace: 200
+            Output Frequency: 10
+          Max Iterations: 200
+          Tolerance: 1.00000000000000008e-05
+    Preconditioner Types: 
+      Ifpack: 
+        Overlap: 1
+        Prec Type: ILU
+        Ifpack Settings: 
+          'fact: drop tolerance': 0.00000000000000000e+00
+          'fact: ilut level-of-fill': 1.00000000000000000e+00
+          'fact: level-of-fill': 1
+  Nonlinear Solver: 
+    Direction: 
+      Method: Newton
+      Newton: 
+        Forcing Term Method: Constant
+        Rescue Bad Newton Solve: true
+        Stratimikos Linear Solver: 
+          NOX Stratimikos Options: { }
+    Line Search: 
+      Full Step: 
+        Full Step: 1.00000000000000000e+00
+      Method: Full Step
+    Nonlinear Solver: Line Search Based
+    Printing: 
+      Output Precision: 3
+      Output Processor: 0
+      Output Information: 
+        Error: true
+        Warning: true
+        Outer Iteration: true
+        Parameters: false
+        Details: true
+        Linear Solver Details: true
+        Stepper Iteration: true
+        Stepper Details: true
+        Stepper Parameters: true
+    Solver Options: 
+      Status Test Check Type: Minimal
+    Status Tests: 
+      Test Type: Combo
+      Combo Type: OR
+      Number of Tests: 2
+      Test 0: 
+        Test Type: Combo
+        Combo Type: AND
+        Number of Tests: 2
+        Test 0: 
+          Test Type: NormF
+          Tolerance: 1.00000000000000002e-08
+        Test 1: 
+          Test Type: RelativeNormF
+          Tolerance: 1.00000000000000005e-04
+      Test 1: 
+        Test Type: MaxIters
+        Maximum Iterations: 10
+...

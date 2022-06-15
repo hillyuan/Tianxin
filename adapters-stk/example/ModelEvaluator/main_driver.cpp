@@ -48,6 +48,7 @@
 #include "Teuchos_GlobalMPISession.hpp"
 #include "Teuchos_CommandLineProcessor.hpp"
 #include "Teuchos_XMLParameterListHelpers.hpp"
+#include "Teuchos_YamlParameterListHelpers.hpp"
 #include "Teuchos_FancyOStream.hpp"
 #include "Teuchos_oblackholestream.hpp"
 #include "Teuchos_Assert.hpp"
@@ -60,8 +61,7 @@
 #include "Panzer_PauseToAttach.hpp"
 #include "Panzer_ResponseLibrary.hpp"
 #include "Panzer_String_Utilities.hpp"
-#include "Panzer_EpetraLinearObjContainer.hpp"
-#include "Panzer_BlockedEpetraLinearObjFactory.hpp"
+#include "Panzer_TpetraLinearObjFactory.hpp"
 #include "Panzer_ElementBlockIdToPhysicsIdMap.hpp"
 #include "Panzer_DOFManagerFactory.hpp"
 #include "Panzer_ModelEvaluator.hpp"
@@ -148,12 +148,13 @@ int main(int argc, char *argv[])
     // Parse the input file and broadcast to other processes
     Teuchos::RCP<Teuchos::ParameterList> input_params = Teuchos::rcp(new Teuchos::ParameterList("User_App Parameters"));
     Teuchos::updateParametersFromXmlFileAndBroadcast(input_file_name, input_params.ptr(), *comm);
-
+Teuchos::writeParameterListToYamlFile(*input_params,"input.yaml");
     RCP<Teuchos::ParameterList> mesh_pl             = rcp(new Teuchos::ParameterList(input_params->sublist("Mesh")));
     RCP<Teuchos::ParameterList> physics_blocks_pl   = rcp(new Teuchos::ParameterList(input_params->sublist("Physics Blocks")));
     RCP<Teuchos::ParameterList> lin_solver_pl       = rcp(new Teuchos::ParameterList(input_params->sublist("Linear Solver")));
     Teuchos::ParameterList & block_to_physics_pl    = input_params->sublist("Block ID to Physics ID Mapping");
     Teuchos::ParameterList & bcs_pl                 = input_params->sublist("Boundary Conditions");
+	Teuchos::ParameterList & dirichelt_pl           = input_params->sublist("Dirichlet Conditions");
     Teuchos::ParameterList & closure_models_pl      = input_params->sublist("Closure Models");
     Teuchos::ParameterList & user_data_pl           = input_params->sublist("User Data");
     Teuchos::ParameterList & nonlinsolver_pl        = input_params->sublist("Nonlinear Solver");
@@ -263,7 +264,7 @@ int main(int argc, char *argv[])
     {
       panzer::DOFManagerFactory globalIndexerFactory;
       dofManager = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);
-      linObjFactory = Teuchos::rcp(new panzer::BlockedEpetraLinearObjFactory<panzer::Traits,int>(comm,dofManager));
+      linObjFactory = Teuchos::rcp(new panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal>(comm,dofManager));
     }
 
     // build linear solver
@@ -281,11 +282,17 @@ int main(int argc, char *argv[])
     panzer::buildBCs(bcs,bcs_pl,globalData);
 
     RCP<PME> physics = Teuchos::rcp(new PME(linObjFactory,lowsFactory,globalData,build_transient_support,0.0));
-    physics->setupModel(wkstContainer,physicsBlocks,bcs,
+    /*physics->setupModel(wkstContainer,physicsBlocks,bcs,
                    *eqset_factory,
                    bc_factory,
                    cm_factory,
                    cm_factory,
+                   closure_models_pl,
+                   user_data_pl,false,"");*/
+	physics->setupModel(wkstContainer,physicsBlocks,
+                   *eqset_factory,
+                   cm_factory,
+                   cm_factory, mesh, dofManager, dirichelt_pl,
                    closure_models_pl,
                    user_data_pl,false,"");
 
