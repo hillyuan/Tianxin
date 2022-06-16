@@ -115,27 +115,23 @@
 
 
     </ParameterList>
-
-    <ParameterList name="Boundary Conditions">
+	
+	<ParameterList name="Dirichlet Conditions">
 
         <ParameterList>
-            <Parameter name="Type" type="string" value="Dirichlet"/> 
-            <Parameter name="Sideset ID" type="string" value="top"/> 
-            <Parameter name="Element Block ID" type="string" value="eblock-0_0"/> 
-            <Parameter name="Equation Set Name" type="string" value="TEMPERATURE"/> 
-            <Parameter name="Strategy" type="string" value="Constant"/>
-            <ParameterList name="Data">
+            <Parameter name="NodeSet Name" type="string" value="top"/> 
+            <Parameter name="DOF Names" type="Array(string)" value="{TEMPERATURE}"/> 
+            <Parameter name="Value Type" type="string" value="Constant"/>
+            <ParameterList name="Constant">
                 <Parameter name="Value" type="double" value="0.0"/>
             </ParameterList>
         </ParameterList>
 
         <ParameterList>
-            <Parameter name="Type" type="string" value="Dirichlet"/> 
-            <Parameter name="Sideset ID" type="string" value="bottom"/> 
-            <Parameter name="Element Block ID" type="string" value="eblock-0_0"/> 
-            <Parameter name="Equation Set Name" type="string" value="TEMPERATURE"/> 
-            <Parameter name="Strategy" type="string" value="Constant"/>
-            <ParameterList name="Data">
+            <Parameter name="NodeSet Name" type="string" value="bottom"/> 
+            <Parameter name="DOF Names" type="Array(string)" value="{TEMPERATURE}"/> 
+            <Parameter name="Value Type" type="string" value="Constant"/>
+            <ParameterList name="Constant">
                 <Parameter name="Value" type="double" value="1.0"/>
             </ParameterList>
         </ParameterList>

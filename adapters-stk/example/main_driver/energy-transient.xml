@@ -38,6 +38,7 @@
 
     <ParameterList name="Assembly">
         <Parameter name="Workset Size" type="int" value="1"/>
+		<Parameter name="Use Tpetra" type="bool" value="true"/>
     </ParameterList>
 
     <ParameterList name="Physics Blocks">
@@ -88,27 +89,23 @@
         </ParameterList>
 
     </ParameterList>
-
-    <ParameterList name="Boundary Conditions">
+	
+	<ParameterList name="Dirichlet Conditions">
 
         <ParameterList>
-            <Parameter name="Type" type="string" value="Dirichlet"/> 
-            <Parameter name="Sideset ID" type="string" value="left"/> 
-            <Parameter name="Element Block ID" type="string" value="eblock-0_0"/> 
-            <Parameter name="Equation Set Name" type="string" value="TEMPERATURE"/> 
-            <Parameter name="Strategy" type="string" value="Constant"/>
-            <ParameterList name="Data">
+            <Parameter name="NodeSet Name" type="string" value="left"/> 
+            <Parameter name="DOF Names" type="Array(string)" value="{TEMPERATURE}"/> 
+            <Parameter name="Value Type" type="string" value="Constant"/>
+            <ParameterList name="Constant">
                 <Parameter name="Value" type="double" value="0.0"/>
             </ParameterList>
         </ParameterList>
 
         <ParameterList>
-            <Parameter name="Type" type="string" value="Dirichlet"/> 
-            <Parameter name="Sideset ID" type="string" value="right"/> 
-            <Parameter name="Element Block ID" type="string" value="eblock-0_0"/> 
-            <Parameter name="Equation Set Name" type="string" value="TEMPERATURE"/> 
-            <Parameter name="Strategy" type="string" value="Constant"/>
-            <ParameterList name="Data">
+            <Parameter name="NodeSet Name" type="string" value="right"/> 
+            <Parameter name="DOF Names" type="Array(string)" value="{TEMPERATURE}"/> 
+            <Parameter name="Value Type" type="string" value="Constant"/>
+            <ParameterList name="Constant">
                 <Parameter name="Value" type="double" value="1.0"/>
             </ParameterList>
         </ParameterList>
@@ -188,7 +185,7 @@
                 </ParameterList>
               </ParameterList>
             </ParameterList>
-            <Parameter name="Preconditioner Type" type="string" value="Ifpack"/>
+            <Parameter name="Preconditioner Type" type="string" value="None"/>
             <ParameterList name="Preconditioner Types">
               <ParameterList name="Ifpack">
                 <Parameter name="Overlap" type="int" value="1"/>

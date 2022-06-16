@@ -20,11 +20,9 @@ TRIBITS_ADD_EXECUTABLE(
 
 TRIBITS_COPY_FILES_TO_BINARY_DIR(main_driver_files
   SOURCE_FILES
-    energy-ss.xml
     energy-ss-tp.xml
     energy-ss-loca-eigenvalue.xml
     energy-transient.xml
-    energy-ss-blocked.xml
     energy-transient-blocked.xml
     energy-transient-tempus-blocked.xml
     energy-neumann.xml
@@ -39,10 +37,6 @@ TRIBITS_COPY_FILES_TO_BINARY_DIR(main_driver_files
 TRIBITS_ADD_ADVANCED_TEST(
   main_driver_energy-ss --exodus-io-num-procs=1
   TEST_0 EXEC main_driver 
-    ARGS  --i=energy-ss.xml
-    PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
-    XHOST trilinos-test.sandia.gov trilinos-test2.sandia.gov zan.sandia.gov
-  TEST_1 EXEC main_driver 
     ARGS  --i=energy-ss-tp.xml
     PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
   )
@@ -51,13 +45,6 @@ TRIBITS_ADD_ADVANCED_TEST(
   main_driver_energy-transient
   TEST_0 EXEC main_driver 
     ARGS  --i=energy-transient.xml
-    PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
-  )
-
-TRIBITS_ADD_ADVANCED_TEST(
-  main_driver_energy-ss-blocked
-  TEST_0 EXEC main_driver 
-    ARGS  --i=energy-ss-blocked.xml
     PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
   )
 
