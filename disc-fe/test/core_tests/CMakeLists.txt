@@ -59,12 +59,6 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   )
   
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  material_model_entry
-  SOURCES material_model_entry.cpp ${UNIT_TEST_DRIVER}
-  NUM_MPI_PROCS 1
-  )
-
-TRIBITS_ADD_EXECUTABLE_AND_TEST(
   evaluators
   SOURCES evaluators.cpp ${UNIT_TEST_DRIVER}
   NUM_MPI_PROCS 1

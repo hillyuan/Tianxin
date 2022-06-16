@@ -237,6 +237,7 @@ namespace panzer {
 	  
 	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_dirichlet_field_manager_;
 	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_neumann_field_manager_;
+	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_sourceterm_field_manager_;
 
     Teuchos::RCP<WorksetContainer> worksetContainer_;
 

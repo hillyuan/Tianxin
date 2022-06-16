@@ -55,12 +55,12 @@ TRIBITS_ADD_ADVANCED_TEST(
     PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
   )
 
-TRIBITS_ADD_ADVANCED_TEST(
-  main_driver_energy-ss-blocked-tp
-  TEST_0 EXEC main_driver 
-    ARGS  --i=energy-ss-blocked-tp.xml
-    PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
-  )
+#TRIBITS_ADD_ADVANCED_TEST(
+#  main_driver_energy-ss-blocked-tp
+#  TEST_0 EXEC main_driver 
+#    ARGS  --i=energy-ss-blocked-tp.xml
+#    PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
+#  )
 
 TRIBITS_ADD_ADVANCED_TEST(
   main_driver_energy-periodic-32bit-limit
@@ -93,14 +93,14 @@ IF(${PACKAGE_NAME}_ENABLE_Teko)
       PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
     )
 
-  IF(${PACKAGE_NAME}_ENABLE_Tempus)
-    TRIBITS_ADD_ADVANCED_TEST(
-      main_driver_energy-transient-tempus-blocked
-      TEST_0 EXEC main_driver 
-        ARGS  --i=energy-transient-tempus-blocked.xml
-        PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
-      )
-  ENDIF()
+  #IF(${PACKAGE_NAME}_ENABLE_Tempus)
+  #  TRIBITS_ADD_ADVANCED_TEST(
+  #    main_driver_energy-transient-tempus-blocked
+  #    TEST_0 EXEC main_driver 
+  #      ARGS  --i=energy-transient-tempus-blocked.xml
+  #      PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
+  #    )
+  #ENDIF()
 ENDIF()
 
 IF(${PACKAGE_NAME}_ENABLE_Pamgen)
