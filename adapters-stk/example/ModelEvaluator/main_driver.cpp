@@ -106,7 +106,6 @@ int main(int argc, char *argv[])
 
   using Teuchos::RCP;
   using Teuchos::rcp;
-  using Teuchos::rcp_dynamic_cast;
 
   int status = 0;
 
@@ -129,7 +128,7 @@ int main(int argc, char *argv[])
     Teuchos::TimeMonitor timer(*total_time);
 
     Teuchos::RCP<const Teuchos::MpiComm<int> > comm
-        = rcp_dynamic_cast<const Teuchos::MpiComm<int> >(Teuchos::DefaultComm<int>::getComm());
+        = Teuchos::rcp_dynamic_cast<const Teuchos::MpiComm<int> >(Teuchos::DefaultComm<int>::getComm());
 
     // Parse the command line arguments
     std::string input_file_name = "user_app.xml";
@@ -147,8 +146,9 @@ int main(int argc, char *argv[])
 
     // Parse the input file and broadcast to other processes
     Teuchos::RCP<Teuchos::ParameterList> input_params = Teuchos::rcp(new Teuchos::ParameterList("User_App Parameters"));
-    Teuchos::updateParametersFromXmlFileAndBroadcast(input_file_name, input_params.ptr(), *comm);
-Teuchos::writeParameterListToYamlFile(*input_params,"input.yaml");
+    Teuchos::updateParametersFromYamlFileAndBroadcast(input_file_name, input_params.ptr(), *comm);
+    //Teuchos::writeParameterListToYamlFile(*input_params,"input.yaml");
+
     RCP<Teuchos::ParameterList> mesh_pl             = rcp(new Teuchos::ParameterList(input_params->sublist("Mesh")));
     RCP<Teuchos::ParameterList> physics_blocks_pl   = rcp(new Teuchos::ParameterList(input_params->sublist("Physics Blocks")));
     RCP<Teuchos::ParameterList> lin_solver_pl       = rcp(new Teuchos::ParameterList(input_params->sublist("Linear Solver")));
@@ -282,19 +282,19 @@ Teuchos::writeParameterListToYamlFile(*input_params,"input.yaml");
     panzer::buildBCs(bcs,bcs_pl,globalData);
 
     RCP<PME> physics = Teuchos::rcp(new PME(linObjFactory,lowsFactory,globalData,build_transient_support,0.0));
-    /*physics->setupModel(wkstContainer,physicsBlocks,bcs,
+    physics->setupModel(wkstContainer,physicsBlocks,bcs,
                    *eqset_factory,
                    bc_factory,
                    cm_factory,
                    cm_factory,
                    closure_models_pl,
-                   user_data_pl,false,"");*/
-	physics->setupModel(wkstContainer,physicsBlocks,
+                   user_data_pl,false,"");
+	/*physics->setupModel(wkstContainer,physicsBlocks,
                    *eqset_factory,
                    cm_factory,
                    cm_factory, mesh, dofManager, dirichelt_pl,
                    closure_models_pl,
-                   user_data_pl,false,"");
+                   user_data_pl,false,"");*/
 
     // setup a response library to write to the mesh
     /////////////////////////////////////////////////////////////

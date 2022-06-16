@@ -66,26 +66,21 @@ User_App Parameters:
       Data: 
         Value: 1.00000000000000000e+00
   Linear Solver: 
-    Linear Solver Type: Amesos
+    Linear Solver Type:  Belos
     Preconditioner Type: None
     Linear Solver Types: 
-      AztecOO: 
-        Forward Solve: 
-          AztecOO Settings: 
-            Aztec Solver: GMRES
-            Convergence Test: r0
-            Size of Krylov Subspace: 200
+      Belos: 
+        Solver Type: Block GMRES
+        Solver Types: 
+          Block GMRES: 
+            Convergence Tolerance: 1.0000000000000000e-10
             Output Frequency: 10
-          Max Iterations: 200
-          Tolerance: 1.00000000000000008e-05
-    Preconditioner Types: 
-      Ifpack: 
-        Overlap: 1
-        Prec Type: ILU
-        Ifpack Settings: 
-          'fact: drop tolerance': 0.00000000000000000e+00
-          'fact: ilut level-of-fill': 1.00000000000000000e+00
-          'fact: level-of-fill': 1
+            Output Style: 1
+            Verbosity: 33
+            Maximum Iterations: 100
+            Block Size: 1
+            Num Blocks: 20
+            Flexible Gmres: false
   Nonlinear Solver: 
     Direction: 
       Method: Newton
