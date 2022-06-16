@@ -248,18 +248,6 @@
           <ParameterList name="Stratimikos">
             <Parameter name="Linear Solver Type" type="string" value="Belos"/>
             <ParameterList name="Linear Solver Types">
-              <ParameterList name="AztecOO">
-                <ParameterList name="Forward Solve"> 
-                  <ParameterList name="AztecOO Settings">
-                    <Parameter name="Aztec Solver" type="string" value="GMRES"/>
-                    <Parameter name="Convergence Test" type="string" value="r0"/>
-                    <Parameter name="Size of Krylov Subspace" type="int" value="200"/>
-                    <Parameter name="Output Frequency" type="int" value="10"/>
-                  </ParameterList>
-                  <Parameter name="Max Iterations" type="int" value="200"/>
-                  <Parameter name="Tolerance" type="double" value="1e-5"/>
-                </ParameterList>
-              </ParameterList>
               <ParameterList name="Belos">
                 <Parameter name="Solver Type" type="string" value="Block GMRES"/>
                 <ParameterList name="Solver Types">
