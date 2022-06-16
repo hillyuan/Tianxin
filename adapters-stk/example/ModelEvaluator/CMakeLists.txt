@@ -23,6 +23,6 @@ TRIBITS_ADD_ADVANCED_TEST(
   me_main_driver_energy-ss 
   TEST_0 EXEC me_main_driver 
     ARGS  --i=input.yaml
-    PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
+    PASS_REGULAR_EXPRESSION "TianXin::MainDriver run completed."
     XHOST trilinos-test.sandia.gov trilinos-test2.sandia.gov zan.sandia.gov
   )

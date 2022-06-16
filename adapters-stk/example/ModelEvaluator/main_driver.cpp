@@ -1,12 +1,9 @@
 // @HEADER
 // ***********************************************************************
 //
-//           Panzer: A partial differential equation assembly
+//           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2011) Sandia Corporation
-//
-// Under the terms of Contract DE-AC04-94AL85000 with Sandia Corporation,
-// the U.S. Government retains certain rights in this software.
+//                 Copyright (2022) Xi Yuan
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -23,10 +20,10 @@
 // contributors may be used to endorse or promote products derived from
 // this software without specific prior written permission.
 //
-// THIS SOFTWARE IS PROVIDED BY SANDIA CORPORATION "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// THIS SOFTWARE IS PROVIDED THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL SANDIA CORPORATION OR THE
+// PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR THE
 // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -35,8 +32,6 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Questions? Contact Roger P. Pawlowski (rppawlo@sandia.gov) and
-// Eric C. Cyr (eccyr@sandia.gov)
 // ***********************************************************************
 // @HEADER
 
@@ -77,7 +72,6 @@
 
 #include "user_app_ClosureModel_Factory_TemplateBuilder.hpp"
 #include "user_app_EquationSetFactory.hpp"
-#include "user_app_BCStrategy_Factory.hpp"
 
 #include <Ioss_SerializeIO.h>
 
@@ -153,7 +147,6 @@ int main(int argc, char *argv[])
     RCP<Teuchos::ParameterList> physics_blocks_pl   = rcp(new Teuchos::ParameterList(input_params->sublist("Physics Blocks")));
     RCP<Teuchos::ParameterList> lin_solver_pl       = rcp(new Teuchos::ParameterList(input_params->sublist("Linear Solver")));
     Teuchos::ParameterList & block_to_physics_pl    = input_params->sublist("Block ID to Physics ID Mapping");
-    Teuchos::ParameterList & bcs_pl                 = input_params->sublist("Boundary Conditions");
 	Teuchos::ParameterList & dirichelt_pl           = input_params->sublist("Dirichlet Conditions");
     Teuchos::ParameterList & closure_models_pl      = input_params->sublist("Closure Models");
     Teuchos::ParameterList & user_data_pl           = input_params->sublist("User Data");
@@ -163,7 +156,6 @@ int main(int argc, char *argv[])
 
     RCP<panzer::GlobalData> globalData = panzer::createGlobalData();
     RCP<user_app::MyFactory> eqset_factory = Teuchos::rcp(new user_app::MyFactory);
-    user_app::BCFactory bc_factory;
 
     user_app::MyModelFactory_TemplateBuilder cm_builder;
     panzer::ClosureModelFactory_TemplateManager<panzer::Traits> cm_factory;
@@ -277,24 +269,20 @@ int main(int argc, char *argv[])
 
     // build and setup model evaluatorlinear solver
     /////////////////////////////////////////////////////////////
-
-    std::vector<panzer::BC> bcs;
-    panzer::buildBCs(bcs,bcs_pl,globalData);
-
     RCP<PME> physics = Teuchos::rcp(new PME(linObjFactory,lowsFactory,globalData,build_transient_support,0.0));
-    physics->setupModel(wkstContainer,physicsBlocks,bcs,
+    /*physics->setupModel(wkstContainer,physicsBlocks,bcs,
                    *eqset_factory,
                    bc_factory,
                    cm_factory,
                    cm_factory,
                    closure_models_pl,
-                   user_data_pl,false,"");
-	/*physics->setupModel(wkstContainer,physicsBlocks,
+                   user_data_pl,false,"");*/
+	physics->setupModel(wkstContainer,physicsBlocks,
                    *eqset_factory,
                    cm_factory,
                    cm_factory, mesh, dofManager, dirichelt_pl,
                    closure_models_pl,
-                   user_data_pl,false,"");*/
+                   user_data_pl,false,"");
 
     // setup a response library to write to the mesh
     /////////////////////////////////////////////////////////////
@@ -358,7 +346,7 @@ int main(int argc, char *argv[])
   // Teuchos::TimeMonitor::summarize(*out,false,true,false);
 
   if (status == 0)
-    *out << "panzer::MainDriver run completed." << std::endl;
+    *out << "TianXin::MainDriver run completed." << std::endl;
 
   return status;
 }

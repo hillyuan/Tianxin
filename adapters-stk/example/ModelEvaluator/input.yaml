@@ -48,23 +48,6 @@ User_App Parameters:
       Value Type: Constant
       Constant: 
         Value: 1.00000000000000000e+00
-  Boundary Conditions: 
-    child0: 
-      Type: Dirichlet
-      Sideset ID: left
-      Element Block ID: eblock-0_0
-      Equation Set Name: TEMPERATURE
-      Strategy: Constant
-      Data: 
-        Value: 0.00000000000000000e+00
-    child1: 
-      Type: Dirichlet
-      Sideset ID: right
-      Element Block ID: eblock-0_0
-      Equation Set Name: TEMPERATURE
-      Strategy: Constant
-      Data: 
-        Value: 1.00000000000000000e+00
   Linear Solver: 
     Linear Solver Type:  Belos
     Preconditioner Type: None
