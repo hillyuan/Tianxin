@@ -107,34 +107,20 @@
 
 
     </ParameterList>
-
-    <ParameterList name="Boundary Conditions">
+	
+	<ParameterList name="Dirichlet Conditions">
 
         <ParameterList>
-            <Parameter name="Type" type="string" value="Dirichlet"/> 
-            <Parameter name="Sideset ID" type="string" value="surface_3"/> 
-            <Parameter name="Element Block ID" type="string" value="block_1"/> 
-            <Parameter name="Equation Set Name" type="string" value="TEMPERATURE"/> 
-            <Parameter name="Strategy" type="string" value="Constant"/>
-            <ParameterList name="Data">
+            <Parameter name="NodeSet Name" type="string" value="nodelist_4"/> 
+            <Parameter name="DOF Names" type="Array(string)" value="{TEMPERATURE}"/> 
+            <Parameter name="Value Type" type="string" value="Constant"/>
+            <ParameterList name="Constant">
                 <Parameter name="Value" type="double" value="0.0"/>
             </ParameterList>
         </ParameterList>
-
-<!--
-        <ParameterList>
-            <Parameter name="Type" type="string" value="Dirichlet"/> 
-            <Parameter name="Sideset ID" type="string" value="surface_2"/> 
-            <Parameter name="Element Block ID" type="string" value="block_1"/> 
-            <Parameter name="Equation Set Name" type="string" value="TEMPERATURE"/> 
-            <Parameter name="Strategy" type="string" value="Constant"/>
-            <ParameterList name="Data">
-                <Parameter name="Value" type="double" value="0.0"/>
-            </ParameterList>
-        </ParameterList>
--->
     
     </ParameterList>
+
 
     <ParameterList name="Output">
         <Parameter name="File Name" type="string" value="periodic_wedge.exo"/>

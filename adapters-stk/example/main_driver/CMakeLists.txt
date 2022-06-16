@@ -86,12 +86,12 @@ TRIBITS_ADD_ADVANCED_TEST(
   )
 
 IF(${PACKAGE_NAME}_ENABLE_Teko)
-  TRIBITS_ADD_ADVANCED_TEST(
-    main_driver_energy-transient-blocked
-    TEST_0 EXEC main_driver 
-      ARGS  --i=energy-transient-blocked.xml
-      PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
-    )
+  #TRIBITS_ADD_ADVANCED_TEST(
+  #  main_driver_energy-transient-blocked
+  #  TEST_0 EXEC main_driver 
+  #    ARGS  --i=energy-transient-blocked.xml
+  #    PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
+  #  )
 
   #IF(${PACKAGE_NAME}_ENABLE_Tempus)
   #  TRIBITS_ADD_ADVANCED_TEST(

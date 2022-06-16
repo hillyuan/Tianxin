@@ -93,8 +93,7 @@ using Teuchos::rcp;
 
 namespace panzer {
 
-  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-			 std::vector<panzer::BC>& bcs);
+  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb);
 
   Teuchos::RCP<const Thyra::LinearOpBase<double> >  tLinearOp;
   Teuchos::RCP<const Thyra::VectorBase<double> >  tVector;
@@ -113,10 +112,42 @@ namespace panzer {
     panzer_stk::SquareQuadMeshFactory factory;
     factory.setParameterList(pl);
     RCP<panzer_stk::STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
+	
+	// construct Dirichlet boundary condition
+   ////////////////////////////////////////////////////////
+   out << "BUILD DIRICHELET BC" << std::endl;
+   Teuchos::ParameterList pldiric;
+   {
+	   Teuchos::ParameterList& p0 = pldiric.sublist("a");  // noname sublist
+	   p0.set("ElementSet Name","eblock-0_0");
+	   p0.set("NodeSet Name","left");
+	   p0.set("Value Type","Constant");
+       p0.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub("Constant");
+	   pl_sub.set("Value",5.0);
+	   p0.set("Constant",pl_sub);
+	   
+	   Teuchos::ParameterList& p1 = pldiric.sublist("b");  // noname sublist
+	   p1.set("ElementSet Name","eblock-0_0");
+	   p1.set("NodeSet Name","top");
+	   p1.set("Value Type","Constant");
+       p1.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub1("Constant");
+	   pl_sub1.set("Value",5.0);
+	   p1.set("Constant",pl_sub1);
+	   
+	   Teuchos::ParameterList& p3 = pldiric.sublist("d");  // noname sublist
+	   p3.set("ElementSet Name","eblock-1_0");
+	   p3.set("NodeSet Name","right");
+	   p3.set("Value Type","Constant");
+       p3.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "ION_TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub3("Constant");
+	   pl_sub3.set("Value",5.0);
+	   p3.set("Constant",pl_sub3);
+   }
 
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
-    std::vector<panzer::BC> bcs;
-    testInitialzation(ipb, bcs);
+    testInitialzation(ipb);
 
     Teuchos::RCP<panzer::FieldManagerBuilder> fmb =
       Teuchos::rcp(new panzer::FieldManagerBuilder);
@@ -125,7 +156,6 @@ namespace panzer {
     //////////////////////////////////////////////////////////////
     const std::size_t workset_size = 20;
     Teuchos::RCP<user_app::MyFactory> eqset_factory = Teuchos::rcp(new user_app::MyFactory);
-    user_app::BCFactory bc_factory;
     std::vector<Teuchos::RCP<panzer::PhysicsBlock> > physicsBlocks;
     {
       const int default_integration_order = 1;
@@ -192,7 +222,8 @@ namespace panzer {
 
     fmb->setWorksetContainer(wkstContainer);
     fmb->setupVolumeFieldManagers(physicsBlocks,cm_factory,closure_models,*linObjFactory,user_data);
-    fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory,user_data);
+    //fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory,user_data);
+	fmb->setupDiricheltFieldManagers(pldiric,mesh,dofManager);
 
     panzer::AssemblyEngine_TemplateManager<panzer::Traits> ae_tm;
     panzer::AssemblyEngine_TemplateBuilder builder(fmb,linObjFactory);
@@ -249,10 +280,39 @@ namespace panzer {
     panzer_stk::SquareQuadMeshFactory factory;
     factory.setParameterList(pl);
     RCP<panzer_stk::STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
+	
+	Teuchos::ParameterList pldiric;
+   {
+	   Teuchos::ParameterList& p0 = pldiric.sublist("a");  // noname sublist
+	   p0.set("ElementSet Name","eblock-0_0");
+	   p0.set("NodeSet Name","left");
+	   p0.set("Value Type","Constant");
+       p0.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub("Constant");
+	   pl_sub.set("Value",5.0);
+	   p0.set("Constant",pl_sub);
+	   
+	   Teuchos::ParameterList& p1 = pldiric.sublist("b");  // noname sublist
+	   p1.set("ElementSet Name","eblock-0_0");
+	   p1.set("NodeSet Name","top");
+	   p1.set("Value Type","Constant");
+       p1.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub1("Constant");
+	   pl_sub1.set("Value",5.0);
+	   p1.set("Constant",pl_sub1);
+	   
+	   Teuchos::ParameterList& p3 = pldiric.sublist("d");  // noname sublist
+	   p3.set("ElementSet Name","eblock-1_0");
+	   p3.set("NodeSet Name","right");
+	   p3.set("Value Type","Constant");
+       p3.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "ION_TEMPERATURE" ));
+	   Teuchos::ParameterList pl_sub3("Constant");
+	   pl_sub3.set("Value",5.0);
+	   p3.set("Constant",pl_sub3);
+   }
 
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
-    std::vector<panzer::BC> bcs;
-    testInitialzation(ipb, bcs);
+    testInitialzation(ipb);
 
     Teuchos::RCP<panzer::FieldManagerBuilder> fmb =
       Teuchos::rcp(new panzer::FieldManagerBuilder);
@@ -328,7 +388,8 @@ namespace panzer {
 
     fmb->setWorksetContainer(wkstContainer);
     fmb->setupVolumeFieldManagers(physicsBlocks,cm_factory,closure_models,*linObjFactory,user_data);
-    fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory,user_data);
+    //fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory,user_data);
+	fmb->setupDiricheltFieldManagers(pldiric,mesh,dofManager);
 
     panzer::AssemblyEngine_TemplateManager<panzer::Traits> ae_tm;
     panzer::AssemblyEngine_TemplateBuilder builder(fmb,linObjFactory);
@@ -408,8 +469,7 @@ namespace panzer {
 
   }
 
-  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-			 std::vector<panzer::BC>& bcs)
+  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb)
   {
     // Physics block
     Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
@@ -431,7 +491,7 @@ namespace panzer {
     }
 
     // BCs
-    {
+   /* {
       std::size_t bc_id = 0;
       panzer::BCType neumann = BCT_Dirichlet;
       std::string sideset_id = "left";
@@ -472,7 +532,7 @@ namespace panzer {
       panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name,
 		    strategy, p);
       bcs.push_back(bc);
-    }
+    }*/
   }
 
 }

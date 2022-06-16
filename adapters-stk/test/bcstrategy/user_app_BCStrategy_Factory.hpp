@@ -51,13 +51,10 @@
 #include "Panzer_GlobalData.hpp"
 
 // Add my bcstrategies here
-#include "user_app_BCStrategy_Dirichlet_Constant.hpp"
 #include "user_app_BCStrategy_Neumann_Constant.hpp"
 
 namespace user_app {
   
-  PANZER_DECLARE_BCSTRATEGY_TEMPLATE_BUILDER(
-    user_app::BCStrategy_Dirichlet_Constant, BCStrategy_Dirichlet_Constant)
   PANZER_DECLARE_BCSTRATEGY_TEMPLATE_BUILDER(
     user_app::BCStrategy_Neumann_Constant, BCStrategy_Neumann_Constant)
 
@@ -72,8 +69,6 @@ namespace user_app {
       
       bool found = false;
 
-      PANZER_BUILD_BCSTRATEGY_OBJECTS("Constant",
-        BCStrategy_Dirichlet_Constant)
       PANZER_BUILD_BCSTRATEGY_OBJECTS("Neumann Constant",
         BCStrategy_Neumann_Constant)
 
