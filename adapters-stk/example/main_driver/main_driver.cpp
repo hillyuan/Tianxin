@@ -61,7 +61,7 @@
 #include "Panzer_ClosureModel_Factory_TemplateManager.hpp"
 #include "Panzer_PauseToAttach.hpp"
 #include "Panzer_String_Utilities.hpp"
-#include "Panzer_EpetraLinearObjContainer.hpp"
+#include "Panzer_TpetraLinearObjFactory.hpp"
 
 #ifdef Panzer_BUILD_PAPI_SUPPORT
 #include "Panzer_PAPI_Counter.hpp"
@@ -383,9 +383,9 @@ int main(int argc, char *argv[])
         // initialize the ghosted container
         linObjFactory->initializeGhostedContainer(panzer::LinearObjContainer::X,*ae_inargs.ghostedContainer_);
 
-        const Teuchos::RCP<panzer::EpetraLinearObjContainer> epGlobalContainer
-           = Teuchos::rcp_dynamic_cast<panzer::EpetraLinearObjContainer>(ae_inargs.container_,true);
-        epGlobalContainer->set_x_th(gx);
+        const Teuchos::RCP<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>> epGlobalContainer
+           = Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(ae_inargs.container_,true);
+        epGlobalContainer->set_x(Teuchos::rcp_dynamic_cast<Tpetra::Vector<double,int,panzer::GlobalOrdinal>>(gx));
 
         // evaluate current on contacts
         fluxResponseLibrary->addResponsesToInArgs<panzer::Traits::Residual>(ae_inargs);
