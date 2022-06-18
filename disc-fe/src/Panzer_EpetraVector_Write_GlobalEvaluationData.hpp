@@ -152,10 +152,21 @@ namespace panzer
         int mem);
 
       /**
-       *  \brief Clear out the ghosted vector.                                   // JMG:  Is this right?                          
+       *  \brief Clear out the ghosted vector.                                   // JMG:  Is this right?
        */
       virtual void
       initializeData();
+
+      /**
+       *  \brief Determine if a Dirichlet adjustment is necessary.
+       *
+       *  \returns False.                                                        // JMG:  But why?
+       */
+      virtual bool
+      requiresDirichletAdjustment() const
+      {
+        return false;
+      } // end of requiresDirichletAdjustment()
 
       /**
        *  \brief Set the owned vector (`Epetra` version).

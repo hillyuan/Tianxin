@@ -202,6 +202,8 @@ namespace panzer
         return gedBlocks_.size();
       } // end of getBlockCount()
 
+
+#ifdef PANZER_HAVE_EPETRA
       /**
        *  \brief Get the `i`-th block (non const version).
        *
@@ -225,6 +227,20 @@ namespace panzer
       {
         return gedBlocks_[i];
       } // end of getGEDBlock()
+#endif // PANZER_HAVE_EPETRA
+
+      /**
+       *  \brief Determine if a Dirichlet adjustment is necessary.
+       *
+       *  For this class, there's nothing to do because it's read-only.
+       *
+       *  \returns False.
+       */
+      bool
+      requiresDirichletAdjustment() const
+      {
+        return false;
+      } // end of requiresDirichletAdjustment()
 
     private:
 

@@ -76,7 +76,8 @@ namespace panzer
    *        are write protected).
    */
   class EpetraVector_ReadOnly_GlobalEvaluationData
-    : public ReadOnlyVector_GlobalEvaluationData
+    :
+    public ReadOnlyVector_GlobalEvaluationData
   {
     public:
 
@@ -187,6 +188,19 @@ namespace panzer
       virtual void
       ghostToGlobal(
         int mem = 0);
+
+      /**
+       *  \brief Determine if a Dirichlet adjustment is necessary.
+       *
+       *  For this class, there's nothing to do because it's read-only.
+       *
+       *  \returns False.
+       */
+      virtual bool
+      requiresDirichletAdjustment() const
+      {
+        return false;
+      } // end of requiresDirichletAdjustment()
 
       /**
        *  \brief Set the owned vector (`Epetra` version).

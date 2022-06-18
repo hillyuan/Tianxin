@@ -66,11 +66,12 @@ namespace Thyra
 namespace panzer
 {
   /**                                                                            // JMG:  What all needs to change for this class?
-   *  \brief This class encapsulates the needs of a gather operation to do a     //                                               
-   *         halo exchange for blocked vectors.                                  //                                               
-   */                                                                            //                                               
-  class BlockedVector_Write_GlobalEvaluationData                                 //                                               
-    : public WriteVector_GlobalEvaluationData                                    //                                               
+   *  \brief This class encapsulates the needs of a gather operation to do a     //
+   *         halo exchange for blocked vectors.                                  //
+   */                                                                            //
+  class BlockedVector_Write_GlobalEvaluationData                                 //
+    :                                                                            //
+    public WriteVector_GlobalEvaluationData                                      //
   {
     public:
 
@@ -153,12 +154,13 @@ namespace panzer
        *                 `GlobalEvaluationData` interface.
        */
       virtual void
-      ghostToGlobal(int mem);
+      ghostToGlobal(
+        int mem);
 
       /**
        *  \brief Initialize internal data for communication.
        *
-       *  This clears out the ghosted vector.                                    // JMG:  Is this right?                          
+       *  This clears out the ghosted vector.                                    // JMG:  Is this right?
        */
       virtual void
       initializeData();
@@ -223,6 +225,19 @@ namespace panzer
       {
         return gedBlocks_[i];
       } // end of getGEDBlock()
+
+      /**
+       *  \brief Determine if a Dirichlet adjustment is necessary.
+       *
+       *  For this class, there's nothing to do because it's read-only.
+       *
+       *  \returns False.                                                        // JMG:  But why?
+       */
+      bool
+      requiresDirichletAdjustment() const
+      {
+        return false;
+      } // end of requiresDirichletAdjustment()
 
     private:
 
