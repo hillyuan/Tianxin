@@ -53,11 +53,15 @@
 #include "Thyra_VectorBase.hpp"
 #include "Thyra_VectorSpaceBase.hpp"
 
+#include "PanzerDiscFE_config.hpp"
+#ifdef PANZER_HAVE_EPETRA
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 #include "Epetra_MpiComm.h"
+#endif
 
 #include "Panzer_ResponseMESupport_Default.hpp"
+#include "Panzer_GlobalEvaluationData.hpp"
 #include "Panzer_ThyraObjFactory.hpp"
 #include "Panzer_ThyraObjContainer.hpp"
 #include "Panzer_LinearObjFactory.hpp"
@@ -69,8 +73,7 @@ namespace panzer {
   * the value of the solution at a point in space/time.
   */
 template <typename EvalT>
-class Response_Probe : public ResponseMESupport_Default<EvalT>
-{
+class Response_Probe : public ResponseMESupport_Default<EvalT> {
 public:
   typedef typename EvalT::ScalarT ScalarT;
 
@@ -96,6 +99,8 @@ public:
   //! Get ghosted responses (this will be filled by the evaluator)
   Teuchos::RCP<Thyra::VectorBase<double> > getGhostedVector() const
   { return Teuchos::rcp_dynamic_cast<const ThyraObjContainer<double> >(ghostedContainer_)->get_x_th(); }
+
+  void adjustForDirichletConditions(const GlobalEvaluationData & localBCRows,const GlobalEvaluationData & globalBCRows);
 
 private:
   //! Set solution vector space

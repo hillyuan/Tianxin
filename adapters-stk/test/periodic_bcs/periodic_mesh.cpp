@@ -53,7 +53,7 @@
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_SquareQuadMeshFactory.hpp"
 #include "Panzer_STK_CubeHexMeshFactory.hpp"
-#include "Panzer_STK_Utilities.hpp"
+#include "TianXin_STK_Utilities.hpp"
 #include "Panzer_STK_PeriodicBC_Matcher.hpp"
 #include "Panzer_STK_PeriodicBC_Parser.hpp"
 #include "Panzer_STK_PeriodicBC_MatchConditions.hpp"

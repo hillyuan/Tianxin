@@ -47,7 +47,10 @@
 #include "Teuchos_CommHelpers.hpp"
 #include "Teuchos_dyn_cast.hpp"
 
+#include "PanzerDiscFE_config.hpp"
+#ifdef PANZER_HAVE_EPETRA
 #include "Epetra_LocalMap.h"
+#endif
 
 #include "Sacado_Traits.hpp"
 
@@ -68,12 +71,15 @@ scatterResponse()
 
   value = glbValue;
 
+#ifdef PANZER_HAVE_EPETRA
   // built data in vectors
   if(this->useEpetra()) {
     // use epetra
     this->getEpetraVector()[0] = glbValue;
   }
-  else {
+  else
+#endif
+  {
     // use thyra
     TEUCHOS_ASSERT(this->useThyra());
 
@@ -143,13 +149,16 @@ scatterResponse()
   value = glbValue;
 
   // copy data in vectors
+#ifdef PANZER_HAVE_EPETRA
   if(this->useEpetra()) {
     // use epetra
     Epetra_MultiVector& deriv = this->getEpetraMultiVector();
     for (int i=0; i<num_deriv; ++i)
       deriv[i][0] = glbValue.dx(i);
   }
-  else {
+  else
+#endif
+  {
     // use thyra
     TEUCHOS_ASSERT(this->useThyra());
     Thyra::ArrayRCP< Thyra::ArrayRCP<double> > deriv = this->getThyraMultiVector();
@@ -178,6 +187,33 @@ void Response_ExtremeValue<panzer::Traits::Hessian>::
 setSolnVectorSpace(const Teuchos::RCP<const Thyra::VectorSpaceBase<double> > & soln_vs)
 {
   setDerivativeVectorSpace(soln_vs);
+}
+#endif
+
+// Do nothing unless derivatives are required
+template <typename EvalT>
+void Response_ExtremeValue<EvalT>::
+adjustForDirichletConditions(const GlobalEvaluationData & /* localBCRows */, const GlobalEvaluationData & /* globalBCRows */) { }
+
+// Do nothing unless derivatives are required
+template < >
+void Response_ExtremeValue<panzer::Traits::Jacobian>::
+adjustForDirichletConditions(const GlobalEvaluationData & localBCRows,const GlobalEvaluationData & globalBCRows)
+{
+  linObjFactory_->adjustForDirichletConditions(Teuchos::dyn_cast<const LinearObjContainer>(localBCRows),
+                                               Teuchos::dyn_cast<const LinearObjContainer>(globalBCRows),
+                                               *ghostedContainer_,true,true);
+}
+
+#ifdef Panzer_BUILD_HESSIAN_SUPPORT
+// Do nothing unless derivatives are required
+template < >
+void Response_ExtremeValue<panzer::Traits::Hessian>::
+adjustForDirichletConditions(const GlobalEvaluationData & localBCRows,const GlobalEvaluationData & globalBCRows)
+{
+  linObjFactory_->adjustForDirichletConditions(Teuchos::dyn_cast<const LinearObjContainer>(localBCRows),
+                                               Teuchos::dyn_cast<const LinearObjContainer>(globalBCRows),
+                                               *ghostedContainer_,true,true);
 }
 #endif
 

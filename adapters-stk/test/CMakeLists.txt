@@ -1,6 +1,6 @@
 IF (PANZER_HAVE_EPETRA)
-    ADD_SUBDIRECTORY(field_manager_builder)
-    ADD_SUBDIRECTORY(model_evaluator)
+#    ADD_SUBDIRECTORY(field_manager_builder)
+#    ADD_SUBDIRECTORY(model_evaluator)
 ENDIF (PANZER_HAVE_EPETRA)
 
 ADD_SUBDIRECTORY(assembly_engine)

@@ -65,9 +65,6 @@ using Teuchos::rcp;
 
 #include "Phalanx_FieldManager.hpp"
 
-#include "Epetra_MpiComm.h"
-#include "Epetra_Comm.h"
-
 // for making explicit instantiated tests easier 
 #define UNIT_TEST_GROUP(TYPE) \
   TEUCHOS_UNIT_TEST_TEMPLATE_1_INSTANT(normals,test2d,TYPE)
@@ -79,9 +76,9 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(normals,test2d,EvalType)
 
   // build global (or serial communicator)
   #ifdef HAVE_MPI
-     Teuchos::RCP<Epetra_Comm> eComm = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+     Teuchos::RCP<const Teuchos::MpiComm<int> > eComm = Teuchos::rcp(new Teuchos::MpiComm<int>(MPI_COMM_WORLD));
   #else
-     Teuchos::RCP<Epetra_Comm> eComm = Teuchos::rcp(new Epetra_SerialComm());
+     auto eComm = Teuchos::rcp(Teuchos::DefaultComm<int>::getComm());
   #endif
  
   using Teuchos::RCP;

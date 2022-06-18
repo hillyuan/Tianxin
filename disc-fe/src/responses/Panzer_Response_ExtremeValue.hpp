@@ -53,11 +53,15 @@
 #include "Thyra_VectorBase.hpp"
 #include "Thyra_VectorSpaceBase.hpp"
 
+#include "PanzerDiscFE_config.hpp"
+#ifdef PANZER_HAVE_EPETRA
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 #include "Epetra_MpiComm.h"
+#endif
 
 #include "Panzer_ResponseMESupport_Default.hpp"
+#include "Panzer_GlobalEvaluationData.hpp"
 #include "Panzer_ThyraObjFactory.hpp"
 #include "Panzer_ThyraObjContainer.hpp"
 #include "Panzer_LinearObjFactory.hpp"
@@ -70,8 +74,7 @@ namespace panzer {
   * values).
   */
 template <typename EvalT>
-class Response_ExtremeValue : public ResponseMESupport_Default<EvalT>
-{
+class Response_ExtremeValue : public ResponseMESupport_Default<EvalT> {
 public:
    typedef typename EvalT::ScalarT ScalarT;
 
@@ -100,12 +103,12 @@ public:
    //! This simply does global summation, then shoves the result into a vector
    virtual void scatterResponse();
 
-   virtual void initializeResponse()  
+   virtual void initializeResponse()
    { if(useMax_)
        value = -std::numeric_limits<ScalarT>::max();
      else
        value =  std::numeric_limits<ScalarT>::max();
-       
+
      if(ghostedContainer_!=Teuchos::null) ghostedContainer_->initialize(); }
 
    // from ResponseMESupport_Default
@@ -119,7 +122,9 @@ public:
    //! Get ghosted responses (this will be filled by the evaluator)
    Teuchos::RCP<Thyra::VectorBase<double> > getGhostedVector() const
    { return Teuchos::rcp_dynamic_cast<const ThyraObjContainer<double> >(ghostedContainer_)->get_x_th(); }
-    
+
+   void adjustForDirichletConditions(const GlobalEvaluationData & localBCRows,const GlobalEvaluationData & globalBCRows);
+
 private:
    //! Set solution vector space
    void setSolnVectorSpace(const Teuchos::RCP<const Thyra::VectorSpaceBase<double> > & soln_vs);
