@@ -379,7 +379,6 @@ int main(int argc,char * argv[])
 
    // evaluate physics: This does both the Jacobian and residual at once
    ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
-   ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
    //linObjFactory->ghostToGlobalContainer(*ghostCont,*container,panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::Mat 
    //                                   | panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>::F); 
    

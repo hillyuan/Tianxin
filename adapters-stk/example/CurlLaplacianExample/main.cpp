@@ -516,7 +516,6 @@ int main(int argc,char * argv[])
 
    // evaluate physics: This does both the Jacobian and residual at once
    ae_tm.getAsObject<panzer::Traits::Jacobian>()->evaluate(input);
-   ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input);
    //int flags = panzer::AssemblyEngine<panzer::Traits::Residual>::EvaluationFlags::BoundaryFill;
    //ae_tm.getAsObject<panzer::Traits::Residual>()->evaluate(input, panzer::AssemblyEngine<panzer::Traits::Residual>::EvaluationFlags(flags));
    

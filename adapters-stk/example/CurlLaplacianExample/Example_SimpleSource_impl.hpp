@@ -96,57 +96,6 @@ void SimpleSource<EvalT,Traits>::evaluateFields(typename Traits::EvalData workse
   });
 }
 
-//**********************************************************************
-//**********************************************************************
-template <typename Traits>
-SimpleSource<panzer::Traits::Residual,Traits>::SimpleSource(const std::string & name,
-                                         const panzer::IntegrationRule & ir)
-{
-  using Teuchos::RCP;
-
-  Teuchos::RCP<PHX::DataLayout> data_layout = ir.dl_vector;
-  ir_degree = ir.cubature_degree;
-
-  source = PHX::MDField<double,Cell,Point,Dim>(name, data_layout);
-
-  this->addEvaluatedField(source);
-  
-  std::string n = "Simple Source";
-  this->setName(n);
-}
-
-//**********************************************************************
-template <typename Traits>
-void SimpleSource<panzer::Traits::Residual,Traits>::postRegistrationSetup(typename Traits::SetupData sd,           
-                                                       PHX::FieldManager<Traits>& /* fm */)
-{
-  ir_index = panzer::getIntegrationRuleIndex(ir_degree,(*sd.worksets_)[0], this->wda);
-}
-
-//**********************************************************************
-template <typename Traits>
-void SimpleSource<panzer::Traits::Residual,Traits>::evaluateFields(typename Traits::EvalData workset)
-{ 
-  using panzer::index_t;
-  auto ip_coordinates = workset.int_rules[ir_index]->ip_coordinates.get_static_view();
-  auto source_v = source.get_static_view();
-
-  Kokkos::parallel_for ("SimpleSource", workset.num_cells, KOKKOS_LAMBDA (const index_t cell) {
-    for (int point = 0; point < source_v.extent_int(1); ++point) {
-
-      const double & x = ip_coordinates(cell,point,0);
-      const double & y = ip_coordinates(cell,point,1);
-
-      source_v(cell,point,0) = 0.0;
-      source_v(cell,point,1) = 0.0;
-
-      // if three d
-      if(source_v.extent(2)==3)
-        source_v(cell,point,2) = 0.0;
-    }
-  });
-}
-
 }
 
 #endif

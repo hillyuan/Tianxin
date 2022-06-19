@@ -222,9 +222,15 @@ public:
    }
    
    // -- 1-0 clear out
-   void applyDirichletBoundaryCondition( const Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs) final
+   void applyDirichletBoundaryCondition( const double p, const Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs,
+		Kokkos::View<double*, Kokkos::HostSpace>& values) final
    {
-	   Tpetra::applyDirichletBoundaryConditionToLocalMatrixRows(*A, local_dofs);
+	   if( f==Teuchos::null ) {   // for eigen , need extent to consider K-pivot
+		   Tpetra::applyDirichletBoundaryConditionToLocalMatrixRowsAndColumns(*A, local_dofs);
+	   } else {
+	       Tpetra::applyDirichletBoundaryConditionToLocalMatrixRows(*A, local_dofs);
+		   this->evalDirichletResidual(local_dofs, values);
+	   }
    }
    
    // -- Penaly
@@ -291,7 +297,7 @@ public:
       }
    }
    
-   void evalDirichletResidual( Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs,
+   void evalDirichletResidual( const Kokkos::View<panzer::LocalOrdinal*, Kokkos::HostSpace>& local_dofs,
 		Kokkos::View<double*, Kokkos::HostSpace>& values) final
    {
 	   const auto& xview = x->getLocalViewDevice(Tpetra::Access::ReadOnly);

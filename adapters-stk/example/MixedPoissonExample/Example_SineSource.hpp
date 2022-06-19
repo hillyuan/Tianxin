@@ -86,26 +86,6 @@ private:
   int ir_degree, ir_index;
 };
 
-template<typename Traits>
-class SineSource<panzer::Traits::Residual,Traits> : public panzer::EvaluatorWithBaseImpl<Traits>,
-                        public PHX::EvaluatorDerived<panzer::Traits::Residual, Traits>  {
-
-public:
-    SineSource(const std::string & name,
-                       const panzer::IntegrationRule & ir);
-                                                                        
-    void postRegistrationSetup(typename Traits::SetupData d,           
-                               PHX::FieldManager<Traits>& fm);        
-                                                                     
-    void evaluateFields(typename Traits::EvalData d);               
-
-
-private:
-  // Simulation source
-  PHX::MDField<double,Cell,Point> source;
-  int ir_degree, ir_index;
-};
-
 }
 
 #include "Example_SineSource_impl.hpp"

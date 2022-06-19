@@ -76,7 +76,8 @@ template<typename Traits>
 void DirichletEvalautor<panzer::Traits::Jacobian, Traits> :: evaluateFields(typename Traits::EvalData d)
 {
 	//this->setValues(d);
-    this->m_GhostedContainer->applyDirichletBoundaryCondition(this->m_local_dofs);
+	double pivot = 1.0; //workset value
+    this->m_GhostedContainer->applyDirichletBoundaryCondition(pivot, this->m_local_dofs, this->m_values);
 }
 
 // **************************************************************
