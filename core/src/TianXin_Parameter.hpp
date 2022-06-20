@@ -51,7 +51,7 @@ class GeneralParameter
 	GeneralParameter(const Teuchos::ParameterList& params ) {}
 	
 	template <class... Args>
-	virtual evalT operator()(Args... args) = 0; 
+	virtual evalT operator()(Args... args) const = 0; 
 
 	virtual bool isConstant() const =0;
 	virtual unsigned int size() const =0;
@@ -69,7 +69,7 @@ class ConstantParamter : public GeneralParameter<T>
 	
     public:
 		ConstantParamter(const Teuchos::ParameterList& params );
-		evalT operator()(Args... args) final　{return m_value;}
+		evalT operator()(Args... args) const final {return m_value;}
 		
 		unsigned int size() const final {return m_value.size();}
 		bool isConstant() const final   {return true;}
@@ -90,7 +90,7 @@ class TableParamter : public GeneralParameter<T>
 	
     public:
 		TableParamter(const Teuchos::ParameterList& params );
-		evalT operator()(Args... args) final;
+		evalT operator()(Args... args) const final;
 		
 		unsigned int size() const {return m_dependent.size();}
 		bool isConstant() const final   {return false;}
@@ -103,6 +103,6 @@ class TableParamter : public GeneralParameter<T>
 
 }
 
-#include "TianXin_Variables_impl.hpp"
+#include "TianXin_Parameter_impl.hpp"
 
 #endif

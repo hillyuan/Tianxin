@@ -52,6 +52,3 @@ MaterialBase::MaterialBase(const Teuchos::ParameterList& params)
 
 }
 
-//#include "TianXin_Functor_impl.hpp"
-
-#endif

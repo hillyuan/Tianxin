@@ -48,7 +48,7 @@ namespace TianXin {
 template< typename T >
 struct MaterialBase
 {
-	Material(const Teuchos::ParameterList& params);
+	MaterialBase(const Teuchos::ParameterList& params);
 	/* Parameter name and its value */
 	std::unordered_map<std::string, std::shared_ptr< TianXin::GeneralParameter<T> > > dataT;
 };
