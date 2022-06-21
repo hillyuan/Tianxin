@@ -580,6 +580,21 @@ void panzer::FieldManagerBuilder::clearVolumeFieldManagers(bool clearVolumeWorks
 
 //=======================================================================
 //=======================================================================
+void panzer::FieldManagerBuilder::buildMaterials( const Teuchos::ParameterList& pl )
+{
+	materials_.clear();
+	for (auto it=pl.begin(); it!= pl.end(); ++it) {
+        TEUCHOS_TEST_FOR_EXCEPTION( !(it->second.isList()), std::logic_error,
+			"Error - All objects in the Material sublist must be unnamed sublists!" );
+        Teuchos::ParameterList& sublist = Teuchos::getValue<Teuchos::ParameterList>(it->second);
+    
+        std::string matl_name = sublist.name();
+        materials_[matl_name] = std::make_shared<TianXin::MaterialBase<double>>(sublist);
+    }
+}
+
+//=======================================================================
+//=======================================================================
 std::ostream& panzer::operator<<(std::ostream& os, const panzer::FieldManagerBuilder& rfd)
 {
   rfd.print(os);

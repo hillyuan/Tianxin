@@ -64,15 +64,14 @@ namespace TianXin {
 		//plmain.print();
 		
 		TianXin::MaterialBase<double> matl(plmain);
-		matl.print();
+		//matl.print();
 		
-		TEST_EQUALITY(matl.find("Fe->Density"), true);
-		TEST_EQUALITY(matl.find("Fe->Elasticity"), true);
+		TEST_EQUALITY(matl.find("Density"), true);
+		TEST_EQUALITY(matl.find("Elasticity"), true);
 		
-		const auto& a = matl.eval("Fe->Density", std::initializer_list<double>({}));
+		const auto& a = matl.eval("Density");
 		TEST_EQUALITY(a[0], 10.0);
-		const auto& b = matl.eval("Fe->Elasticity", std::initializer_list<double>({}));
-		std::cout << b[0] << "," << b[1] << "   aaaaaa\n";
+		const auto& b = matl.eval("Elasticity");
 		TEST_EQUALITY(b[0], 1000.0);
 		TEST_EQUALITY(b[1], 0.3);
 	}

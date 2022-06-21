@@ -51,9 +51,6 @@ namespace TianXin {
 template< typename T >
 struct MaterialBase
 {
-//	typedef std::function< std::vector<double>(std::initializer_list<double>) > ParameterFunction;
-	
-public:
 	MaterialBase(const Teuchos::ParameterList& params);
 	
 	/* Material Name */
@@ -61,9 +58,9 @@ public:
 	/* Parameter name and its value */
 	std::unordered_map<std::string, std::shared_ptr< TianXin::GeneralParameter<T> > > _dataT;
 	
-	bool find(std::string name) const {return _dataT.find(name)!=_dataT.end();}
-	std::vector<T> eval(std::string name, std::initializer_list<T> independent) const;
-	std::vector<T> eval(std::string name) const 
+	bool find(const std::string name) const {return _dataT.find(name)!=_dataT.end();}
+	std::vector<T> eval(const std::string name, std::initializer_list<T> independent) const;
+	std::vector<T> eval(const std::string name) const 
 	{
 		return this->eval( name,std::initializer_list<T>({}) );
 	}

@@ -38,10 +38,10 @@
 #ifndef _TIANXIN_MATERIALBASE_IMPL_HPP
 #define _TIANXIN_MATERIALBASE_IMPL_HPP
 
-
 #include <iostream>
 #include <exception>
 #include <stdexcept>
+#include <cassert>
 
 namespace TianXin {
 
@@ -54,7 +54,9 @@ MaterialBase<T>::MaterialBase(const Teuchos::ParameterList& params)
 		try {
 			const auto& ppl = params.sublist(it->first);
 			Teuchos::ParameterList pl(ppl);
-			std::string pname = pl.name();
+			std::string ppname = pl.name();
+			std::size_t found = ppname.find_last_of("->");
+			std::string pname = ppname.substr(found+1);
 			auto& value_type = pl.get<std::string>("Value Type","Constant");
 			if( value_type == "Constant" ) {
 				//const auto& p2 = pl.sublist("Constant");
@@ -74,8 +76,9 @@ MaterialBase<T>::MaterialBase(const Teuchos::ParameterList& params)
 }
 
 template< typename T >
-std::vector<T> MaterialBase<T>::eval(std::string name, std::initializer_list<T> independent) const
+std::vector<T> MaterialBase<T>::eval(const std::string name, std::initializer_list<T> independent) const
 {
+	assert(this->find(name));
     auto& pfunc = this->_dataT.at(name);
 	return (*pfunc)(independent);
 }
