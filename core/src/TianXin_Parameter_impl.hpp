@@ -38,8 +38,7 @@
 #ifndef _TIANXIN_PARAMETER_IMPL_HPP
 #define _TIANXIN_PARAMETER_IMPL_HPP
 
-#include <Teuchos_ParameterList.hpp>
-#include <valarray>
+#include <Teuchos_Array.hpp>
 
 namespace TianXin {
 
@@ -47,13 +46,17 @@ namespace TianXin {
 // Constat variables
 // **************************************************************
 
-template<typename T>
+template< typename T >
 ConstantParamter<T>::ConstantParamter(const Teuchos::ParameterList& params )
-: GeneralParameter(params)
+: GeneralParameter<T>(params)
 {
-	const Teuchos::ParameterList& pl = params.sublist("Constant"); 
-	auto& val = pl.get<EvalT>("Value");
-	m_value = evalT( {val} );
+	try {
+		const Teuchos::ParameterList& pl = params.sublist("Constant"); 
+		m_value = pl.get<Teuchos::Array<T>>("Value").toVector();
+	}
+	catch (std::exception& e) {
+		std::cout << e.what() << std::endl;
+	}
 }
 
 
@@ -61,14 +64,14 @@ ConstantParamter<T>::ConstantParamter(const Teuchos::ParameterList& params )
 // Tableted variables
 // **************************************************************
 
-template<typename T>
+/*template< typename T >
 TableParamter<T>::TableParamter(const Teuchos::ParameterList& params )
-: GeneralParameter(params)
+: GeneralParameter<T>(params)
 {
 	const Teuchos::ParameterList& pl = params.sublist("Constant"); 
-	auto& param = pl.get<EvalT>("Value");
+	auto& param = pl.get<std::vector<T>>("Value");
 	//m_value = evalT( {param} );
-}
+}*/
 
 
 }

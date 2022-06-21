@@ -44,61 +44,54 @@
 namespace TianXin {
 
 template< typename T >
-class GeneralParameter
+struct GeneralParameter
 {
-	typedef std::valarray<T>   evalT;
-	
 	GeneralParameter(const Teuchos::ParameterList& params ) {}
 	
-	template <class... Args>
-	virtual evalT operator()(Args... args) const = 0; 
+	virtual std::vector<T> operator()(std::initializer_list<T>) const = 0; 
 
 	virtual bool isConstant() const =0;
-	virtual unsigned int size() const =0;
+	virtual unsigned int nitems() const =0;
 };
 
 
 // **************************************************************
-// Constat variables
+// Constant variables
 // **************************************************************
 
-template<typename T>
+template< typename T >
 class ConstantParamter : public GeneralParameter<T>
 {
-	typedef std::valarray<T>   evalT;
-	
     public:
 		ConstantParamter(const Teuchos::ParameterList& params );
-		evalT operator()(Args... args) const final {return m_value;}
+		std::vector<T> operator()(std::initializer_list<T>) const final {return m_value;}
 		
-		unsigned int size() const final {return m_value.size();}
+		unsigned int nitems() const final {return m_value.size();}
 		bool isConstant() const final   {return true;}
 
     private:
-		evalT m_value;
+		std::vector<T> m_value;
 };
 
 
 // **************************************************************
-// Tableted variables
+// Table variables
 // **************************************************************
 
-template<typename T>
+/*template< typename T >
 class TableParamter : public GeneralParameter<T>
 {
-	typedef std::valarray<T>   evalT;
-	
     public:
 		TableParamter(const Teuchos::ParameterList& params );
-		evalT operator()(Args... args) const final;
+		std::vector<T> operator()(std::initializer_list<T>) const final;
 		
-		unsigned int size() const {return m_dependent.size();}
+		unsigned int nitems() const final {return m_dependent.size();}
 		bool isConstant() const final   {return false;}
 
     private:
-        evalT m_independent;
-		std::vector< evalT > m_dependent;
-};
+        std::valarray<T> m_independent;
+		std::vector< T > m_dependent;
+};*/
 
 
 }

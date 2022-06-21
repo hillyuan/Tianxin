@@ -35,47 +35,46 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _TIANXIN_MATERIALBASE_HPP
-#define _TIANXIN_MATERIALBASE_HPP
+#include <Teuchos_ConfigDefs.hpp>
+#include <Teuchos_UnitTestHarness.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
-#include "TianXin_Parameter.hpp"
-#include <unordered_map>
-#include <string>
-#include <initializer_list>
-#include <vector>
-#include <functional>
-#include <memory>
+#include "TianXin_MaterialBase.hpp"
 
 namespace TianXin {
 
-template< typename T >
-struct MaterialBase
-{
-//	typedef std::function< std::vector<double>(std::initializer_list<double>) > ParameterFunction;
-	
-public:
-	MaterialBase(const Teuchos::ParameterList& params);
-	
-	/* Material Name */
-	std::string _name;
-	/* Parameter name and its value */
-	std::unordered_map<std::string, std::shared_ptr< TianXin::GeneralParameter<T> > > _dataT;
-	
-	bool find(std::string name) const {return _dataT.find(name)!=_dataT.end();}
-	std::vector<T> eval(std::string name, std::initializer_list<T> independent) const;
-	std::vector<T> eval(std::string name) const 
+	TEUCHOS_UNIT_TEST(material, default)
 	{
-		return this->eval( name,std::initializer_list<T>({}) );
+		Teuchos::ParameterList plmain("Fe");
+		{	
+			Teuchos::ParameterList& p0 = plmain.sublist("Density");  
+			p0.set("Value Type","Constant");
+			Teuchos::ParameterList pl_sub("Constant");
+			pl_sub.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 10.0 ));
+			p0.set("Constant",pl_sub);
+	   
+			Teuchos::ParameterList& p1 = plmain.sublist("Elasticity");  
+			p1.set("Value Type","Constant");
+			Teuchos::ParameterList pl_sub1("Constant");
+			pl_sub1.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1000.0,0.3 ));
+			p1.set("Constant",pl_sub1);
+		}
+		//std::cout << "**Name=" << plmain.name() << std::endl;
+		//plmain.print();
+		
+		TianXin::MaterialBase<double> matl(plmain);
+		matl.print();
+		
+		TEST_EQUALITY(matl.find("Fe->Density"), true);
+		TEST_EQUALITY(matl.find("Fe->Elasticity"), true);
+		
+		const auto& a = matl.eval("Fe->Density", std::initializer_list<double>({}));
+		TEST_EQUALITY(a[0], 10.0);
+		const auto& b = matl.eval("Fe->Elasticity", std::initializer_list<double>({}));
+		std::cout << b[0] << "," << b[1] << "   aaaaaa\n";
+		TEST_EQUALITY(b[0], 1000.0);
+		TEST_EQUALITY(b[1], 0.3);
 	}
-	void print(std::ostream& os = std::cout) const;
-};
-
-/* Material name and its parameter list */
-//template< typename T, typename... Args >
-//using CMaterials = std::unordered_map<std::string, std::shared_ptr<MaterialBase<T, Args...>> >;
 
 }
-
-#include "TianXin_MaterialBase_impl.hpp"
-
-#endif

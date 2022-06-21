@@ -35,47 +35,75 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _TIANXIN_MATERIALBASE_HPP
-#define _TIANXIN_MATERIALBASE_HPP
+#ifndef _TIANXIN_MATERIALBASE_IMPL_HPP
+#define _TIANXIN_MATERIALBASE_IMPL_HPP
 
-#include "TianXin_Parameter.hpp"
-#include <unordered_map>
-#include <string>
-#include <initializer_list>
-#include <vector>
-#include <functional>
-#include <memory>
+
+#include <iostream>
+#include <exception>
+#include <stdexcept>
 
 namespace TianXin {
 
+	
 template< typename T >
-struct MaterialBase
+MaterialBase<T>::MaterialBase(const Teuchos::ParameterList& params)
 {
-//	typedef std::function< std::vector<double>(std::initializer_list<double>) > ParameterFunction;
-	
-public:
-	MaterialBase(const Teuchos::ParameterList& params);
-	
-	/* Material Name */
-	std::string _name;
-	/* Parameter name and its value */
-	std::unordered_map<std::string, std::shared_ptr< TianXin::GeneralParameter<T> > > _dataT;
-	
-	bool find(std::string name) const {return _dataT.find(name)!=_dataT.end();}
-	std::vector<T> eval(std::string name, std::initializer_list<T> independent) const;
-	std::vector<T> eval(std::string name) const 
-	{
-		return this->eval( name,std::initializer_list<T>({}) );
+	_name = params.name();
+	for(auto it = params.begin(); it != params.end(); ++it) {
+		try {
+			const auto& ppl = params.sublist(it->first);
+			Teuchos::ParameterList pl(ppl);
+			std::string pname = pl.name();
+			auto& value_type = pl.get<std::string>("Value Type","Constant");
+			if( value_type == "Constant" ) {
+				//const auto& p2 = pl.sublist("Constant");
+				std::shared_ptr<GeneralParameter<T>> pC(new ConstantParamter<T>(pl));
+				_dataT.insert( std::make_pair(pname, pC) );
+			}
+			else if( value_type == "Table" ) {
+			//	const auto& p2 = pl.sublist("Table");
+			//	_dataT.emplace( pname, std::make_shared<ConstantParamter<T>>(new ConstantParamter<T>(p2)) );
+			}
+		}
+		catch (std::exception& e) {
+			std::cout << e.what() << std::endl;
+		}
+    /**/
 	}
-	void print(std::ostream& os = std::cout) const;
-};
-
-/* Material name and its parameter list */
-//template< typename T, typename... Args >
-//using CMaterials = std::unordered_map<std::string, std::shared_ptr<MaterialBase<T, Args...>> >;
-
 }
 
-#include "TianXin_MaterialBase_impl.hpp"
+template< typename T >
+std::vector<T> MaterialBase<T>::eval(std::string name, std::initializer_list<T> independent) const
+{
+    auto& pfunc = this->_dataT.at(name);
+	return (*pfunc)(independent);
+}
+
+template< typename T >
+void MaterialBase<T>::print(std::ostream& os) const
+{
+    for( const auto& itr : _dataT ) {
+        os << "    Property Name = " << itr.first << std::endl;
+    }
+}
+
+
+/*template< typename T, typename... Args >
+MaterialBase<T, Args...>::MaterialBase(const Teuchos::ParameterList& params)
+{
+    for(auto it = params.begin(); it != params.end(); ++it) {
+		try {
+			const auto& pl = params.sublist(it->first);
+		//	items[it->first] = std::make_shared<XYZLib::variable<double>>(pl);
+		}
+		catch (std::exception& e) {
+			std::cout << e.what() << std::endl;
+		}
+    }
+}*/
+
+
+}
 
 #endif

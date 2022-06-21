@@ -36,19 +36,8 @@
 // @HEADER
 
 #include "TianXin_MaterialBase.hpp"
+//#include "Panzer_ExplicitTemplateInstantiation.hpp"
 
-namespace TianXin {
+//PANZER_INSTANTIATE_TEMPLATE_CLASS_ONE_T(TianXin::MaterialBase)
 
-template< typename T >
-MaterialBase::MaterialBase(const Teuchos::ParameterList& params)
-{
-    /*  for(auto it = params.begin(); it != params.end(); ++it) {
-         if( it->first=="Name" ) continue;       // not a sublist
-         auto pl = params.sublist(it->first);
-         items[it->first] = std::make_shared<XYZLib::variable<double>>(pl);
-      }*/
-}
-
-
-}
-
+template class TianXin::MaterialBase<double>;
