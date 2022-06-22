@@ -35,9 +35,62 @@
 // ***********************************************************************
 // @HEADER
 
-#include "TianXin_MaterialBase.hpp"
-//#include "Panzer_ExplicitTemplateInstantiation.hpp"
+#ifndef _TIANXIN_MATERIALBASE_IMPL_HPP
+#define _TIANXIN_MATERIALBASE_IMPL_HPP
 
-//PANZER_INSTANTIATE_TEMPLATE_CLASS_ONE_T(TianXin::MaterialBase)
+#include <iostream>
+#include <exception>
+#include <stdexcept>
+#include <cassert>
 
-template class TianXin::MaterialBase<double>;
+namespace TianXin {
+
+	
+template< typename T >
+ParameterLibrary<T>::ParameterLibrary(const Teuchos::ParameterList& params)
+{
+	_name = params.name();
+	for(auto it = params.begin(); it != params.end(); ++it) {
+		try {
+			const auto& ppl = params.sublist(it->first);
+			Teuchos::ParameterList pl(ppl);
+			std::string ppname = pl.name();
+			std::size_t found = ppname.find_last_of("->");
+			std::string pname = ppname.substr(found+1);
+			auto& value_type = pl.get<std::string>("Value Type","Constant");
+			if( value_type == "Constant" ) {
+				//const auto& p2 = pl.sublist("Constant");
+				std::shared_ptr<GeneralParameter<T>> pC(new ConstantParamter<T>(pl));
+				_dataT.insert( std::make_pair(pname, pC) );
+			}
+			else if( value_type == "Table" ) {
+			//	const auto& p2 = pl.sublist("Table");
+			//	_dataT.emplace( pname, std::make_shared<ConstantParamter<T>>(new ConstantParamter<T>(p2)) );
+			}
+		}
+		catch (std::exception& e) {
+			std::cout << e.what() << std::endl;
+		}
+    /**/
+	}
+}
+
+template< typename T >
+std::vector<T> ParameterLibrary<T>::eval(const std::string name, std::initializer_list<T> independent) const
+{
+	assert(this->find(name));
+    auto& pfunc = this->_dataT.at(name);
+	return (*pfunc)(independent);
+}
+
+template< typename T >
+void ParameterLibrary<T>::print(std::ostream& os) const
+{
+    for( const auto& itr : _dataT ) {
+        os << "    Property Name = " << itr.first << std::endl;
+    }
+}
+
+}
+
+#endif

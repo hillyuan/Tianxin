@@ -35,40 +35,9 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _TIANXIN_MATERIALBASE_HPP
-#define _TIANXIN_MATERIALBASE_HPP
+#include "TianXin_ParameterLibrary.hpp"
+//#include "Panzer_ExplicitTemplateInstantiation.hpp"
 
-#include "TianXin_Parameter.hpp"
-#include <unordered_map>
-#include <string>
-#include <initializer_list>
-#include <vector>
-#include <functional>
-#include <memory>
+//PANZER_INSTANTIATE_TEMPLATE_CLASS_ONE_T(TianXin::MaterialBase)
 
-namespace TianXin {
-
-template< typename T >
-struct MaterialBase
-{
-	MaterialBase(const Teuchos::ParameterList& params);
-	
-	/* Material Name */
-	std::string _name;
-	/* Parameter name and its value */
-	std::unordered_map<std::string, std::shared_ptr< TianXin::GeneralParameter<T> > > _dataT;
-	
-	bool find(const std::string name) const {return _dataT.find(name)!=_dataT.end();}
-	std::vector<T> eval(const std::string name, std::initializer_list<T> independent) const;
-	std::vector<T> eval(const std::string name) const 
-	{
-		return this->eval( name,std::initializer_list<T>({}) );
-	}
-	void print(std::ostream& os = std::cout) const;
-};
-
-}
-
-#include "TianXin_MaterialBase_impl.hpp"
-
-#endif
+template class TianXin::ParameterLibrary<double>;

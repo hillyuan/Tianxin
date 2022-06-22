@@ -35,62 +35,40 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _TIANXIN_MATERIALBASE_IMPL_HPP
-#define _TIANXIN_MATERIALBASE_IMPL_HPP
+#ifndef _TIANXIN_PARAMETERLIBRARY_HPP
+#define _TIANXIN_PARAMETERLIBRARY_HPP
 
-#include <iostream>
-#include <exception>
-#include <stdexcept>
-#include <cassert>
+#include "TianXin_Parameter.hpp"
+#include <unordered_map>
+#include <string>
+#include <initializer_list>
+#include <vector>
+#include <functional>
+#include <memory>
 
 namespace TianXin {
 
+template< typename T >
+struct ParameterLibrary
+{
+	ParameterLibrary(const Teuchos::ParameterList& params);
 	
-template< typename T >
-MaterialBase<T>::MaterialBase(const Teuchos::ParameterList& params)
-{
-	_name = params.name();
-	for(auto it = params.begin(); it != params.end(); ++it) {
-		try {
-			const auto& ppl = params.sublist(it->first);
-			Teuchos::ParameterList pl(ppl);
-			std::string ppname = pl.name();
-			std::size_t found = ppname.find_last_of("->");
-			std::string pname = ppname.substr(found+1);
-			auto& value_type = pl.get<std::string>("Value Type","Constant");
-			if( value_type == "Constant" ) {
-				//const auto& p2 = pl.sublist("Constant");
-				std::shared_ptr<GeneralParameter<T>> pC(new ConstantParamter<T>(pl));
-				_dataT.insert( std::make_pair(pname, pC) );
-			}
-			else if( value_type == "Table" ) {
-			//	const auto& p2 = pl.sublist("Table");
-			//	_dataT.emplace( pname, std::make_shared<ConstantParamter<T>>(new ConstantParamter<T>(p2)) );
-			}
-		}
-		catch (std::exception& e) {
-			std::cout << e.what() << std::endl;
-		}
-    /**/
+	/* Material Name */
+	std::string _name;
+	/* Parameter name and its value */
+	std::unordered_map<std::string, std::shared_ptr< TianXin::GeneralParameter<T> > > _dataT;
+	
+	bool find(const std::string name) const {return _dataT.find(name)!=_dataT.end();}
+	std::vector<T> eval(const std::string name, std::initializer_list<T> independent) const;
+	std::vector<T> eval(const std::string name) const 
+	{
+		return this->eval( name,std::initializer_list<T>({}) );
 	}
-}
-
-template< typename T >
-std::vector<T> MaterialBase<T>::eval(const std::string name, std::initializer_list<T> independent) const
-{
-	assert(this->find(name));
-    auto& pfunc = this->_dataT.at(name);
-	return (*pfunc)(independent);
-}
-
-template< typename T >
-void MaterialBase<T>::print(std::ostream& os) const
-{
-    for( const auto& itr : _dataT ) {
-        os << "    Property Name = " << itr.first << std::endl;
-    }
-}
+	void print(std::ostream& os = std::cout) const;
+};
 
 }
+
+#include "TianXin_ParameterLibrary_impl.hpp"
 
 #endif

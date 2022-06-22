@@ -40,7 +40,7 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "TianXin_MaterialBase.hpp"
+#include "TianXin_ParameterLibrary.hpp"
 
 namespace TianXin {
 
@@ -63,7 +63,7 @@ namespace TianXin {
 		//std::cout << "**Name=" << plmain.name() << std::endl;
 		//plmain.print();
 		
-		TianXin::MaterialBase<double> matl(plmain);
+		TianXin::ParameterLibrary<double> matl(plmain);
 		//matl.print();
 		
 		TEST_EQUALITY(matl.find("Density"), true);

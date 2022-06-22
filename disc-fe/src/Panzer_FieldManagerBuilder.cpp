@@ -589,7 +589,7 @@ void panzer::FieldManagerBuilder::buildMaterials( const Teuchos::ParameterList& 
         Teuchos::ParameterList& sublist = Teuchos::getValue<Teuchos::ParameterList>(it->second);
     
         std::string matl_name = sublist.name();
-        materials_[matl_name] = std::make_shared<TianXin::MaterialBase<double>>(sublist);
+        materials_[matl_name] = std::make_shared<TianXin::ParameterLibrary<double>>(sublist);
     }
 }
 
