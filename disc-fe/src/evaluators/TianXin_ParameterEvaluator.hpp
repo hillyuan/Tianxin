@@ -35,71 +35,43 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _TIANXIN_PARAMETER_HPP
-#define _TIANXIN_PARAMETER_HPP
+#ifndef _TIANXIN_EVALUATOR_PARAMETER_HPP
+#define _TIANXIN_EVALUATOR_PARAMETER_HPP
 
-#include <Teuchos_ParameterList.hpp>
-#include <vector>
+#include "PanzerDiscFE_config.hpp"
+
+#include "Phalanx_Evaluator_Macros.hpp"
+#include "Phalanx_MDField.hpp"
+#include "Teuchos_RCP.hpp"
+
+#include "Panzer_Evaluator_WithBaseImpl.hpp"
+#include "TianXin_Parameter.hpp"
 
 namespace TianXin {
 
-template< typename T >
-struct GeneralParameter
+template<typename EvalT, typename TRAITS>
+class ParameterEvaluator : public panzer::EvaluatorWithBaseImpl<TRAITS>,
+    public PHX::EvaluatorDerived<EvalT, TRAITS> 
 {
-	GeneralParameter(const Teuchos::ParameterList& params ) {}
-	
-	virtual std::vector<T> operator()(std::initializer_list<T>) const = 0; 
-	virtual std::vector<T> operator()() const
-	{
-		return this->operator()(std::initializer_list<T>({}));
-	}
-
-	virtual bool isConstant() const =0;
-	virtual unsigned int nitems() const =0;
+	typedef typename EvalT::ScalarT ScalarT;
+  
+  public:
+    ParameterEvaluator(const std::string parameter_name,
+	      std::shared_ptr< TianXin::GeneralParameter<ScalarT> > pf,
+	      const Teuchos::RCP<PHX::DataLayout>& data_layout);
+    void postRegistrationSetup(typename panzer::Traits::SetupData d, PHX::FieldManager<panzer::Traits>& fm);
+    void evaluateFields(typename TRAITS::EvalData ud);
+    
+  private:    
+    PHX::MDField<ScalarT, panzer::Cell, panzer::Point> target_field;
+	PHX::MDField<ScalarT, panzer::Cell, panzer::Point, panzer::Dim> state_variables;
+    unsigned int nitems;
+	std::shared_ptr< TianXin::GeneralParameter<ScalarT> > pFunc;
 };
-
-
-// **************************************************************
-// Constant variables
-// **************************************************************
-
-template< typename T >
-class ConstantParamter : public GeneralParameter<T>
-{
-    public:
-		ConstantParamter(const Teuchos::ParameterList& params );
-		std::vector<T> operator()(std::initializer_list<T>) const final {return m_value;}
-		
-		unsigned int nitems() const final {return m_value.size();}
-		bool isConstant() const final   {return true;}
-
-    private:
-		std::vector<T> m_value;
-};
-
-
-// **************************************************************
-// Table variables
-// **************************************************************
-
-/*template< typename T >
-class TableParamter : public GeneralParameter<T>
-{
-    public:
-		TableParamter(const Teuchos::ParameterList& params );
-		std::vector<T> operator()(std::initializer_list<T>) const final;
-		
-		unsigned int nitems() const final {return m_dependent.size();}
-		bool isConstant() const final   {return false;}
-
-    private:
-        std::valarray<T> m_independent;
-		std::vector< T > m_dependent;
-};*/
 
 
 }
 
-#include "TianXin_Parameter_impl.hpp"
+//#include "TianXin_MaterialBase_impl.hpp"
 
 #endif

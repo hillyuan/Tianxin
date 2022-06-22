@@ -67,10 +67,6 @@ struct MaterialBase
 	void print(std::ostream& os = std::cout) const;
 };
 
-/* Material name and its parameter list */
-//template< typename T, typename... Args >
-//using CMaterials = std::unordered_map<std::string, std::shared_ptr<MaterialBase<T, Args...>> >;
-
 }
 
 #include "TianXin_MaterialBase_impl.hpp"

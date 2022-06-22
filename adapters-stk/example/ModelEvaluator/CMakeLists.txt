@@ -2,7 +2,6 @@
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${PACKAGE_SOURCE_DIR}/../disc-fe/test/equation_set)
 INCLUDE_DIRECTORIES(${PACKAGE_SOURCE_DIR}/../disc-fe/test/closure_model)
-INCLUDE_DIRECTORIES(${PACKAGE_SOURCE_DIR}/test/bcstrategy)
 
 SET(main_driver_SOURCES
   main_driver.cpp

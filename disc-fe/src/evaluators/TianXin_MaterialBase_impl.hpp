@@ -91,22 +91,6 @@ void MaterialBase<T>::print(std::ostream& os) const
     }
 }
 
-
-/*template< typename T, typename... Args >
-MaterialBase<T, Args...>::MaterialBase(const Teuchos::ParameterList& params)
-{
-    for(auto it = params.begin(); it != params.end(); ++it) {
-		try {
-			const auto& pl = params.sublist(it->first);
-		//	items[it->first] = std::make_shared<XYZLib::variable<double>>(pl);
-		}
-		catch (std::exception& e) {
-			std::cout << e.what() << std::endl;
-		}
-    }
-}*/
-
-
 }
 
 #endif
