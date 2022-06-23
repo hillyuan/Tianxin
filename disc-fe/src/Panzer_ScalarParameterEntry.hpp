@@ -45,16 +45,15 @@
 
 #include "Panzer_Traits.hpp"
 #include "Sacado_ScalarParameterEntry.hpp"
-#include "Panzer_EvaluationTraits.hpp"
 
 namespace panzer {
 
   template <typename EvalType>
-  class ScalarParameterEntry : public  Sacado::ScalarParameterEntry<EvalType,panzer::EvaluationTraits> {
+  class ScalarParameterEntry : public  Sacado::ScalarParameterEntry<EvalType,panzer::DefaultScalarTypeTraits> {
     
   public:
 
-    typedef typename Sacado::ScalarParameterEntry<EvalType,panzer::EvaluationTraits>::ScalarT ScalarT;
+    typedef typename Sacado::ScalarParameterEntry<EvalType,panzer::DefaultScalarTypeTraits>::ScalarT ScalarT;
     
     void setRealValue(double value)
     {

@@ -707,9 +707,7 @@ buildGhostedGraph() const
    }
 
    Teuchos::ArrayView<const size_t> nEntriesPerRowView(nEntriesPerRow);
-   Teuchos::RCP<CrsGraphType> graph = Teuchos::rcp(new CrsGraphType(rMap,cMap,
-                                                          nEntriesPerRowView,
-                                                          Tpetra::StaticProfile));
+    Teuchos::RCP<CrsGraphType> graph = Teuchos::rcp(new CrsGraphType(rMap,cMap,nEntriesPerRowView));
 
    // Now insert entries into the graph
    for(blockItr=elementBlockIds.begin();blockItr!=elementBlockIds.end();++blockItr) {

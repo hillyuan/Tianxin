@@ -139,6 +139,16 @@ namespace panzer {
     typedef void* PostEvalData;
 
   };
+  
+  // ******************************************************************
+  // *** Access Residual/Jacobian/Tangent::ScalarT 
+  //     Specified for Sacodo::ScalarParameterEntry definition which use function apply
+  //   to fetch type of first template argument
+  // ******************************************************************
+  struct DefaultScalarTypeTraits {
+    template <class EvalType> struct apply {
+      typedef typename EvalType::ScalarT type; };
+  };
  
 }
 

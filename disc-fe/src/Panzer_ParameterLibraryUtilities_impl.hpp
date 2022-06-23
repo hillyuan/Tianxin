@@ -56,7 +56,7 @@ namespace panzer {
     Teuchos::RCP<panzer::ScalarParameterEntry<EvaluationType> > entry;
     
     if (pl.isParameterForType<EvaluationType>(name)) {
-      Teuchos::RCP<Sacado::ScalarParameterEntry<EvaluationType,panzer::EvaluationTraits> > sacado_entry =
+      Teuchos::RCP<Sacado::ScalarParameterEntry<EvaluationType,panzer::DefaultScalarTypeTraits> > sacado_entry =
 	pl.getEntry<EvaluationType>(name);
       entry = Teuchos::rcp_dynamic_cast<panzer::ScalarParameterEntry<EvaluationType> >(sacado_entry);
     }
@@ -73,7 +73,7 @@ namespace panzer {
   Teuchos::RCP<panzer::ScalarParameterEntry<EvaluationType> >
   accessScalarParameter(const std::string name, panzer::ParamLib& pl)
   {
-    Teuchos::RCP<Sacado::ScalarParameterEntry<EvaluationType,panzer::EvaluationTraits> > sacado_entry =
+    Teuchos::RCP<Sacado::ScalarParameterEntry<EvaluationType,panzer::DefaultScalarTypeTraits> > sacado_entry =
       pl.getEntry<EvaluationType>(name);
     return Teuchos::rcp_dynamic_cast<panzer::ScalarParameterEntry<EvaluationType> >(sacado_entry,true);
   }

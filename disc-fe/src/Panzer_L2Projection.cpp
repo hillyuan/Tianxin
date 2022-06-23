@@ -363,7 +363,7 @@ namespace panzer {
     }
 
     Teuchos::ArrayView<const size_t> nEntriesPerRowView(nEntriesPerRow);
-    RCP<GraphType> ghostedGraph = rcp(new GraphType(ghostedTargetMap,ghostedSourceMap,nEntriesPerRowView,Tpetra::StaticProfile));
+    RCP<GraphType> ghostedGraph = rcp(new GraphType(ghostedTargetMap,ghostedSourceMap,nEntriesPerRowView));
 
     for (blockItr=elementBlockIds.begin();blockItr!=elementBlockIds.end();++blockItr) {
       std::string blockId = *blockItr;
@@ -420,7 +420,7 @@ namespace panzer {
     for (const auto& block : elementBlockNames_) {
 
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true);
-      const auto& worksets = worksetContainer_->generateWorksets(wd);
+      const auto& worksets = worksetContainer_->getWorksets(wd);
       for (const auto& workset : *worksets) {
 
         // Get target basis values: current implementation assumes target basis is HGrad

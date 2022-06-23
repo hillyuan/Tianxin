@@ -46,12 +46,11 @@
 #include "Sacado_ScalarParameterLibrary.hpp"
 #include "Sacado_ScalarParameterVector.hpp"
 #include "Panzer_Traits.hpp"
-#include "Panzer_EvaluationTraits.hpp"
 
 namespace panzer {
   
-  typedef Sacado::ScalarParameterLibrary<panzer::EvaluationTraits> ParamLib;
-  typedef Sacado::ScalarParameterVector<panzer::EvaluationTraits> ParamVec;
+  typedef Sacado::ScalarParameterLibrary<panzer::DefaultScalarTypeTraits> ParamLib;
+  typedef Sacado::ScalarParameterVector<panzer::DefaultScalarTypeTraits> ParamVec;
 
 }
 

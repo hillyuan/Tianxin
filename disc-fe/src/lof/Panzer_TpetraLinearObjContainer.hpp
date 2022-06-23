@@ -204,8 +204,11 @@ public:
       //   std::cout << itr.first << "," << itr.second << std::endl;
 	      std::size_t numEntries = 0;
          std::size_t sz = A->getNumEntriesInLocalRow(itr.first);
-         Teuchos::Array<LocalOrdinalT> indices(sz);
-         Teuchos::Array<ScalarT> Entries(sz);
+         //Teuchos::Array<LocalOrdinalT> indices(sz);
+         //Teuchos::Array<ScalarT> Entries(sz);
+         //A->getLocalRowCopy(itr.first,indices,Entries,numEntries);
+		 typename CrsMatrixType::nonconst_local_inds_host_view_type indices("indices", sz);
+	     typename CrsMatrixType::nonconst_values_host_view_type Entries("values", sz);
          A->getLocalRowCopy(itr.first,indices,Entries,numEntries);
          inputCols[0] = itr.first;
 	      for (std::size_t i=0; i<sz; i++) {
@@ -257,8 +260,11 @@ public:
       {
          std::size_t numEntries = 0;
          std::size_t sz = A->getNumEntriesInLocalRow(itr.first);
-         Teuchos::Array<LocalOrdinalT> indices(sz);
-         Teuchos::Array<ScalarT> Entries(sz);
+         //Teuchos::Array<LocalOrdinalT> indices(sz);
+         //Teuchos::Array<ScalarT> Entries(sz);
+		 //A->getLocalRowCopy(itr.first,indices,Entries,numEntries);
+		 typename CrsMatrixType::nonconst_local_inds_host_view_type indices("indices", sz);
+	     typename CrsMatrixType::nonconst_values_host_view_type Entries("values", sz);
          A->getLocalRowCopy(itr.first,indices,Entries,numEntries);
          inputCols[0] = itr.first;
 	      for (std::size_t i=0; i<sz; i++) {

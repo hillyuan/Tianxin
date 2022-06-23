@@ -49,10 +49,7 @@
 
 namespace panzer {
 
-  /** \brief Allocates a parameter entry and registers with parameter library
-      
-  \relates ParameterLibraryAcceptor
-  */
+  /** \brief Allocates a parameter entry and registers with parameter library */
   template<typename EvaluationType>
   Teuchos::RCP<panzer::ScalarParameterEntry<EvaluationType> >
   createAndRegisterScalarParameter(const std::string name,
