@@ -43,7 +43,6 @@
 #ifndef PANZER_PARAMETER_LIBRARY_UTILITIES_HPP
 #define PANZER_PARAMETER_LIBRARY_UTILITIES_HPP
 
-#include "Panzer_ParameterLibrary.hpp"
 #include "Panzer_ScalarParameterEntry.hpp"
 #include "Teuchos_RCP.hpp"
 

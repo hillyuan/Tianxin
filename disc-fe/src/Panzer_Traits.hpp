@@ -54,6 +54,8 @@
 
 // Scalar types
 #include "Sacado.hpp"
+#include "Sacado_ScalarParameterLibrary.hpp"
+#include "Sacado_ScalarParameterVector.hpp"
 //#include "Sacado_CacheFad_DFad.hpp"
 //#include "Sacado_ELRFad_DFad.hpp"
 //#include "Sacado_ELRCacheFad_DFad.hpp"
@@ -145,10 +147,13 @@ namespace panzer {
   //     Specified for Sacodo::ScalarParameterEntry definition which use function apply
   //   to fetch type of first template argument
   // ******************************************************************
-  struct DefaultScalarTypeTraits {
+  struct SacadoScalarTypeTraits {
     template <class EvalType> struct apply {
       typedef typename EvalType::ScalarT type; };
   };
+  
+  typedef Sacado::ScalarParameterLibrary<SacadoScalarTypeTraits> ParamLib;
+  typedef Sacado::ScalarParameterVector<SacadoScalarTypeTraits> ParamVec;
  
 }
 

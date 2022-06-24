@@ -47,7 +47,6 @@
 
 #include "Panzer_Traits.hpp"
 #include "Panzer_AssemblyEngine_TemplateManager.hpp"
-#include "Panzer_ParameterLibrary.hpp"
 #include "Panzer_GlobalEvaluationData.hpp"
 #include "Panzer_ResponseLibrary.hpp"
 #include "Panzer_ResponseMESupportBase.hpp"

@@ -49,11 +49,11 @@
 namespace panzer {
 
   template <typename EvalType>
-  class ScalarParameterEntry : public  Sacado::ScalarParameterEntry<EvalType,panzer::DefaultScalarTypeTraits> {
+  class ScalarParameterEntry : public  Sacado::ScalarParameterEntry<EvalType,panzer::SacadoScalarTypeTraits> {
     
   public:
 
-    typedef typename Sacado::ScalarParameterEntry<EvalType,panzer::DefaultScalarTypeTraits>::ScalarT ScalarT;
+    typedef typename EvalType::ScalarT ScalarT;
     
     void setRealValue(double value)
     {

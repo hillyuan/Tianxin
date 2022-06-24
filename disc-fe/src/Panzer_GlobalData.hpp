@@ -45,7 +45,7 @@
 
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_FancyOStream.hpp"
-#include "Panzer_ParameterLibrary.hpp"
+#include "Panzer_Traits.hpp"
 
 #include <map>
 

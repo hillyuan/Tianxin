@@ -49,7 +49,7 @@
 #include "Phalanx_MDField.hpp"
 #include "Teuchos_RCP.hpp"
 
-#include "Panzer_ParameterLibrary.hpp"
+#include "Panzer_Traits.hpp"
 
 #include "Panzer_Evaluator_WithBaseImpl.hpp"
 
