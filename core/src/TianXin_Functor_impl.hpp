@@ -35,9 +35,46 @@
 // ***********************************************************************
 // @HEADER
 
-#include "TianXin_ParameterLibrary.hpp"
-//#include "Panzer_ExplicitTemplateInstantiation.hpp"
+#ifndef _TIANXIN_FUNCTOR_IMPL_HPP
+#define _TIANXIN_FUNCTOR_IMPL_HPP
 
-//PANZER_INSTANTIATE_TEMPLATE_CLASS_ONE_T(TianXin::MaterialBase)
+#include <Teuchos_Array.hpp>
 
-template class TianXin::ParameterLibrary<double>;
+namespace TianXin {
+
+// **************************************************************
+// Constat variables
+// **************************************************************
+
+template< typename T >
+ConstantFunctor<T>::ConstantFunctor(const Teuchos::ParameterList& params )
+: GeneralFunctor<T>(params)
+{
+	try {
+		const Teuchos::ParameterList& pl = params.sublist("Constant"); 
+		m_value = pl.get<Teuchos::Array<T>>("Value").toVector();
+	}
+	catch (std::exception& e) {
+		std::cout << e.what() << std::endl;
+	}
+}
+
+
+// **************************************************************
+// Tableted variables
+// **************************************************************
+
+/*template< typename T >
+TableParamter<T>::TableParamter(const Teuchos::ParameterList& params )
+: GeneralFunctor<T>(params)
+{
+	const Teuchos::ParameterList& pl = params.sublist("Constant"); 
+	auto& param = pl.get<std::vector<T>>("Value");
+	//m_value = evalT( {param} );
+}*/
+
+
+}
+
+
+#endif

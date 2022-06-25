@@ -51,7 +51,7 @@ namespace TianXin {
 template<typename EvalT, typename TRAITS>
 ParameterEvaluator<EvalT, TRAITS>::
 ParameterEvaluator(const std::string parameter_name,
-	      std::shared_ptr< TianXin::GeneralParameter<ScalarT> > pf,
+	      std::shared_ptr< TianXin::GeneralFunctor<ScalarT> > pf,
 	      const Teuchos::RCP<PHX::DataLayout>& data_layout)
 : pFunc(pf)
 {

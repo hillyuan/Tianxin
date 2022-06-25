@@ -35,8 +35,8 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _WORKSET_FUNCTOR_IMPL_HPP
-#define _WORKSET_FUNCTOR_IMPL_HPP
+#ifndef _TIANXIN_WORKSET_FUNCTOR_IMPL_HPP
+#define _TIANXIN_WORKSET_FUNCTOR_IMPL_HPP
 
 //#include <stk_expreval/Evaluator.hpp>
 
@@ -46,7 +46,7 @@ namespace TianXin {
 // ConstantFunctor
 // **************************************************************
 template<typename EvalT>
-ConstantFunctor<EvalT>::ConstantFunctor(const Teuchos::ParameterList& params )
+ConstantWorksetFunctor<EvalT>::ConstantWorksetFunctor(const Teuchos::ParameterList& params )
 : WorksetFunctor(params)
 {
 	const Teuchos::ParameterList& p = params.sublist("Constant"); 
@@ -55,7 +55,7 @@ ConstantFunctor<EvalT>::ConstantFunctor(const Teuchos::ParameterList& params )
 
 
 template<typename EvalT>
-double ConstantFunctor<EvalT> :: operator()(const panzer::Workset&)
+double ConstantWorksetFunctor<EvalT> :: operator()(const panzer::Workset&)
 {
     return m_value;
 }
@@ -64,7 +64,7 @@ double ConstantFunctor<EvalT> :: operator()(const panzer::Workset&)
 // LinearFunctor
 // **************************************************************
 template<typename EvalT>
-LinearFunctor<EvalT>::LinearFunctor(const Teuchos::ParameterList& params )
+LinearWorksetFunctor<EvalT>::LinearWorksetFunctor(const Teuchos::ParameterList& params )
 : WorksetFunctor(params)
 {
 	const Teuchos::ParameterList& p = params.sublist("Constant"); 
@@ -74,7 +74,7 @@ LinearFunctor<EvalT>::LinearFunctor(const Teuchos::ParameterList& params )
 
 
 template<typename EvalT>
-double LinearFunctor<EvalT> :: operator()(const panzer::Workset& wk)
+double LinearWorksetFunctor<EvalT> :: operator()(const panzer::Workset& wk)
 {
 	if( wk.time>= m_elapse_time ) return m_value;
 	if( wk.time<= 0.0 ) return 0.0;

@@ -45,7 +45,7 @@
 #include "Teuchos_RCP.hpp"
 
 #include "Panzer_Evaluator_WithBaseImpl.hpp"
-#include "TianXin_Parameter.hpp"
+#include "TianXin_Functor.hpp"
 
 namespace TianXin {
 
@@ -57,7 +57,7 @@ class ParameterEvaluator : public panzer::EvaluatorWithBaseImpl<TRAITS>,
   
   public:
     ParameterEvaluator(const std::string parameter_name,
-	      std::shared_ptr< TianXin::GeneralParameter<ScalarT> > pf,
+	      std::shared_ptr< TianXin::GeneralFunctor<ScalarT> > pf,
 	      const Teuchos::RCP<PHX::DataLayout>& data_layout);
     void postRegistrationSetup(typename panzer::Traits::SetupData d, PHX::FieldManager<panzer::Traits>& fm);
     void evaluateFields(typename TRAITS::EvalData ud);
@@ -66,7 +66,7 @@ class ParameterEvaluator : public panzer::EvaluatorWithBaseImpl<TRAITS>,
     PHX::MDField<ScalarT, panzer::Cell, panzer::Point> target_field;
 	PHX::MDField<ScalarT, panzer::Cell, panzer::Point, panzer::Dim> state_variables;
     unsigned int nitems;
-	std::shared_ptr< TianXin::GeneralParameter<ScalarT> > pFunc;
+	std::shared_ptr< TianXin::GeneralFunctor<ScalarT> > pFunc;
 };
 
 

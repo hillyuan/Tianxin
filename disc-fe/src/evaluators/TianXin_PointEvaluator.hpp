@@ -46,7 +46,7 @@
 
 #include "Teuchos_ParameterList.hpp"
 
-#include "TianXin_Functor.hpp"
+#include "TianXin_WorksetFunctor.hpp"
 #include "TianXin_AbstractDiscretation.hpp"
 #include "Panzer_GlobalIndexer.hpp"
 

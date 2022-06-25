@@ -35,8 +35,8 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _WORKSET_FUNCTOR_HPP
-#define _WORKSET_FUNCTOR_HPP
+#ifndef _TIANXIN_WORKSET_FUNCTOR_HPP
+#define _TIANXIN_WORKSET_FUNCTOR_HPP
 
 #include "Panzer_Workset.hpp"
 #include <Teuchos_ParameterList.hpp>
@@ -58,33 +58,33 @@ typedef Factory<WorksetFunctor,std::string,Teuchos::ParameterList> WorksetFuncto
 // **************************************************************
 
 template<typename EvalT>
-class ConstantFunctor : public WorksetFunctor
+class ConstantWorksetFunctor : public WorksetFunctor
 {
   public:
-    ConstantFunctor(const Teuchos::ParameterList& params );
+    ConstantWorksetFunctor(const Teuchos::ParameterList& params );
     double operator()(const panzer::Workset&) final;
   private:
     double m_value;
 };
 namespace FunctorRegister {
-	 static bool const ok = WorksetFunctorFactory::Instance().template Register< ConstantFunctor<double> >( "Constant");
+	 static bool const ok = WorksetFunctorFactory::Instance().template Register< ConstantWorksetFunctor<double> >( "Constant");
 }
 // **************************************************************
 // Linear function
 // **************************************************************
 
 template<typename EvalT>
-class LinearFunctor : public WorksetFunctor
+class LinearWorksetFunctor : public WorksetFunctor
 {
   public:
-    LinearFunctor(const Teuchos::ParameterList& params );
+    LinearWorksetFunctor(const Teuchos::ParameterList& params );
     double operator()(const panzer::Workset&) final;
   private:
     double m_elapse_time;
     double m_value;
 };
 namespace FunctorRegister {
-	static bool const ok1 = WorksetFunctorFactory::Instance().template Register< LinearFunctor<double> >( "Linear");
+	static bool const ok1 = WorksetFunctorFactory::Instance().template Register< LinearWorksetFunctor<double> >( "Linear");
 }
 
 // **************************************************************
@@ -150,6 +150,6 @@ bool const ok1 = WorksetFunctorFactory::Instance().Register( "Linear", createLin
 
 }
 
-#include "TianXin_Functor_impl.hpp"
+#include "TianXin_WorksetFunctor_impl.hpp"
 
 #endif

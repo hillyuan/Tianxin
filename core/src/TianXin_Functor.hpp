@@ -35,8 +35,8 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _TIANXIN_PARAMETER_HPP
-#define _TIANXIN_PARAMETER_HPP
+#ifndef _TIANXIN_FUNCTOR_HPP
+#define _TIANXIN_FUNCTOR_HPP
 
 #include <Teuchos_ParameterList.hpp>
 #include <vector>
@@ -44,9 +44,9 @@
 namespace TianXin {
 
 template< typename T >
-struct GeneralParameter
+struct GeneralFunctor
 {
-	GeneralParameter(const Teuchos::ParameterList& params ) {}
+	GeneralFunctor(const Teuchos::ParameterList& params ) {}
 	
 	virtual std::vector<T> operator()(std::initializer_list<T>) const = 0; 
 	virtual std::vector<T> operator()() const
@@ -64,10 +64,10 @@ struct GeneralParameter
 // **************************************************************
 
 template< typename T >
-class ConstantParamter : public GeneralParameter<T>
+class ConstantFunctor : public GeneralFunctor<T>
 {
     public:
-		ConstantParamter(const Teuchos::ParameterList& params );
+		ConstantFunctor(const Teuchos::ParameterList& params );
 		std::vector<T> operator()(std::initializer_list<T>) const final {return m_value;}
 		
 		unsigned int nitems() const final {return m_value.size();}
@@ -100,6 +100,6 @@ class TableParamter : public GeneralParameter<T>
 
 }
 
-#include "TianXin_Parameter_impl.hpp"
+#include "TianXin_Functor_impl.hpp"
 
 #endif

@@ -580,7 +580,7 @@ void panzer::FieldManagerBuilder::clearVolumeFieldManagers(bool clearVolumeWorks
 
 //=======================================================================
 //=======================================================================
-void panzer::FieldManagerBuilder::buildMaterials( const Teuchos::ParameterList& pl )
+/*void panzer::FieldManagerBuilder::buildMaterials( const Teuchos::ParameterList& pl )
 {
 	materials_.clear();
 	for (auto it=pl.begin(); it!= pl.end(); ++it) {
@@ -591,7 +591,7 @@ void panzer::FieldManagerBuilder::buildMaterials( const Teuchos::ParameterList& 
         std::string matl_name = sublist.name();
         materials_[matl_name] = std::make_shared<TianXin::ParameterLibrary<double>>(sublist);
     }
-}
+}*/
 
 //=======================================================================
 //=======================================================================

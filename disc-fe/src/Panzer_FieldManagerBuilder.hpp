@@ -53,7 +53,6 @@
 #include "Panzer_WorksetContainer.hpp"
 #include "TianXin_AbstractDiscretation.hpp"
 #include "TianXin_Dirichlet.hpp"
-#include "TianXin_ParameterLibrary.hpp"
 
 // Forward Declarations
 namespace panzer {
@@ -217,7 +216,7 @@ namespace panzer {
                                              const Teuchos::ParameterList& user_data,
                                              PHX::FieldManager<panzer::Traits> & fm) const;
 											 
-	void buildMaterials( const Teuchos::ParameterList& pl );
+	//void buildMaterials( const Teuchos::ParameterList& pl );
 
     //! Phalanx volume field managers for each element block.
     std::vector< Teuchos::RCP< PHX::FieldManager<panzer::Traits> > >
@@ -243,7 +242,7 @@ namespace panzer {
 	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_sourceterm_field_manager_;
 
     Teuchos::RCP<WorksetContainer> worksetContainer_;
-	std::unordered_map<std::string, std::shared_ptr<TianXin::ParameterLibrary<double>> > materials_;
+	//std::unordered_map<std::string, std::shared_ptr<TianXin::ParameterLibrary<double>> > materials_;
 
     /** Set to false by default, enables/disables physics block scattering in
       * newly created field managers.
