@@ -3,10 +3,6 @@
 
 #include "Panzer_ClosureModel_Factory.hpp"
 
-namespace panzer {
-  class InputEquationSet;
-}
-
 namespace mini_em {
 
 template<typename EvalT>

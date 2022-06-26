@@ -45,10 +45,6 @@
 
 #include "Panzer_ClosureModel_Factory.hpp"
 
-namespace panzer {
-  class InputEquationSet;
-}
-
 namespace user_app {
 
   template<typename EvalT>
@@ -67,6 +63,18 @@ namespace user_app {
 		       const Teuchos::ParameterList& user_data,
 		       const Teuchos::RCP<panzer::GlobalData>& global_data,
 		       PHX::FieldManager<panzer::Traits>& fm) const;
+
+    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
+    buildMaterialModels(const std::string& model_id,
+                                const Teuchos::ParameterList& models,
+                                const Teuchos::RCP<panzer::IntegrationRule>& ir,
+                                const Teuchos::RCP<panzer::GlobalData>& global_data,
+                                PHX::FieldManager<panzer::Traits>& fm) const
+    {
+        Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > evaluators =
+          Teuchos::rcp(new std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > );
+        return evaluators;
+    }
 
   private:
 

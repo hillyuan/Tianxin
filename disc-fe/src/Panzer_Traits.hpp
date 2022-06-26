@@ -63,7 +63,7 @@
 #include "Phalanx_Traits.hpp"
 
 // Include User Data Types
-//#include "Phalanx_Allocator_Contiguous.hpp"
+#include "TianXin_Functor.hpp"
 #include "Panzer_Workset.hpp"
 //#include "Panzer_GlobalEvaluationDataContainer.hpp"
 
@@ -154,7 +154,9 @@ namespace panzer {
   
   typedef Sacado::ScalarParameterLibrary<SacadoScalarTypeTraits> ParamLib;
   typedef Sacado::ScalarParameterVector<SacadoScalarTypeTraits> ParamVec;
- 
+  
+  typedef std::unordered_map<std::string, std::shared_ptr< TianXin::GeneralFunctor<Traits::RealType> > > FunctorLib;
+
 }
 
 namespace PHX {

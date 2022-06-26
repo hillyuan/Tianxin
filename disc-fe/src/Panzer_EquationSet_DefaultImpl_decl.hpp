@@ -108,6 +108,9 @@ namespace panzer {
                                                         const Teuchos::ParameterList& models,
                                                         const Teuchos::ParameterList& user_data) const;
 
+	void buildAndRegisterMaterialEvaluators(PHX::FieldManager<panzer::Traits>& fm,
+			const Teuchos::RCP<panzer::IntegrationRule>& ir) const;
+
     virtual const Teuchos::RCP<Teuchos::ParameterList> getEvaluatorParameterList() const;
     
     virtual const std::vector<std::pair<std::string,Teuchos::RCP<panzer::PureBasis> > > & getProvidedDOFs() const;
@@ -434,6 +437,8 @@ namespace panzer {
     std::string m_block_id;
     std::string m_type;
     std::vector<std::string> m_closure_model_ids;
+	std::string material_id;
+	std::vector<std::string> c0,c1,c2,c3;
 
     std::vector<std::vector<std::string> > m_coordinate_dofs;
 

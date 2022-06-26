@@ -45,6 +45,9 @@
 
 #include "Panzer_ScalarParameterEntry.hpp"
 #include "Teuchos_RCP.hpp"
+#include "TianXin_Functor.hpp"
+#include <memory>
+#include <string>
 
 namespace panzer {
 
@@ -53,6 +56,16 @@ namespace panzer {
   Teuchos::RCP<panzer::ScalarParameterEntry<EvaluationType> >
   createAndRegisterScalarParameter(const std::string name,
 				   panzer::ParamLib& pl);
+
+  /** \brief Allocates a parameter entry and registers with parameter library */
+  template<typename EvaluationType>
+  std::shared_ptr<TianXin::GeneralFunctor<EvaluationType> >
+  createAndRegisterFunctor(const Teuchos::ParameterList& params,
+				   panzer::FunctorLib& pf);
+
+  template<typename EvaluationType>
+  void createAndRegisterFunctor(const Teuchos::ParameterList& params,
+				   panzer::FunctorLib& pf);
 
   template<typename EvaluationType>
   Teuchos::RCP<panzer::ScalarParameterEntry<EvaluationType> >

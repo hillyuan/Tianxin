@@ -35,8 +35,8 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _TIANXIN_EVALUATOR_PARAMETER_HPP
-#define _TIANXIN_EVALUATOR_PARAMETER_HPP
+#ifndef _TIANXIN_EVALUATOR_FUNCTOR_HPP
+#define _TIANXIN_EVALUATOR_FUNCTOR_HPP
 
 #include "PanzerDiscFE_config.hpp"
 
@@ -48,22 +48,26 @@
 #include "TianXin_Functor.hpp"
 
 namespace TianXin {
+	
+// **************************************************************
+// This class defines functor evaluators act upon integration points of cell
+// **************************************************************
 
 template<typename EvalT, typename TRAITS>
-class ParameterEvaluator : public panzer::EvaluatorWithBaseImpl<TRAITS>,
+class FunctorEvaluator : public panzer::EvaluatorWithBaseImpl<TRAITS>,
     public PHX::EvaluatorDerived<EvalT, TRAITS> 
 {
 	typedef typename EvalT::ScalarT ScalarT;
   
   public:
-    ParameterEvaluator(const std::string parameter_name,
+    FunctorEvaluator(const std::string parameter_name,
 	      std::shared_ptr< TianXin::GeneralFunctor<ScalarT> > pf,
 	      const Teuchos::RCP<PHX::DataLayout>& data_layout);
     void postRegistrationSetup(typename panzer::Traits::SetupData d, PHX::FieldManager<panzer::Traits>& fm);
     void evaluateFields(typename TRAITS::EvalData ud);
     
   private:    
-    PHX::MDField<ScalarT, panzer::Cell, panzer::Point> target_field;
+    PHX::MDField<ScalarT, panzer::Cell, panzer::Point, panzer::Dim> target_field;
 	PHX::MDField<ScalarT, panzer::Cell, panzer::Point, panzer::Dim> state_variables;
     unsigned int nitems;
 	std::shared_ptr< TianXin::GeneralFunctor<ScalarT> > pFunc;
@@ -72,6 +76,6 @@ class ParameterEvaluator : public panzer::EvaluatorWithBaseImpl<TRAITS>,
 
 }
 
-//#include "TianXin_MaterialBase_impl.hpp"
+#include "TianXin_FunctorEvaluator_impl.hpp"
 
 #endif

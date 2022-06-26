@@ -56,7 +56,7 @@
 namespace TianXin {
 
 // **************************************************************
-// Generic Template Impelementation for constructor and PostReg
+// This class defines evaluators act upon DOF points specified by (sideset, dofname) pair
 // **************************************************************
 
 template<typename EvalT, typename Traits>

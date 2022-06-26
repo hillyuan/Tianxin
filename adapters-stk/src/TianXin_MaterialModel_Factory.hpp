@@ -3,7 +3,7 @@
 //
 //           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2022) YUAN Xi
+//                 Copyright (2022) Xi Yuan
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -35,16 +35,44 @@
 // ***********************************************************************
 // @HEADER
 
-#include "Kokkos_View_Fad.hpp"
+#ifndef _TIANXIN_MATERIAL_MODEL_FACTORY_HPP
+#define _TIANXIN_MATERIAL_MODEL_FACTORY_HPP
 
-#include "PanzerDiscFE_config.hpp"
+#include "Panzer_ClosureModel_Factory.hpp"
 
-#ifdef HAVE_PANZER_EXPLICIT_INSTANTIATION
 
-#include "Panzer_ExplicitTemplateInstantiation.hpp"
+namespace TianXin {
 
-#include "TianXin_ParameterEvaluator.hpp"
+template<typename EvalT>
+class MaterialModelFactory : public panzer::ClosureModelFactory<EvalT> {
 
-PANZER_INSTANTIATE_TEMPLATE_CLASS_TWO_T(TianXin::ParameterEvaluator)
+  public:
+    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
+    buildClosureModels(const std::string& model_id,
+		       const Teuchos::ParameterList& models,
+		       const panzer::FieldLayoutLibrary& fl,
+		       const Teuchos::RCP<panzer::IntegrationRule>& ir,
+		       const Teuchos::ParameterList& default_params,
+		       const Teuchos::ParameterList& user_data,
+		       const Teuchos::RCP<panzer::GlobalData>& global_data,
+		       PHX::FieldManager<panzer::Traits>& fm) const
+	{
+        Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > evaluators =
+          Teuchos::rcp(new std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > );
+        return evaluators;
+    }
+	
+    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
+    buildMaterialModels(const std::string& model_id,
+                                const Teuchos::ParameterList& models,
+                                const Teuchos::RCP<panzer::IntegrationRule>& ir,
+                                const Teuchos::RCP<panzer::GlobalData>& global_data,
+                                PHX::FieldManager<panzer::Traits>& fm) const;
+    
+};
+
+}
+
+#include "TianXin_MaterialModel_Factory_impl.hpp"
 
 #endif

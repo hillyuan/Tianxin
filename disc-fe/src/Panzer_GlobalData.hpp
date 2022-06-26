@@ -46,8 +46,10 @@
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_FancyOStream.hpp"
 #include "Panzer_Traits.hpp"
+#include "TianXin_Functor.hpp"
 
 #include <map>
+#include <unordered_map>
 
 namespace panzer {
   
@@ -70,6 +72,9 @@ namespace panzer {
 	
 	/** \brief Global constants */
     std::map< std::string, double > constants;
+	
+	/** \brief Global functions */
+    panzer::FunctorLib functors;
 
     /** \brief Get the output stream */
     std::ostream & out() 

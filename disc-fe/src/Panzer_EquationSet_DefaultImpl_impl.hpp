@@ -671,6 +671,20 @@ buildAndRegisterClosureModelEvaluators(PHX::FieldManager<panzer::Traits>& fm,
     this->template registerEvaluator<EvalT>(fm, (*evaluators)[i]);
 }
 
+// ***********************************************************************
+
+template <typename EvalT>
+void panzer::EquationSet_DefaultImpl<EvalT>::
+buildAndRegisterMaterialEvaluators(PHX::FieldManager<panzer::Traits>& fm,
+                                   const Teuchos::RCP<panzer::IntegrationRule>& ir) const
+{
+  std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >  evaluators;
+  
+  
+  for (auto& eval: evaluators)
+    this->template registerEvaluator<EvalT>(fm, eval);
+}
+
 
 // ***********************************************************************
 template <typename EvalT>

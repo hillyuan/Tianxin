@@ -45,10 +45,6 @@
 
 #include "Panzer_ClosureModel_Factory.hpp"
 
-namespace panzer {
-  class InputEquationSet;
-}
-
 namespace Example {
 
 template<typename EvalT>

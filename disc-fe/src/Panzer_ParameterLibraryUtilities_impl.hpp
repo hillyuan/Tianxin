@@ -47,8 +47,7 @@ namespace panzer {
 
   template<typename EvaluationType>
   Teuchos::RCP<panzer::ScalarParameterEntry<EvaluationType> >
-  createAndRegisterScalarParameter(const std::string name, 
-				   panzer::ParamLib& pl)
+  createAndRegisterScalarParameter(const std::string name, panzer::ParamLib& pl)
   {
     if (!pl.isParameter(name))
       pl.addParameterFamily(name,true,false);
@@ -67,6 +66,56 @@ namespace panzer {
     }
 
     return entry;
+  }
+  
+  template<typename EvaluationType>
+  std::shared_ptr<TianXin::GeneralFunctor<EvaluationType> >
+  createAndRegisterFunctor(const Teuchos::ParameterList& pl, panzer::FunctorLib& pfl)
+  {
+    //if (pl.find(name) != pl.end() )
+    //  pl.addParameterFamily(name,true,false);
+    
+    std::string pname = pl.name();
+	
+	if (pfl.find(pname) != pfl.end() ) 
+		return pfl[pname];
+	else {
+		auto& value_type = pl.get<std::string>("Value Type");
+		if( value_type.find("Parameter") != std::string::npos )  // Global parameter
+			return nullptr;
+		
+		if( value_type == "Constant" ) {
+			std::shared_ptr<TianXin::GeneralFunctor<EvaluationType>> pC(new TianXin::ConstantFunctor<EvaluationType>(pl));
+			pfl.insert( std::make_pair(pname, pC) );
+			return pC;
+		}
+	}
+  }
+  
+  template<typename EvaluationType>
+  void 
+  createAndRegisterFunctor(const Teuchos::ParameterList& pl, panzer::FunctorLib& pfl)
+  {
+    auto const& name = pl.name();
+	for(auto it = pl.begin(); it != pl.end(); ++it) {
+		try {
+			const auto& ppl = pl.sublist(it->first);
+			Teuchos::ParameterList pl(ppl);
+			std::string pname = pl.name();
+			auto& value_type = pl.get<std::string>("Value Type","Constant");
+			if( value_type.find("Parameter") != std::string::npos ) continue;
+			if( value_type == "Constant" ) {
+				pfl[pname] = std::shared_ptr<TianXin::GeneralFunctor<EvaluationType>>(new TianXin::ConstantFunctor<EvaluationType>(pl));
+			}
+			else if( value_type == "Table" ) {
+			//	const auto& p2 = pl.sublist("Table");
+			//	_dataT.emplace( pname, std::make_shared<ConstantParamter<T>>(new ConstantParamter<T>(p2)) );
+			}
+		}
+		catch (std::exception& e) {
+			std::cout << e.what() << std::endl;
+		}
+	}
   }
 
   template<typename EvaluationType>
