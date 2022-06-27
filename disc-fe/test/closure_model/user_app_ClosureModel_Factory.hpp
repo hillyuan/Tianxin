@@ -59,7 +59,7 @@ namespace user_app {
     void setDistributedParameterLOF(const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits> > & dpl)
     { distr_param_lof = dpl; }
 
-    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
+    std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
     buildClosureModels(const std::string& model_id,
 		       const Teuchos::ParameterList& models,
 		       const panzer::FieldLayoutLibrary& fl,

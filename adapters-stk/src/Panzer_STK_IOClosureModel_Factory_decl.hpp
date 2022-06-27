@@ -67,7 +67,7 @@ namespace panzer_stk {
                           const std::map<std::string,std::vector<std::string> > & nodalFields,
                           const std::map<std::string,std::vector<std::string> > & cellFields);
 
-    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
+    std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
     buildClosureModels(const std::string& model_id,
 		       const Teuchos::ParameterList& models,
 		       const panzer::FieldLayoutLibrary& fl,
@@ -120,7 +120,7 @@ namespace panzer_stk {
   };
 
   template < >
-  Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
+  std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
   panzer_stk::IOClosureModelFactory<panzer::Traits::Residual>::buildClosureModels(const std::string& model_id,
 		       const Teuchos::ParameterList& models,
 		       const panzer::FieldLayoutLibrary& fl,

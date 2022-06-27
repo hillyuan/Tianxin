@@ -54,7 +54,7 @@ namespace user_app {
 
     MyModelFactory_Physics1(bool throw_if_model_not_found);
 
-    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
+    std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
     buildClosureModels(const std::string& model_id,
 		       const Teuchos::ParameterList& models,
 		       const panzer::FieldLayoutLibrary& fl,

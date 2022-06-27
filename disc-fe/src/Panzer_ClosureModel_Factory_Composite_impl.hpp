@@ -64,7 +64,7 @@ ClosureModelFactoryComposite(const std::vector<Teuchos::RCP<panzer::ClosureModel
 
 // ********************************************************************
 template<typename EvalT>
-Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > 
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
 panzer::ClosureModelFactoryComposite<EvalT>::
 buildClosureModels(const std::string& model_id,
 		   const Teuchos::ParameterList& models, 
@@ -75,16 +75,12 @@ buildClosureModels(const std::string& model_id,
 		   const Teuchos::RCP<panzer::GlobalData>& global_data,
 		   PHX::FieldManager<panzer::Traits>& fm) const
 {
-
-  using std::string;
-  using std::vector;
   using Teuchos::RCP;
   using Teuchos::rcp;
   using Teuchos::ParameterList;
   using PHX::Evaluator;
 
-  RCP< vector< RCP<Evaluator<panzer::Traits> > > > evaluators = 
-    rcp(new vector< RCP<Evaluator<panzer::Traits> > > );
+  std::vector< RCP<Evaluator<panzer::Traits> > > evaluators;
 
   if (!models.isSublist(model_id)) {
     std::stringstream msg;
@@ -115,12 +111,12 @@ buildClosureModels(const std::string& model_id,
   for (std::vector<Teuchos::RCP<panzer::ClosureModelFactory_TemplateManager<panzer::Traits> > >::const_iterator factory = m_factories.begin(); factory != m_factories.end(); ++factory) {
     
     (*factory)->getAsObject<EvalT>()->setThrowOnModelNotFound(false);
-    RCP< vector< RCP<Evaluator<panzer::Traits> > > > tmp_evaluators =
+    std::vector< RCP<Evaluator<panzer::Traits> > > tmp_evaluators =
       (*factory)->getAsObject<EvalT>()->buildClosureModels(model_id,copy_of_my_model,fl,ir,default_params,user_data,global_data,fm);
 
-    if (tmp_evaluators->size() > 0) {
-      for (vector< RCP<Evaluator<panzer::Traits> > >::const_iterator eval = tmp_evaluators->begin(); eval != tmp_evaluators->end(); ++eval)
-        evaluators->push_back(*eval);
+    if (tmp_evaluators.size() > 0) {
+      for (std::vector< RCP<Evaluator<panzer::Traits> > >::const_iterator eval = tmp_evaluators.begin(); eval != tmp_evaluators.end(); ++eval)
+        evaluators.push_back(*eval);
     }
 
   }

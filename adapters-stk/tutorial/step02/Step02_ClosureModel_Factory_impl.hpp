@@ -62,7 +62,7 @@
 // ********************************************************************
 // ********************************************************************
 template<typename EvalT>
-Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > 
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
 user_app::ClosureModelFactory<EvalT>::
 buildClosureModels(const std::string& model_id,
     const Teuchos::ParameterList& models,
@@ -77,8 +77,7 @@ buildClosureModels(const std::string& model_id,
   using Teuchos::rcp;
   using Teuchos::ParameterList;
 
-  RCP<std::vector< RCP<PHX::Evaluator<panzer::Traits> > > > evaluators = 
-      rcp(new std::vector< RCP<PHX::Evaluator<panzer::Traits> > > );
+  std::vector< RCP<PHX::Evaluator<panzer::Traits> > > > evaluators;
 
   if (!models.isSublist(model_id)) {
     models.print(std::cout);
@@ -116,7 +115,7 @@ buildClosureModels(const std::string& model_id,
         input.set("Data Layout", ir->dl_scalar);
         RCP<PHX::Evaluator<panzer::Traits> > e =
               rcp(new panzer::Constant<EvalT,panzer::Traits>(input));
-        evaluators->push_back(e);
+        evaluators.push_back(e);
       }
 
       // add constant evaluator for each basis
@@ -128,7 +127,7 @@ buildClosureModels(const std::string& model_id,
         input.set("Data Layout", basis->functional);
         RCP<PHX::Evaluator<panzer::Traits> > e =
             rcp(new panzer::Constant<EvalT,panzer::Traits>(input));
-        evaluators->push_back(e);
+        evaluators.push_back(e);
       }
       found = true;
     }
@@ -142,7 +141,7 @@ buildClosureModels(const std::string& model_id,
 
         RCP<PHX::Evaluator<panzer::Traits> > e =
             rcp(new user_app::LinearFunction<EvalT,panzer::Traits>(key,acoeff,bcoeff,*ir));
-        evaluators->push_back(e);
+        evaluators.push_back(e);
 
         found = true;
       }

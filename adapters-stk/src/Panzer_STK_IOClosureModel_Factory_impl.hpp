@@ -107,7 +107,7 @@ parseOutputList(const Teuchos::ParameterList & pl,
 // ********************************************************************
 // ********************************************************************
 template<typename EvalT>
-Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > 
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
 panzer_stk::IOClosureModelFactory<EvalT>::
 buildClosureModels(const std::string& model_id,
 		   const Teuchos::ParameterList& models, 

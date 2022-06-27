@@ -25,7 +25,7 @@
 // ********************************************************************
 // ********************************************************************
 template<typename EvalT>
-Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > 
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
 mini_em::ModelFactory<EvalT>::
 buildClosureModels(const std::string& model_id,
 		   const Teuchos::ParameterList& models, 
@@ -36,15 +36,12 @@ buildClosureModels(const std::string& model_id,
 		   const Teuchos::RCP<panzer::GlobalData>& /* global_data */,
 		   PHX::FieldManager<panzer::Traits>& /* fm */) const
 {
-  using std::string;
-  using std::vector;
   using Teuchos::RCP;
   using Teuchos::rcp;
   using Teuchos::ParameterList;
   using PHX::Evaluator;
 
-  RCP< vector< RCP<Evaluator<panzer::Traits> > > > evaluators = 
-    rcp(new vector< RCP<Evaluator<panzer::Traits> > > );
+  std::vector< RCP<Evaluator<panzer::Traits> > > evaluators;
 
   if (!models.isSublist(model_id)) {
     models.print(std::cout);
@@ -76,7 +73,7 @@ buildClosureModels(const std::string& model_id,
 	input.set("Data Layout", ir->dl_scalar);
 	RCP< Evaluator<panzer::Traits> > e = 
 	  rcp(new panzer::Constant<EvalT,panzer::Traits>(input));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
       }
       
       for (std::vector<Teuchos::RCP<const panzer::PureBasis> >::const_iterator basis_itr = bases.begin();
@@ -88,7 +85,7 @@ buildClosureModels(const std::string& model_id,
 	input.set("Data Layout", basis->functional);
 	RCP< Evaluator<panzer::Traits> > e = 
 	  rcp(new panzer::Constant<EvalT,panzer::Traits>(input));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
       }
       found = true;
     }
@@ -99,7 +96,7 @@ buildClosureModels(const std::string& model_id,
         double dt = plist.get<double>("dt");
 	RCP< Evaluator<panzer::Traits> > e = 
 	  rcp(new mini_em::GaussianPulse<EvalT,panzer::Traits>(key,*ir,fl,dt));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
 
         found = true;
       }
@@ -109,7 +106,7 @@ buildClosureModels(const std::string& model_id,
         double max = plist.get<double>("range max");
 	RCP< Evaluator<panzer::Traits> > e =
 	  rcp(new mini_em::RandomForcing<EvalT,panzer::Traits>(key,*ir,fl,seed,min,max));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
 
         found = true;
       }
@@ -118,7 +115,7 @@ buildClosureModels(const std::string& model_id,
         std::string DoF = plist.get<std::string>("DoF Name");
 	RCP< Evaluator<panzer::Traits> > e =
 	  rcp(new mini_em::InversePermeability<EvalT,panzer::Traits>(key,*ir,fl,mu,DoF));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
 
         found = true;
       }
@@ -127,7 +124,7 @@ buildClosureModels(const std::string& model_id,
         std::string DoF = plist.get<std::string>("DoF Name");
 	RCP< Evaluator<panzer::Traits> > e =
 	  rcp(new mini_em::Permittivity<EvalT,panzer::Traits>(key,*ir,fl,epsilon,DoF));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
 
         found = true;
       }
@@ -136,7 +133,7 @@ buildClosureModels(const std::string& model_id,
         std::string DoF = plist.get<std::string>("DoF Name");
 	RCP< Evaluator<panzer::Traits> > e =
 	  rcp(new mini_em::Conductivity<EvalT,panzer::Traits>(key,*ir,fl,sigma,DoF));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
 
         found = true;
       }
@@ -148,7 +145,7 @@ buildClosureModels(const std::string& model_id,
         std::string DoF = plist.get<std::string>("DoF Name");
 	RCP< Evaluator<panzer::Traits> > e =
 	  rcp(new mini_em::TensorConductivity<EvalT,panzer::Traits>(key,*ir,fl,sigma,betax,betay,betaz,DoF));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
 
         found = true;
       }
@@ -172,7 +169,7 @@ buildClosureModels(const std::string& model_id,
                                                                             betax1,betay1,betaz1,
                                                                             betax2,betay2,betaz2,
                                                                             DoF));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
 
         found = true;
       }
@@ -188,7 +185,7 @@ buildClosureModels(const std::string& model_id,
 
           RCP< Evaluator<panzer::Traits> > e = 
 	    rcp(new panzer::DotProduct<EvalT,panzer::Traits>(input));
-	  evaluators->push_back(e);
+	  evaluators.push_back(e);
         }
 
         // compute (B, 1/mu * B)
@@ -203,7 +200,7 @@ buildClosureModels(const std::string& model_id,
 
             RCP< Evaluator<panzer::Traits> > e =
               rcp(new panzer::DotProduct<EvalT,panzer::Traits>(input));
-            evaluators->push_back(e);
+            evaluators.push_back(e);
           } else if (ir->spatial_dimension == 2) {
             Teuchos::ParameterList input;
             input.set("Product Name", "B_SQUARED");
@@ -216,7 +213,7 @@ buildClosureModels(const std::string& model_id,
 
             RCP< Evaluator<panzer::Traits> > e =
               rcp(new panzer::Product<EvalT,panzer::Traits>(input));
-            evaluators->push_back(e);
+            evaluators.push_back(e);
           }
         }
 
@@ -238,7 +235,7 @@ buildClosureModels(const std::string& model_id,
 
           RCP< Evaluator<panzer::Traits> > e = 
 	    rcp(new panzer::Sum<EvalT,panzer::Traits>(input));
-	  evaluators->push_back(e);
+	  evaluators.push_back(e);
         }
 
         {
@@ -254,7 +251,7 @@ buildClosureModels(const std::string& model_id,
 
           RCP< Evaluator<panzer::Traits> > e =
 	    rcp(new panzer::Product<EvalT,panzer::Traits>(input));
-	  evaluators->push_back(e);
+	  evaluators.push_back(e);
         }
  
         found = true;

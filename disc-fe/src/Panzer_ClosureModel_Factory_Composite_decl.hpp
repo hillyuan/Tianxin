@@ -55,7 +55,7 @@ namespace panzer {
 
     ClosureModelFactoryComposite(const std::vector<Teuchos::RCP<panzer::ClosureModelFactory_TemplateManager<panzer::Traits> > >& factories);
 
-    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
+    std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
     buildClosureModels(const std::string& model_id,
 		       const Teuchos::ParameterList& models,
 		       const panzer::FieldLayoutLibrary& fl,

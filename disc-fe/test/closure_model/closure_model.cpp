@@ -92,24 +92,22 @@ namespace panzer {
 
     user_app::MyModelFactory<panzer::Traits::Residual> mf;
 
-    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > evaluators;
-
     Teuchos::ParameterList user_data("User Data");
 
     Teuchos::RCP<panzer::GlobalData> gd = panzer::createGlobalData();
 
     PHX::FieldManager<panzer::Traits> fm;
 
-    evaluators = mf.buildClosureModels(model_id, p, fl, ir, eqset_params, user_data, gd, fm);
+    std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > evaluators = mf.buildClosureModels(model_id, p, fl, ir, eqset_params, user_data, gd, fm);
 
-    TEST_EQUALITY(evaluators->size(), 8);
+    TEST_EQUALITY(evaluators.size(), 8);
 
     user_app::MyModelFactory_TemplateBuilder builder;
     panzer::ClosureModelFactory_TemplateManager<panzer::Traits> model_factory;
     model_factory.buildObjects(builder);
     evaluators = model_factory.getAsObject<panzer::Traits::Residual>()->buildClosureModels(model_id, p, fl, ir, eqset_params, user_data, gd, fm);
 
-    TEST_EQUALITY(evaluators->size(), 8);
+    TEST_EQUALITY(evaluators.size(), 8);
 
     // Add an unsupported type
     p.sublist("fluid model").sublist("garbage").set<std::string>("Value","help!");

@@ -52,7 +52,7 @@ namespace user_app {
 
   public:
 
-    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
+    std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
     buildClosureModels(const std::string& model_id,
 		       const Teuchos::ParameterList& models,
 		       const panzer::FieldLayoutLibrary& fl,

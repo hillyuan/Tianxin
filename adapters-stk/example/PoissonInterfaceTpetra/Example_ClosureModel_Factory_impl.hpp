@@ -59,7 +59,7 @@
 // ********************************************************************
 // ********************************************************************
 template<typename EvalT>
-Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > 
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
 Example::ModelFactory<EvalT>::
 buildClosureModels(const std::string& model_id,
 		   const Teuchos::ParameterList& models, 
@@ -70,15 +70,12 @@ buildClosureModels(const std::string& model_id,
 		   const Teuchos::RCP<panzer::GlobalData>& /* global_data */,
 		   PHX::FieldManager<panzer::Traits>& /* fm */) const
 {
-  using std::string;
-  using std::vector;
   using Teuchos::RCP;
   using Teuchos::rcp;
   using Teuchos::ParameterList;
   using PHX::Evaluator;
 
-  RCP< vector< RCP<Evaluator<panzer::Traits> > > > evaluators = 
-    rcp(new vector< RCP<Evaluator<panzer::Traits> > > );
+  std::vector< RCP<Evaluator<panzer::Traits> > > evaluators;
 
   if (!models.isSublist(model_id)) {
     models.print(std::cout);
@@ -110,7 +107,7 @@ buildClosureModels(const std::string& model_id,
 	input.set("Data Layout", ir->dl_scalar);
 	RCP< Evaluator<panzer::Traits> > e = 
 	  rcp(new panzer::Constant<EvalT,panzer::Traits>(input));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
       }
       
       for (std::vector<Teuchos::RCP<const panzer::PureBasis> >::const_iterator basis_itr = bases.begin();
@@ -121,7 +118,7 @@ buildClosureModels(const std::string& model_id,
 	input.set("Data Layout", basis->functional);
 	RCP< Evaluator<panzer::Traits> > e = 
 	  rcp(new panzer::Constant<EvalT,panzer::Traits>(input));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
       }
       found = true;
     }
@@ -130,15 +127,15 @@ buildClosureModels(const std::string& model_id,
       const std::string type = plist.get<std::string>("Type");
       if (type == "SIMPLE SOURCE") {
 	RCP<Evaluator<panzer::Traits> > e = rcp(new Example::SimpleSource<EvalT,panzer::Traits>(key, *ir));
-	evaluators->push_back(e);
+	evaluators.push_back(e);
         found = true;
       } else if (type == "EXACT") {
         RCP<Evaluator<panzer::Traits> > e = rcp(new Example::Solution<EvalT,panzer::Traits>(key, *ir));
-        evaluators->push_back(e);
+        evaluators.push_back(e);
         found = true;
       } else if (type == "EXACT nonlinear Robin") {
         RCP<Evaluator<panzer::Traits> > e = rcp(new Example::Solution<EvalT,panzer::Traits>(key, *ir, false));
-        evaluators->push_back(e);
+        evaluators.push_back(e);
         found = true;
       } else if (type == "ERROR_CALC") {
         {
@@ -157,7 +154,7 @@ buildClosureModels(const std::string& model_id,
           p.set("Data Layout", ir->dl_scalar);
   
           RCP<Evaluator<panzer::Traits> > e = rcp(new panzer::Sum<EvalT,panzer::Traits>(p));
-          evaluators->push_back(e);
+          evaluators.push_back(e);
         }
         {
           std::vector<std::string> values(2);
@@ -170,7 +167,7 @@ buildClosureModels(const std::string& model_id,
           p.set("Data Layout",ir->dl_scalar);
   
           RCP<Evaluator<panzer::Traits> > e = rcp(new panzer::Product<EvalT,panzer::Traits>(p));
-          evaluators->push_back(e);
+          evaluators.push_back(e);
         }
         found = true;
       }

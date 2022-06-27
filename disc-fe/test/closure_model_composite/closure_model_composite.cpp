@@ -100,7 +100,7 @@ namespace panzer {
     }
 
     // default data
-    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > evaluators;
+    std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > evaluators;
     Teuchos::ParameterList user_data("User Data");
     user_data.set("Comm",Teuchos::DefaultComm<int>::getComm());
     Teuchos::RCP<panzer::GlobalData> gd = panzer::createGlobalData();
@@ -110,7 +110,7 @@ namespace panzer {
       user_app::MyModelFactory_Physics1<panzer::Traits::Residual> p1(false);
       PHX::FieldManager<panzer::Traits> fm;
       evaluators = p1.buildClosureModels(model_id, p, fl, ir, eqset_params, user_data, gd, fm);
-      TEST_EQUALITY(evaluators->size(), 8);
+      TEST_EQUALITY(evaluators.size(), 8);
     }
 
     // Prove Physics 2 builds the global statistics evaluator
@@ -118,7 +118,7 @@ namespace panzer {
       user_app::MyModelFactory_Physics2<panzer::Traits::Residual> p2(false);
       PHX::FieldManager<panzer::Traits> fm;
       evaluators = p2.buildClosureModels(model_id, p, fl, ir, eqset_params, user_data, gd, fm);
-      TEST_EQUALITY(evaluators->size(), 1);
+      TEST_EQUALITY(evaluators.size(), 1);
     }
     
     PHX::FieldManager<panzer::Traits> fm;
@@ -142,7 +142,7 @@ namespace panzer {
 
     evaluators = model_factory_composite.getAsObject<panzer::Traits::Residual>()->buildClosureModels(model_id, p, fl, ir, eqset_params, user_data, gd, fm);
     
-    TEST_EQUALITY(evaluators->size(), 9);
+    TEST_EQUALITY(evaluators.size(), 9);
     
     // Add an unsupported type 
 

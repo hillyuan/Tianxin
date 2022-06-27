@@ -51,8 +51,8 @@ template<typename EvalT>
 class ClosureModelFactory : public panzer::ClosureModelFactory<EvalT> {
 public:
 
-  Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
-  buildClosureModels(const std::string& model_id,
+    std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
+    buildClosureModels(const std::string& model_id,
                      const Teuchos::ParameterList& models,
                      const panzer::FieldLayoutLibrary& fl,
                      const Teuchos::RCP<panzer::IntegrationRule>& ir,

@@ -634,7 +634,7 @@ buildAndRegisterClosureModelEvaluators(PHX::FieldManager<panzer::Traits>& fm,
           Teuchos::RCP<panzer::IntegrationRule> ir = ir_iter->second;
 
           // call directly to the closure models
-          Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > evaluators =
+          std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > evaluators =
             eval_type->buildClosureModels(model_name,
                                           models,
                                           *m_field_lib->buildFieldLayoutLibrary(*ir),
@@ -646,7 +646,7 @@ buildAndRegisterClosureModelEvaluators(PHX::FieldManager<panzer::Traits>& fm,
 
           // register the constructed evaluators
           const int di = eval_type->setDetailsIndex(this->getDetailsIndex());
-          eval_type->registerEvaluators(*evaluators,fm);
+          eval_type->registerEvaluators(evaluators,fm);
           eval_type->setDetailsIndex(di);
         }
       }

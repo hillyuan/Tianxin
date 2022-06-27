@@ -49,7 +49,7 @@
 #include "Panzer_STK_ScatterFields.hpp"
 
 template< >
-Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > 
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
 panzer_stk::IOClosureModelFactory<panzer::Traits::Residual>::
 buildClosureModels(const std::string& model_id,
 		   const Teuchos::ParameterList& models,
@@ -64,12 +64,11 @@ buildClosureModels(const std::string& model_id,
   using Teuchos::rcp;
 
   // build user evaluators
-  RCP< std::vector< RCP<PHX::Evaluator<panzer::Traits> > > > user_evals = 
+  std::vector< RCP<PHX::Evaluator<panzer::Traits> > > user_evals = 
     userCMF_->buildClosureModels(model_id,models,fl,ir,default_params,user_data,global_data,fm);
 
   // add user evaluators to evaluator list
-  RCP< std::vector< RCP<PHX::Evaluator<panzer::Traits> > > > evaluators = 
-    rcp(new std::vector< RCP<PHX::Evaluator<panzer::Traits> > > );
+  std::vector< RCP<PHX::Evaluator<panzer::Traits> > > evaluators;
 
   // extract element block id
   std::string block_id = default_params.get<std::string>("Block ID");
@@ -95,7 +94,7 @@ buildClosureModels(const std::string& model_id,
         fm.registerEvaluator<panzer::Traits::Residual>(eval);
         fm.requireField<panzer::Traits::Residual>(*eval->evaluatedFields()[0]);
    
-        evaluators->push_back(eval);
+        evaluators.push_back(eval);
    
         blockIdEvaluated_[block_id] = true;
      } 
@@ -116,7 +115,7 @@ buildClosureModels(const std::string& model_id,
         fm.registerEvaluator<panzer::Traits::Residual>(eval);
         fm.requireField<panzer::Traits::Residual>(*eval->evaluatedFields()[0]);
    
-        evaluators->push_back(eval);
+        evaluators.push_back(eval);
    
         blockIdEvaluated_[block_id] = true;
      } 
@@ -137,7 +136,7 @@ buildClosureModels(const std::string& model_id,
         fm.registerEvaluator<panzer::Traits::Residual>(eval);
         fm.requireField<panzer::Traits::Residual>(*eval->evaluatedFields()[0]);
    
-        evaluators->push_back(eval);
+        evaluators.push_back(eval);
    
         blockIdEvaluated_[block_id] = true;
      } 
@@ -155,13 +154,13 @@ buildClosureModels(const std::string& model_id,
         fm.registerEvaluator<panzer::Traits::Residual>(eval);
         fm.requireField<panzer::Traits::Residual>(*eval->evaluatedFields()[0]);
    
-        evaluators->push_back(eval);
+        evaluators.push_back(eval);
    
         blockIdEvaluated_[block_id] = true;
      } 
   }
 
-  evaluators->insert(evaluators->end(),user_evals->begin(),user_evals->end()); 
+  evaluators.insert(evaluators.end(),user_evals.begin(),user_evals.end()); 
 
   return evaluators;
 }

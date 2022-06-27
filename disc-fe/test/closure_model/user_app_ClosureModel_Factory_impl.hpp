@@ -71,7 +71,7 @@
 // ********************************************************************
 // ********************************************************************
 template<typename EvalT>
-Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > 
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
 user_app::MyModelFactory<EvalT>::
 buildClosureModels(const std::string& model_id,
     const Teuchos::ParameterList& models,
@@ -82,16 +82,12 @@ buildClosureModels(const std::string& model_id,
     const Teuchos::RCP<panzer::GlobalData>& global_data,
     PHX::FieldManager<panzer::Traits>& fm) const
 {
-
-  using std::string;
-  using std::vector;
   using Teuchos::RCP;
   using Teuchos::rcp;
   using Teuchos::ParameterList;
   using PHX::Evaluator;
 
-  RCP< vector< RCP<Evaluator<panzer::Traits> > > > evaluators = 
-      rcp(new vector< RCP<Evaluator<panzer::Traits> > > );
+  std::vector< RCP<Evaluator<panzer::Traits> > > evaluators;
 
   if (!models.isSublist(model_id)) {
     models.print(std::cout);
@@ -130,7 +126,7 @@ buildClosureModels(const std::string& model_id,
           { // at IP
             RCP< Evaluator<panzer::Traits> > e =
                 rcp(new panzer::Parameter<EvalT,panzer::Traits>(parameter_name,field_name,ir->dl_scalar,*global_data->pl));
-            evaluators->push_back(e);
+            evaluators.push_back(e);
           }
 
           for (std::vector<Teuchos::RCP<const panzer::PureBasis> >::const_iterator basis_itr = bases.begin();
@@ -138,7 +134,7 @@ buildClosureModels(const std::string& model_id,
             Teuchos::RCP<const panzer::BasisIRLayout> basis = basisIRLayout(*basis_itr,*ir);
             RCP< Evaluator<panzer::Traits> > e =
                 rcp(new panzer::Parameter<EvalT,panzer::Traits>(parameter_name,field_name,basis->functional,*global_data->pl));
-            evaluators->push_back(e);
+            evaluators.push_back(e);
           }
 
           found = true;
@@ -169,7 +165,7 @@ buildClosureModels(const std::string& model_id,
 
             RCP< PHX::Evaluator<panzer::Traits> > e = distr_param_lof->buildGatherDomain<EvalT>(p);
 
-            evaluators->push_back(e);
+            evaluators.push_back(e);
           }
 
           {
@@ -180,7 +176,7 @@ buildClosureModels(const std::string& model_id,
 
             RCP< PHX::Evaluator<panzer::Traits> > e = rcp(new panzer::DOF<EvalT,panzer::Traits>(p));
 
-            evaluators->push_back(e);
+            evaluators.push_back(e);
           }
 
           found = true;
@@ -202,7 +198,7 @@ buildClosureModels(const std::string& model_id,
   
             RCP< panzer::Product<EvalT,panzer::Traits> > e = 
               rcp(new panzer::Product<EvalT,panzer::Traits>(input));
-            evaluators->push_back(e);
+            evaluators.push_back(e);
           }
   
           found = true;
@@ -217,7 +213,7 @@ buildClosureModels(const std::string& model_id,
           input.set("Data Layout", ir->dl_scalar);
           RCP< Evaluator<panzer::Traits> > e =
               rcp(new panzer::Constant<EvalT,panzer::Traits>(input));
-          evaluators->push_back(e);
+          evaluators.push_back(e);
         }
         // at BASIS
         for (std::vector<Teuchos::RCP<const panzer::PureBasis> >::const_iterator basis_itr = bases.begin();
@@ -229,7 +225,7 @@ buildClosureModels(const std::string& model_id,
           input.set("Data Layout", basis->functional);
           RCP< Evaluator<panzer::Traits> > e =
               rcp(new panzer::Constant<EvalT,panzer::Traits>(input));
-          evaluators->push_back(e);
+          evaluators.push_back(e);
         }
         found = true;
       }
@@ -247,7 +243,7 @@ buildClosureModels(const std::string& model_id,
           input.set("Global Data", global_data);
           RCP< panzer::GlobalStatistics<EvalT,panzer::Traits> > e =
               rcp(new panzer::GlobalStatistics<EvalT,panzer::Traits>(input));
-          evaluators->push_back(e);
+          evaluators.push_back(e);
 
           // Require certain fields be evaluated
           fm.template requireField<EvalT>(e->getRequiredFieldTag());
@@ -259,7 +255,7 @@ buildClosureModels(const std::string& model_id,
 
         RCP<panzer::FieldSpy<EvalT,panzer::Traits> > e =
             rcp(new panzer::FieldSpy<EvalT,panzer::Traits>(source,ir->dl_scalar));
-        evaluators->push_back(e);
+        evaluators.push_back(e);
 
         fm.template requireField<EvalT>(e->getRequiredFieldTag());
 
@@ -270,7 +266,7 @@ buildClosureModels(const std::string& model_id,
 
         RCP<panzer::FieldSpy<EvalT,panzer::Traits> > e =
             rcp(new panzer::FieldSpy<EvalT,panzer::Traits>(source,bases[0]->functional));
-        evaluators->push_back(e);
+        evaluators.push_back(e);
 
         fm.template requireField<EvalT>(e->getRequiredFieldTag());
 
@@ -288,7 +284,7 @@ buildClosureModels(const std::string& model_id,
         input.set("Data Layout", ir->dl_scalar);
         RCP< Evaluator<panzer::Traits> > e =
             rcp(new panzer::Constant<EvalT,panzer::Traits>(input));
-        evaluators->push_back(e);
+        evaluators.push_back(e);
       }
 
       {
@@ -299,7 +295,7 @@ buildClosureModels(const std::string& model_id,
 
         RCP< Evaluator<panzer::Traits> > e =
             rcp(new panzer::Integrator_Scalar<EvalT,panzer::Traits>(input));
-        evaluators->push_back(e);
+        evaluators.push_back(e);
       }
 
       found = true;
@@ -318,7 +314,7 @@ buildClosureModels(const std::string& model_id,
 
         RCP< Evaluator<panzer::Traits> > e = 
             rcp(new panzer::CoordinatesEvaluator<EvalT,panzer::Traits>(input));
-        evaluators->push_back(e);
+        evaluators.push_back(e);
       }
 
       found = true;

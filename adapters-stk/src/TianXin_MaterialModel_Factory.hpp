@@ -47,7 +47,7 @@ template<typename EvalT>
 class MaterialModelFactory : public panzer::ClosureModelFactory<EvalT> {
 
   public:
-    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
+    std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
     buildClosureModels(const std::string& model_id,
 		       const Teuchos::ParameterList& models,
 		       const panzer::FieldLayoutLibrary& fl,
@@ -57,8 +57,7 @@ class MaterialModelFactory : public panzer::ClosureModelFactory<EvalT> {
 		       const Teuchos::RCP<panzer::GlobalData>& global_data,
 		       PHX::FieldManager<panzer::Traits>& fm) const
 	{
-        Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > evaluators =
-          Teuchos::rcp(new std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > );
+        std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > evaluators;
         return evaluators;
     }
 	

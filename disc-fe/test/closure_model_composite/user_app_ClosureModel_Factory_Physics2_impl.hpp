@@ -65,7 +65,7 @@ user_app::MyModelFactory_Physics2<EvalT>::MyModelFactory_Physics2(bool throw_if_
 
 // ********************************************************************
 template<typename EvalT>
-Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > 
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
 user_app::MyModelFactory_Physics2<EvalT>::
 buildClosureModels(const std::string& model_id,
 		   const Teuchos::ParameterList& models, 
@@ -76,16 +76,12 @@ buildClosureModels(const std::string& model_id,
 		   const Teuchos::RCP<panzer::GlobalData>& global_data,
 		   PHX::FieldManager<panzer::Traits>& fm) const
 {
-
-  using std::string;
-  using std::vector;
   using Teuchos::RCP;
   using Teuchos::rcp;
   using Teuchos::ParameterList;
   using PHX::Evaluator;
 
-  RCP< vector< RCP<Evaluator<panzer::Traits> > > > evaluators = 
-    rcp(new vector< RCP<Evaluator<panzer::Traits> > > );
+  std::vector< RCP<Evaluator<panzer::Traits> > > evaluators;
 
   if (!models.isSublist(model_id)) {
     models.print(std::cout);
@@ -119,7 +115,7 @@ buildClosureModels(const std::string& model_id,
 	  input.set("Global Data", global_data);
 	  RCP< panzer::GlobalStatistics<EvalT,panzer::Traits> > e = 
 	    rcp(new panzer::GlobalStatistics<EvalT,panzer::Traits>(input));
-	  evaluators->push_back(e);
+	  evaluators.push_back(e);
 	  
 	  // Require certain fields be evaluated
 	  fm.template requireField<EvalT>(e->getRequiredFieldTag());
