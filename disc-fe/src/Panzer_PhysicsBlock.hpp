@@ -197,6 +197,10 @@ namespace panzer {
                                             const Teuchos::ParameterList& models,
                                             const Teuchos::ParameterList& user_data) const;
 
+    void buildAndRegisterMaterialEvaluators(PHX::FieldManager<panzer::Traits>& fm,
+                                   const Teuchos::RCP<panzer::IntegrationRule>& ir,
+                                   const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory) const;
+
     template<typename EvalT>
     void buildAndRegisterEquationSetEvaluatorsForType(PHX::FieldManager<panzer::Traits>& fm,
                                                       const Teuchos::ParameterList& user_data) const;
@@ -267,6 +271,12 @@ namespace panzer {
     { return m_input_parameters; }
 	
 	bool isDotDot() const;
+	
+	std::string getMaterialName() const
+	{ return m_material_id; }
+	
+	void setMaterialName(const std::string name)
+	{ m_material_id = name; }
 
   protected:
     void initialize(const Teuchos::RCP<Teuchos::ParameterList>& input_parameters,
@@ -278,6 +288,7 @@ namespace panzer {
 
     std::string m_physics_id;
     std::string m_element_block_id;
+	std::string m_material_id;
     int m_default_integration_order;
     panzer::CellData m_cell_data;
     //! store the input parameter list for copy ctors

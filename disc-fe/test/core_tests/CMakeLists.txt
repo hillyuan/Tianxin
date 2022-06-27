@@ -64,11 +64,11 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   NUM_MPI_PROCS 1
   )
   
-#TRIBITS_ADD_EXECUTABLE_AND_TEST(
-#  material
-#  SOURCES material.cpp ${UNIT_TEST_DRIVER}
-#  NUM_MPI_PROCS 1
-#  )
+TRIBITS_ADD_EXECUTABLE_AND_TEST(
+  general_functor
+  SOURCES general_functor.cpp ${UNIT_TEST_DRIVER}
+  NUM_MPI_PROCS 1
+  )
 
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
   element_block_to_physics_block_map

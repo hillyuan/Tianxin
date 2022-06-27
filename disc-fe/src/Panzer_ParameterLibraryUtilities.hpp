@@ -58,10 +58,10 @@ namespace panzer {
 				   panzer::ParamLib& pl);
 
   /** \brief Allocates a parameter entry and registers with parameter library */
-  template<typename EvaluationType>
+  /*template<typename EvaluationType>
   std::shared_ptr<TianXin::GeneralFunctor<EvaluationType> >
   createAndRegisterFunctor(const Teuchos::ParameterList& params,
-				   panzer::FunctorLib& pf);
+				   panzer::FunctorLib& pf);*/
 
   template<typename EvaluationType>
   void createAndRegisterFunctor(const Teuchos::ParameterList& params,

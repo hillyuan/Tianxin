@@ -129,6 +129,11 @@ namespace panzer {
 							const Teuchos::ParameterList& models,
 							const Teuchos::ParameterList& user_data) const = 0;
 
+    virtual void buildAndRegisterMaterialEvaluators(PHX::FieldManager<panzer::Traits>& fm,
+                            const Teuchos::RCP<panzer::IntegrationRule>& ir,
+		                    const std::string& material_name,
+                            const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory) const = 0;
+
     ///@}
 
     /// \name Query Methods

@@ -677,10 +677,11 @@ template <typename EvalT>
 void panzer::EquationSet_DefaultImpl<EvalT>::
 buildAndRegisterMaterialEvaluators(PHX::FieldManager<panzer::Traits>& fm,
                                    const Teuchos::RCP<panzer::IntegrationRule>& ir,
+		                           const std::string& material_name,
                                    const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory) const
 {
   std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > evaluators = 
-    factory.getAsObject<EvalT>()->buildMaterialModels(ir, m_gd, fm);
+    factory.getAsObject<EvalT>()->buildMaterialModels(ir, material_name, m_gd, fm);
 
   for (auto& eval: evaluators)
     this->template registerEvaluator<EvalT>(fm, eval);

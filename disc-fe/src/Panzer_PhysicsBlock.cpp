@@ -654,6 +654,44 @@ buildAndRegisterClosureModelEvaluators(PHX::FieldManager<panzer::Traits>& fm,
   }
 }
 
+// *******************************************************************
+void panzer::PhysicsBlock::
+buildAndRegisterMaterialEvaluators(PHX::FieldManager<panzer::Traits>& fm,
+                                   const Teuchos::RCP<panzer::IntegrationRule>& ir,
+                                   const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory) const
+{
+  using namespace std;
+  using namespace panzer;
+  using namespace Teuchos;
+
+  // Loop over equation set template managers
+  vector< RCP<EquationSet_TemplateManager<panzer::Traits> > >::const_iterator
+    eq_set = m_equation_sets.begin();
+  for (;eq_set != m_equation_sets.end(); ++eq_set) {
+
+    // Loop over evaluation types
+    EquationSet_TemplateManager<panzer::Traits> eqstm = *(*eq_set);
+    EquationSet_TemplateManager<panzer::Traits>::iterator eval_type =
+      eqstm.begin();
+    int idx = 0;
+    for (; eval_type != eqstm.end(); ++eval_type,++idx) {
+      if (m_active_evaluation_types[idx]) {
+
+        // Loop over integration rules
+        for (std::map<int,Teuchos::RCP<panzer::IntegrationRule> >::const_iterator ir_iter = m_integration_rules.begin();
+             ir_iter != m_integration_rules.end(); ++ ir_iter) {
+
+          Teuchos::RCP<panzer::IntegrationRule> ir = ir_iter->second;
+
+          const int di = eval_type->setDetailsIndex(this->getDetailsIndex());
+          eval_type->buildAndRegisterMaterialEvaluators(fm, ir, m_material_id, factory);
+          eval_type->setDetailsIndex(di);
+        }
+      }
+    }
+  }
+}
+
 
 // *******************************************************************
 const std::vector<std::string>& panzer::PhysicsBlock::getDOFNames() const

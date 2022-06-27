@@ -40,11 +40,11 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "TianXin_ParameterLibrary.hpp"
+#include "Panzer_ParameterLibraryUtilities.hpp"
 
 namespace TianXin {
 
-	TEUCHOS_UNIT_TEST(material, default)
+	TEUCHOS_UNIT_TEST(functor, default)
 	{
 		Teuchos::ParameterList plmain("Fe");
 		{	
@@ -63,15 +63,15 @@ namespace TianXin {
 		//std::cout << "**Name=" << plmain.name() << std::endl;
 		//plmain.print();
 		
-		TianXin::ParameterLibrary<double> matl(plmain);
-		//matl.print();
+		panzer::FunctorLib functors;
+		panzer::createAndRegisterFunctor<double>(plmain,functors);
 		
-		TEST_EQUALITY(matl.find("Density"), true);
-		TEST_EQUALITY(matl.find("Elasticity"), true);
-		
-		const auto& a = matl.eval("Density");
+		TEST_EQUALITY(functors.find("Fe->Density")!=functors.end(), true);
+		TEST_EQUALITY(functors.find("Fe->Elasticity")!=functors.end(), true);
+
+		const auto& a = (*functors["Fe->Density"])();
 		TEST_EQUALITY(a[0], 10.0);
-		const auto& b = matl.eval("Elasticity");
+		const auto& b = (*functors["Fe->Elasticity"])();
 		TEST_EQUALITY(b[0], 1000.0);
 		TEST_EQUALITY(b[1], 0.3);
 	}

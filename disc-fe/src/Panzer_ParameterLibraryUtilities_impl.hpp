@@ -68,7 +68,7 @@ namespace panzer {
     return entry;
   }
   
-  template<typename EvaluationType>
+  /*template<typename EvaluationType>
   std::shared_ptr<TianXin::GeneralFunctor<EvaluationType> >
   createAndRegisterFunctor(const Teuchos::ParameterList& pl, panzer::FunctorLib& pfl)
   {
@@ -90,7 +90,7 @@ namespace panzer {
 			return pC;
 		}
 	}
-  }
+  }*/
   
   template<typename EvaluationType>
   void 

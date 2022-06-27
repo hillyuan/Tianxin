@@ -73,8 +73,8 @@ namespace panzer {
 	/** \brief Global constants */
     std::map< std::string, double > constants;
 	
-	/** \brief Global functions */
-    panzer::FunctorLib functors;
+	/** \brief Global functions grouped by name */
+    std::unordered_map<std::string, panzer::FunctorLib> functors;
 
     /** \brief Get the output stream */
     std::ostream & out() 

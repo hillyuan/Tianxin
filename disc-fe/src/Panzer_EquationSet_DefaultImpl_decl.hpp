@@ -110,7 +110,8 @@ namespace panzer {
 
 	void buildAndRegisterMaterialEvaluators(PHX::FieldManager<panzer::Traits>& fm,
                                    const Teuchos::RCP<panzer::IntegrationRule>& ir,
-                                   const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory) const;
+		                           const std::string& material_name,
+                                   const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory) const override;
 
     virtual const Teuchos::RCP<Teuchos::ParameterList> getEvaluatorParameterList() const;
     
