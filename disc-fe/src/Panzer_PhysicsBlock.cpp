@@ -322,6 +322,11 @@ void panzer::PhysicsBlock::initialize(const Teuchos::RCP<Teuchos::ParameterList>
   typedef ParameterList::ConstIterator pl_iter;
   for (pl_iter eq = input_parameters->begin(); eq != input_parameters->end(); ++eq) {
 
+    if( input_parameters->name(eq)=="Material" ) {
+		m_material_id = Teuchos::getValue<std::string>(input_parameters->entry(eq));
+		continue;
+	}
+
     TEUCHOS_TEST_FOR_EXCEPTION( !(eq->second.isList()), std::logic_error,
                             "All entries in the physics block \"" << m_physics_id
                             << "\" must be an equation set sublist!" );
