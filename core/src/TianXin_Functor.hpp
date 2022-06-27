@@ -3,7 +3,7 @@
 //
 //           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2022) Xi Yuan
+//                 Copyright (2022) YUAN Xi
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are

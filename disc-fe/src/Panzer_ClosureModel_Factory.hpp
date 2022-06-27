@@ -82,17 +82,10 @@ namespace panzer {
                                 const Teuchos::RCP<panzer::GlobalData>& global_data,
                                 PHX::FieldManager<panzer::Traits>& fm) const = 0;
 								
-	Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
-    virtual  buildMaterialModels(const std::string& model_id,
-                                const Teuchos::ParameterList& models,
-                                const Teuchos::RCP<panzer::IntegrationRule>& ir,
+	virtual std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
+    buildMaterialModels(const Teuchos::RCP<panzer::IntegrationRule>& ir,
                                 const Teuchos::RCP<panzer::GlobalData>& global_data,
-                                PHX::FieldManager<panzer::Traits>& fm) const
-    {
-        Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > evaluators =
-          Teuchos::rcp(new std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > );
-        return evaluators;
-    }
+                                PHX::FieldManager<panzer::Traits>& fm) const = 0;
 
     /** This a convenience function for registering the evaluators. Essentially this
       * facilitates better usage of the ClosureModel TM and allows an easy registration

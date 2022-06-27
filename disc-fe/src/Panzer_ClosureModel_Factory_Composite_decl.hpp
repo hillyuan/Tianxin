@@ -65,15 +65,12 @@ namespace panzer {
 		       const Teuchos::RCP<panzer::GlobalData>& global_data,
 		       PHX::FieldManager<panzer::Traits>& fm) const;
 
-    Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > >
-    buildMaterialModels(const std::string& model_id,
-                                const Teuchos::ParameterList& models,
-                                const Teuchos::RCP<panzer::IntegrationRule>& ir,
-                                const Teuchos::RCP<panzer::GlobalData>& global_data,
-                                PHX::FieldManager<panzer::Traits>& fm) const
+    std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
+    buildMaterialModels(const Teuchos::RCP<panzer::IntegrationRule>& ir,
+                        const Teuchos::RCP<panzer::GlobalData>& global_data,
+                        PHX::FieldManager<panzer::Traits>& fm) const
     {
-        Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > evaluators =
-          Teuchos::rcp(new std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > );
+        std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >  evaluators;
         return evaluators;
     }
 

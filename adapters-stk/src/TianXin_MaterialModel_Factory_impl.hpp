@@ -3,7 +3,7 @@
 //
 //           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2022) Xi Yuan
+//                 Copyright (2022) YUAN Xi
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -42,8 +42,6 @@
 #include <sstream>
 #include <typeinfo>
 #include "Panzer_IntegrationRule.hpp"
-#include "Panzer_BasisIRLayout.hpp"
-#include "Panzer_Integrator_Scalar.hpp"
 
 #include "Phalanx_FieldTag_Tag.hpp"
 
@@ -51,24 +49,18 @@
 #include "Teuchos_TypeNameTraits.hpp"
 
 #include "Panzer_Parameter.hpp"
-#include "Panzer_GlobalStatistics.hpp"
 #include "Panzer_CoordinatesEvaluator.hpp"
-#include "Panzer_Constant.hpp"
-#include "Panzer_LinearObjFactory.hpp"
-#include "Panzer_DOF.hpp"
 #include "Panzer_GlobalData.hpp"
 #include "TianXin_Functor.hpp"
 
 // ********************************************************************
 // ********************************************************************
 template<typename EvalT>
-Teuchos::RCP< std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > > 
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
 TianXin::MaterialModelFactory<EvalT>::
-buildMaterialModels(const std::string& model_id,
-                                const Teuchos::ParameterList& models,
-                                const Teuchos::RCP<panzer::IntegrationRule>& ir,
-                                const Teuchos::RCP<panzer::GlobalData>& global_data,
-                                PHX::FieldManager<panzer::Traits>& fm) const
+buildMaterialModels(const Teuchos::RCP<panzer::IntegrationRule>& ir,
+                    const Teuchos::RCP<panzer::GlobalData>& global_data,
+                    PHX::FieldManager<panzer::Traits>& fm) const
 {
   std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >  evaluators;
   
@@ -77,9 +69,9 @@ buildMaterialModels(const std::string& model_id,
             std::cout << "Material Property: " << a << "  NOT FOUND!\n";
             throw std::runtime_error("Material Property not defined");
         }
-     //   Teuchos::RCP< PHX::Evaluator<panzer::Traits> > e =
-    //        Teuchos::rcp( new TianXin::FunctorEvaluator<EvalT, panzer::Traits>(a, m_gd->functos[a],*ir) );
-     //   evaluators.push_back(e);
+        Teuchos::RCP< PHX::Evaluator<panzer::Traits> > e =
+            Teuchos::rcp( new TianXin::FunctorEvaluator<EvalT, panzer::Traits>(a, global_data->functos[a],ir->dl_scalar) );
+        evaluators.push_back(e);
   }
   return evaluators;
 }
