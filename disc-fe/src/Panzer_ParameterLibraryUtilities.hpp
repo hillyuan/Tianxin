@@ -65,7 +65,7 @@ namespace panzer {
 
   template<typename EvaluationType>
   void createAndRegisterFunctor(const Teuchos::ParameterList& params,
-				   panzer::FunctorLib& pf);
+				std::unordered_map<std::string, panzer::FunctorLib>& pf);
 
   template<typename EvaluationType>
   Teuchos::RCP<panzer::ScalarParameterEntry<EvaluationType> >

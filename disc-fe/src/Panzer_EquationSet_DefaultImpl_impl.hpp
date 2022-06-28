@@ -681,7 +681,7 @@ buildAndRegisterMaterialEvaluators(PHX::FieldManager<panzer::Traits>& fm,
                                    const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory) const
 {
   std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > > evaluators = 
-    factory.getAsObject<EvalT>()->buildMaterialModels(ir, material_name, m_gd, fm);
+    factory.getAsObject<EvalT>()->buildMaterialModels(ir, material_name, m_material_props, m_gd, fm);
 
   for (auto& eval: evaluators)
     this->template registerEvaluator<EvalT>(fm, eval);

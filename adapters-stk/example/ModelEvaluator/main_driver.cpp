@@ -3,7 +3,7 @@
 //
 //           TianXin: A partial differential equation assembly
 //       engine for strongly coupled complex multiphysics systems
-//                 Copyright (2022) Xi Yuan
+//                 Copyright (2022) YUAN Xi
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -53,6 +53,7 @@
 
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_ClosureModel_Factory_TemplateManager.hpp"
+#include "Panzer_ParameterLibraryUtilities.hpp"
 #include "Panzer_PauseToAttach.hpp"
 #include "Panzer_ResponseLibrary.hpp"
 #include "Panzer_String_Utilities.hpp"
@@ -125,11 +126,11 @@ int main(int argc, char *argv[])
         = Teuchos::rcp_dynamic_cast<const Teuchos::MpiComm<int> >(Teuchos::DefaultComm<int>::getComm());
 
     // Parse the command line arguments
-    std::string input_file_name = "user_app.xml";
+    std::string input_file_name = "input.yaml";
     {
       Teuchos::CommandLineProcessor clp;
 
-      clp.setOption("i", &input_file_name, "User_App input xml filename");
+      clp.setOption("i", &input_file_name, "User_App input yaml filename");
 
       Teuchos::CommandLineProcessor::EParseCommandLineReturn parse_return =
          clp.parse(argc,argv,&std::cerr);
@@ -151,10 +152,12 @@ int main(int argc, char *argv[])
     Teuchos::ParameterList & closure_models_pl      = input_params->sublist("Closure Models");
     Teuchos::ParameterList & user_data_pl           = input_params->sublist("User Data");
     Teuchos::ParameterList & nonlinsolver_pl        = input_params->sublist("Nonlinear Solver");
+	Teuchos::ParameterList & material_pl            = input_params->sublist("Material");
 
     user_data_pl.set<RCP<const Teuchos::Comm<int> > >("Comm", comm);
 
     RCP<panzer::GlobalData> globalData = panzer::createGlobalData();
+	panzer::createAndRegisterFunctor<double>(material_pl,globalData->functors);
     RCP<user_app::MyFactory> eqset_factory = Teuchos::rcp(new user_app::MyFactory);
 
     user_app::MyModelFactory_TemplateBuilder cm_builder;
@@ -202,7 +205,7 @@ int main(int argc, char *argv[])
    //////////////////////////////////////////////////////////////////////////////////////////
    for(std::size_t i=0;i<physicsBlocks.size();i++) {
       RCP<panzer::PhysicsBlock> pb = physicsBlocks[i]; // we are assuming only one physics block
-
+      std::cout << "PhysicsBlock:" << i << ", " << pb->getMaterialName() << std::endl;
       const std::vector<panzer::StrPureBasisPair> & blockFields = pb->getProvidedDOFs();
 
       // insert all fields into a set

@@ -662,7 +662,6 @@ buildAndRegisterClosureModelEvaluators(PHX::FieldManager<panzer::Traits>& fm,
 // *******************************************************************
 void panzer::PhysicsBlock::
 buildAndRegisterMaterialEvaluators(PHX::FieldManager<panzer::Traits>& fm,
-                                   const Teuchos::RCP<panzer::IntegrationRule>& ir,
                                    const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory) const
 {
   using namespace std;

@@ -14,6 +14,7 @@ User_App Parameters:
     eblock-0_0: solid
   Physics Blocks: 
     solid: 
+      Material : Fe
       EQ 0: 
         Type: Energy
         Basis Type: HGrad
@@ -21,6 +22,20 @@ User_App Parameters:
         Integration Order: 2
         Model ID: fluid model
         Prefix: ''
+  Material:
+    Fe :
+      Heat Capacity:
+        Value Type : Constant
+        Constant :
+          Value : [1.0]
+      Thermal Conductivity:
+        Value Type : Constant
+        Constant :
+          Value : [1.0]
+      Density:
+        Value Type : Constant
+        Constant :
+          Value : [1.0]
   Closure Models: 
     fluid model: 
       Volume Integral: { }

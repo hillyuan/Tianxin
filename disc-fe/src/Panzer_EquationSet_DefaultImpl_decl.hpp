@@ -391,6 +391,7 @@ namespace panzer {
     std::vector<std::string> m_tangent_param_names;
 	
 	Teuchos::RCP<panzer::GlobalData> m_gd;
+	std::vector<std::string> m_material_props;
 	
   protected:
 	void enable_xdotdot() { m_xdotdot_support = true; }
@@ -439,8 +440,6 @@ namespace panzer {
     std::string m_block_id;
     std::string m_type;
     std::vector<std::string> m_closure_model_ids;
-	std::string material_id;
-	std::vector<std::string> c0,c1,c2,c3;
 
     std::vector<std::vector<std::string> > m_coordinate_dofs;
 

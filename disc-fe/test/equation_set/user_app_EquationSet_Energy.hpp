@@ -54,7 +54,7 @@
 namespace user_app {
 
   template <typename EvalT>
-    class EquationSet_Energy : public panzer::EquationSet_DefaultImpl<EvalT> {
+  class EquationSet_Energy : public panzer::EquationSet_DefaultImpl<EvalT> {
 
   public:    
 

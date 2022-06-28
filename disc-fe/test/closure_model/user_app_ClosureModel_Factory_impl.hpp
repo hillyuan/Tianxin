@@ -67,6 +67,7 @@
 #include "Panzer_FieldSpy.hpp"
 #include "Panzer_Product.hpp"
 #include "Panzer_String_Utilities.hpp"
+#include "TianXin_FunctorEvaluator.hpp"
 
 // ********************************************************************
 // ********************************************************************
@@ -331,6 +332,39 @@ buildClosureModels(const std::string& model_id,
 
   }
 
+  return evaluators;
+}
+
+// ********************************************************************
+template<typename EvalT>
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
+user_app::MyModelFactory<EvalT>::
+buildMaterialModels(const Teuchos::RCP<panzer::IntegrationRule>& ir,
+		            const std::string& material_name,
+					const std::vector<std::string>& entry_names,
+                    const Teuchos::RCP<panzer::GlobalData>& global_data,
+                    PHX::FieldManager<panzer::Traits>& fm) const
+{
+  std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >  evaluators;
+  
+/*  if (global_data->functors.find(material_name)==global_data->functors.end()) {
+    std::stringstream msg;
+    msg << "Falied to find requested material, \"" << material_name 
+	<< "\", for equation set:\n" << std::endl;
+    TEUCHOS_TEST_FOR_EXCEPTION(global_data->functors.find(material_name)==global_data->functors.end(), 
+			std::logic_error, msg.str());
+  }
+  
+  auto& fc = global_data->functors[material_name];
+  for( auto& a: entry_names) {
+        if( fc.find(a)== fc.end() ) {
+            std::cout << "Material Property: " << a << "  NOT FOUND!\n";
+            throw std::runtime_error("Material Property not defined");
+        }
+ //       Teuchos::RCP< PHX::Evaluator<panzer::Traits> > e =
+ //           Teuchos::rcp( new TianXin::FunctorEvaluator<EvalT, panzer::Traits>(a, fc[a],ir->dl_scalar) );
+ //       evaluators.push_back(e);
+  }*/
   return evaluators;
 }
 

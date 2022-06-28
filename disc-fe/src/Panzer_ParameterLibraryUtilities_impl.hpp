@@ -94,27 +94,40 @@ namespace panzer {
   
   template<typename EvaluationType>
   void 
-  createAndRegisterFunctor(const Teuchos::ParameterList& pl, panzer::FunctorLib& pfl)
+  createAndRegisterFunctor(const Teuchos::ParameterList& ppl, std::unordered_map<std::string, panzer::FunctorLib>& pfls)
   {
-    auto const& name = pl.name();
-	for(auto it = pl.begin(); it != pl.end(); ++it) {
-		try {
-			const auto& ppl = pl.sublist(it->first);
-			Teuchos::ParameterList pl(ppl);
-			std::string pname = pl.name();
-			auto& value_type = pl.get<std::string>("Value Type","Constant");
-			if( value_type.find("Parameter") != std::string::npos ) continue;
-			if( value_type == "Constant" ) {
-				pfl[pname] = std::shared_ptr<TianXin::GeneralFunctor<EvaluationType>>(new TianXin::ConstantFunctor<EvaluationType>(pl));
-			}
-			else if( value_type == "Table" ) {
-			//	const auto& p2 = pl.sublist("Table");
+	typedef Teuchos::ParameterList::ConstIterator pl_iter;
+	for (pl_iter input = ppl.begin(); input != ppl.end(); ++input) {
+		TEUCHOS_TEST_FOR_EXCEPTION( !(input->second.isList()), std::logic_error,
+                            "All entries in the material block must be a sublist!" );
+
+        auto const& pl = ppl.sublist(input->first);
+		panzer::FunctorLib pfl;
+		auto const& name = pl.name();
+		std::size_t found = name.find_last_of("->");
+	    std::string nname = name.substr(found+1);
+		for(auto it = pl.begin(); it != pl.end(); ++it) {
+			try {
+				const auto& pll = pl.sublist(it->first);
+				Teuchos::ParameterList pp(pll);
+				std::string ppname = pp.name();
+				std::size_t found = ppname.find_last_of("->");
+			    std::string pname = ppname.substr(found+1);
+				auto& value_type = pp.get<std::string>("Value Type","Constant");
+				if( value_type.find("Parameter") != std::string::npos ) continue;
+				if( value_type == "Constant" ) {
+					pfl[pname] = std::shared_ptr<TianXin::GeneralFunctor<EvaluationType>>(new TianXin::ConstantFunctor<EvaluationType>(pll));
+				}
+				else if( value_type == "Table" ) {
+			//	const auto& p2 = pp.sublist("Table");
 			//	_dataT.emplace( pname, std::make_shared<ConstantParamter<T>>(new ConstantParamter<T>(p2)) );
+				}
+			}
+			catch (std::exception& e) {
+				std::cout << e.what() << std::endl;
 			}
 		}
-		catch (std::exception& e) {
-			std::cout << e.what() << std::endl;
-		}
+		pfls[nname] = pfl;
 	}
   }
 

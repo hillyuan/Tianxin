@@ -46,32 +46,43 @@ namespace TianXin {
 
 	TEUCHOS_UNIT_TEST(functor, default)
 	{
-		Teuchos::ParameterList plmain("Fe");
+		Teuchos::ParameterList plmatl("Material");
+		Teuchos::ParameterList& plFe = plmatl.sublist("Fe");
 		{	
-			Teuchos::ParameterList& p0 = plmain.sublist("Density");  
+			Teuchos::ParameterList& p0 = plFe.sublist("Density");  
 			p0.set("Value Type","Constant");
 			Teuchos::ParameterList pl_sub("Constant");
 			pl_sub.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 10.0 ));
 			p0.set("Constant",pl_sub);
 	   
-			Teuchos::ParameterList& p1 = plmain.sublist("Elasticity");  
+			Teuchos::ParameterList& p1 = plFe.sublist("Elasticity");  
 			p1.set("Value Type","Constant");
 			Teuchos::ParameterList pl_sub1("Constant");
 			pl_sub1.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1000.0,0.3 ));
 			p1.set("Constant",pl_sub1);
 		}
-		//std::cout << "**Name=" << plmain.name() << std::endl;
-		//plmain.print();
+		Teuchos::ParameterList& plAl = plmatl.sublist("Al");
+		{	
+			Teuchos::ParameterList& p0 = plAl.sublist("Density");  
+			p0.set("Value Type","Constant");
+			Teuchos::ParameterList pl_sub("Constant");
+			pl_sub.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 20.0 ));
+			p0.set("Constant",pl_sub);
+		}
+		//std::cout << "**Name=" << plmatl.name() << std::endl;
+		//plmatl.print();
 		
-		panzer::FunctorLib functors;
-		panzer::createAndRegisterFunctor<double>(plmain,functors);
+		std::unordered_map<std::string, panzer::FunctorLib> functors;
+		panzer::createAndRegisterFunctor<double>(plmatl,functors);
+		TEST_EQUALITY(functors.size(), 2);
+		//TEST_EQUALITY((functors.find("Fe")!=functors.end()), 1);
 		
-		TEST_EQUALITY(functors.find("Fe->Density")!=functors.end(), true);
-		TEST_EQUALITY(functors.find("Fe->Elasticity")!=functors.end(), true);
-
-		const auto& a = (*functors["Fe->Density"])();
+		panzer::FunctorLib& func = functors["Fe"];
+		//TEST_EQUALITY((func.find("Density")!=func.end()), 1);
+		//TEST_EQUALITY(func.find("Elasticity")!=func.end(), true);
+		const auto& a = (*func["Density"])();
 		TEST_EQUALITY(a[0], 10.0);
-		const auto& b = (*functors["Fe->Elasticity"])();
+		const auto& b = (*func["Elasticity"])();
 		TEST_EQUALITY(b[0], 1000.0);
 		TEST_EQUALITY(b[1], 0.3);
 	}

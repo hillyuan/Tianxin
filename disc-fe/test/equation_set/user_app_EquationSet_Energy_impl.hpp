@@ -102,6 +102,12 @@ EquationSet_Energy(const Teuchos::RCP<Teuchos::ParameterList>& params,
   int basis_order = params->get<int>("Basis Order");
   std::string model_id = params->get<std::string>("Model ID");
   int integration_order = params->get<int>("Integration Order");
+  this->m_material_props.emplace_back(m_prefix + "Thermal Conductivity");
+  if (this->buildTransientSupport() )
+  {
+	this->m_material_props.emplace_back(m_prefix + "Density");
+    this->m_material_props.emplace_back(m_prefix + "Heat Capacity");
+  }
 
   // ********************
   // Setup DOFs and closure models
@@ -132,7 +138,6 @@ buildAndRegisterEquationSetEvaluators(PHX::FieldManager<panzer::Traits>& fm,
   using panzer::IntegrationRule;
   using panzer::Integrator_BasisTimesScalar;
   using panzer::Integrator_GradBasisDotVector;
-  using panzer::ScalarToVector;
   using panzer::Traits;
   using PHX::Evaluator;
   using std::string;
@@ -140,7 +145,6 @@ buildAndRegisterEquationSetEvaluators(PHX::FieldManager<panzer::Traits>& fm,
   using Teuchos::ParameterList;
   using Teuchos::RCP;
   using Teuchos::rcp;
-  using user_app::Convection;
   // ********************
   // Energy Equation
   // ********************
@@ -194,7 +198,7 @@ buildAndRegisterEquationSetEvaluators(PHX::FieldManager<panzer::Traits>& fm,
       p.set("Data Layout Vector",ir->dl_vector);
 
       RCP< Evaluator<Traits> > op = 
-        rcp(new ScalarToVector<EvalT,Traits>(p));
+        rcp(new panzer::ScalarToVector<EvalT,Traits>(p));
       
       this->template registerEvaluator<EvalT>(fm, op);
     }
@@ -209,7 +213,7 @@ buildAndRegisterEquationSetEvaluators(PHX::FieldManager<panzer::Traits>& fm,
       p.set("Multiplier", 1.0);
 
       RCP< Evaluator<Traits> > op = 
-        rcp(new Convection<EvalT,Traits>(p));
+        rcp(new user_app::Convection<EvalT,Traits>(p));
       
       this->template registerEvaluator<EvalT>(fm, op);
     }

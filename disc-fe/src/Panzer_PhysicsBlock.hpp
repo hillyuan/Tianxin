@@ -198,7 +198,6 @@ namespace panzer {
                                             const Teuchos::ParameterList& user_data) const;
 
     void buildAndRegisterMaterialEvaluators(PHX::FieldManager<panzer::Traits>& fm,
-                                   const Teuchos::RCP<panzer::IntegrationRule>& ir,
                                    const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& factory) const;
 
     template<typename EvalT>

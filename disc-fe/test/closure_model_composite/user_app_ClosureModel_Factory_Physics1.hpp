@@ -67,6 +67,7 @@ namespace user_app {
     std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
     buildMaterialModels(const Teuchos::RCP<panzer::IntegrationRule>& ir,
 		                const std::string& material_name,
+						const std::vector<std::string>& entry_names,
                         const Teuchos::RCP<panzer::GlobalData>& global_data,
                         PHX::FieldManager<panzer::Traits>& fm) const
     {

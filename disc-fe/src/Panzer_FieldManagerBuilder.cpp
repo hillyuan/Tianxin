@@ -159,6 +159,7 @@ void panzer::FieldManagerBuilder::setupVolumeFieldManagers(
       pb->buildAndRegisterClosureModelEvaluators(*fm,cm_factory,pb->elementBlockID(),closure_models,user_data);
     else
       pb->buildAndRegisterClosureModelEvaluators(*fm,cm_factory,closure_models,user_data);
+    pb->buildAndRegisterMaterialEvaluators(*fm,cm_factory);
 
     // Reset active evaluation types
     pb->activateAllEvaluationTypes();
