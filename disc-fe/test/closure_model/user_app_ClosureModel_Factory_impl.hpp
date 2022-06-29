@@ -347,7 +347,7 @@ buildMaterialModels(const Teuchos::RCP<panzer::IntegrationRule>& ir,
 {
   std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >  evaluators;
   
-/*  if (global_data->functors.find(material_name)==global_data->functors.end()) {
+  if (global_data->functors.find(material_name)==global_data->functors.end()) {
     std::stringstream msg;
     msg << "Falied to find requested material, \"" << material_name 
 	<< "\", for equation set:\n" << std::endl;
@@ -361,10 +361,10 @@ buildMaterialModels(const Teuchos::RCP<panzer::IntegrationRule>& ir,
             std::cout << "Material Property: " << a << "  NOT FOUND!\n";
             throw std::runtime_error("Material Property not defined");
         }
- //       Teuchos::RCP< PHX::Evaluator<panzer::Traits> > e =
- //           Teuchos::rcp( new TianXin::FunctorEvaluator<EvalT, panzer::Traits>(a, fc[a],ir->dl_scalar) );
- //       evaluators.push_back(e);
-  }*/
+        Teuchos::RCP< PHX::Evaluator<panzer::Traits> > e =
+            Teuchos::rcp( new TianXin::FunctorEvaluator<EvalT, panzer::Traits>(a, fc[a],ir->dl_scalar) );
+        evaluators.push_back(e);
+  }
   return evaluators;
 }
 

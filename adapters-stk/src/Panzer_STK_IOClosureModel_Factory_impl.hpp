@@ -125,5 +125,19 @@ buildClosureModels(const std::string& model_id,
 
 // ********************************************************************
 // ********************************************************************
+template<typename EvalT>
+std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >
+panzer_stk::IOClosureModelFactory<EvalT>::
+buildMaterialModels(const Teuchos::RCP<panzer::IntegrationRule>& ir,
+		            const std::string& material_name,
+					const std::vector<std::string>& entry_names,
+                    const Teuchos::RCP<panzer::GlobalData>& global_data,
+                    PHX::FieldManager<panzer::Traits>& fm) const
+{
+  return userCMF_->buildMaterialModels(ir,material_name,entry_names,global_data,fm);
+}
+
+// ********************************************************************
+// ********************************************************************
 
 #endif

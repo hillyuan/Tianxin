@@ -61,16 +61,17 @@ class FunctorEvaluator : public panzer::EvaluatorWithBaseImpl<TRAITS>,
   
   public:
     FunctorEvaluator(const std::string parameter_name,
-	      std::shared_ptr< TianXin::GeneralFunctor<ScalarT> > pf,
+	      std::shared_ptr< TianXin::GeneralFunctor<panzer::Traits::RealType> > pf,
 	      const Teuchos::RCP<PHX::DataLayout>& data_layout);
     void postRegistrationSetup(typename panzer::Traits::SetupData d, PHX::FieldManager<panzer::Traits>& fm);
     void evaluateFields(typename TRAITS::EvalData ud);
     
   private:    
-    PHX::MDField<ScalarT, panzer::Cell, panzer::Point, panzer::Dim> target_field;
+    PHX::MDField<ScalarT, panzer::Cell, panzer::Point> target_field0;
+	PHX::MDField<ScalarT, panzer::Cell, panzer::Point, panzer::Dim> target_field;
 	PHX::MDField<ScalarT, panzer::Cell, panzer::Point, panzer::Dim> state_variables;
     unsigned int nitems;
-	std::shared_ptr< TianXin::GeneralFunctor<ScalarT> > pFunc;
+	std::shared_ptr< TianXin::GeneralFunctor<panzer::Traits::RealType> > pFunc;
 };
 
 

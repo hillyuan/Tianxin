@@ -62,6 +62,7 @@
 #include "Panzer_PauseToAttach.hpp"
 #include "Panzer_String_Utilities.hpp"
 #include "Panzer_TpetraLinearObjFactory.hpp"
+#include "Panzer_ParameterLibraryUtilities.hpp"
 
 #ifdef Panzer_BUILD_PAPI_SUPPORT
 #include "Panzer_PAPI_Counter.hpp"
@@ -157,6 +158,8 @@ int main(int argc, char *argv[])
 
     // Create the global data
     Teuchos::RCP<panzer::GlobalData> global_data = panzer::createGlobalData();
+	Teuchos::ParameterList materailPL = input_params->sublist("Material");
+	panzer::createAndRegisterFunctor<double>(materailPL,global_data->functors);
 
     // A GlobalStatistics closure model requires the comm to be set in the user data.
     input_params->sublist("User Data").set("Comm", comm);
@@ -176,7 +179,6 @@ int main(int argc, char *argv[])
     std::map<int,std::string> responseIndexToName;
     {
       panzer_stk::ModelEvaluatorFactory<double> me_factory;
-
       me_factory.setParameterList(input_params);
       me_factory.buildObjects(comm,global_data,eqset_factory,bc_factory,cm_factory);
 
@@ -205,7 +207,7 @@ int main(int argc, char *argv[])
         int respIndex = me_factory.addResponse(name,wkst_descs,builder);
         responseIndexToName[respIndex] = name;
       }
- 
+
       // enusre all the responses are built
       me_factory.buildResponses(cm_factory);
 

@@ -143,6 +143,7 @@ namespace panzer_stk {
       pl->sublist("Closure Models").disableRecursiveValidation();
       pl->sublist("Boundary Conditions").disableRecursiveValidation();
 	  pl->sublist("Dirichlet Conditions").disableRecursiveValidation();
+	  pl->sublist("Material").disableRecursiveValidation();
       pl->sublist("Solution Control").disableRecursiveValidation();
       pl->set<bool>("Use Discrete Adjoint",false);
 

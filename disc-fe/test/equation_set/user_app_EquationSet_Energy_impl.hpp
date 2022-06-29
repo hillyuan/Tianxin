@@ -158,8 +158,8 @@ buildAndRegisterEquationSetEvaluators(PHX::FieldManager<panzer::Traits>& fm,
     string resName("RESIDUAL_" + m_dof_name),
            valName("DXDT_" + m_prefix + "TEMPERATURE");
     double multiplier(1);
-    vector<string> fieldMultipliers{m_prefix + "DENSITY",
-      m_prefix + "HEAT_CAPACITY"};
+    vector<string> fieldMultipliers{m_prefix + "Density",
+      m_prefix + "Heat Capacity"};
     RCP<Evaluator<Traits>> op = rcp(new
       Integrator_BasisTimesScalar<EvalT, Traits>(EvaluatorStyle::CONTRIBUTES,
       resName, valName, *basis, *ir, multiplier, fieldMultipliers));
@@ -168,14 +168,16 @@ buildAndRegisterEquationSetEvaluators(PHX::FieldManager<panzer::Traits>& fm,
 
   // Diffusion Operator
   {
-    double thermal_conductivity = 1.0;
-
     ParameterList p("Diffusion Residual");
     p.set("Residual Name", "RESIDUAL_"+m_dof_name);
     p.set("Flux Name", "GRAD_"+m_prefix+"TEMPERATURE");
     p.set("Basis", basis);
     p.set("IR", ir);
-    p.set("Multiplier", thermal_conductivity);
+	double multiplier(1);
+    p.set("Multiplier", multiplier);
+	Teuchos::RCP<const std::vector<std::string> > vec = 
+		Teuchos::rcp(new std::vector<std::string>{m_prefix + "Thermal Conductivity"});
+	p.set("Field Multipliers", vec);
     
     RCP< Evaluator<Traits> > op = 
       rcp(new Integrator_GradBasisDotVector<EvalT,Traits>(p));

@@ -51,17 +51,23 @@ namespace TianXin {
 template<typename EvalT, typename TRAITS>
 FunctorEvaluator<EvalT, TRAITS>::
 FunctorEvaluator(const std::string parameter_name,
-	      std::shared_ptr< TianXin::GeneralFunctor<ScalarT> > pf,
+	      std::shared_ptr< TianXin::GeneralFunctor<panzer::Traits::RealType> > pf,
 	      const Teuchos::RCP<PHX::DataLayout>& data_layout)
 : pFunc(pf)
 {
 	nitems = pFunc->nitems();
 	const auto ncell = data_layout->extent(0);
 	const auto npoint = data_layout->extent(1);
-    target_field = PHX::MDField<ScalarT, panzer::Cell, panzer::Point, panzer::Dim>(parameter_name, 
-		Teuchos::rcp(new PHX::MDALayout<panzer::Cell,panzer::IP,panzer::Dim>(ncell, npoint, nitems)) );
-
-    this->addEvaluatedField(target_field);
+	if( nitems==1 ) {
+		target_field0 = PHX::MDField<ScalarT, panzer::Cell, panzer::Point>(parameter_name, 
+			Teuchos::rcp(new PHX::MDALayout<panzer::Cell,panzer::IP>(ncell, npoint)) );
+		this->addEvaluatedField(target_field0);
+	}
+	else {
+		target_field = PHX::MDField<ScalarT, panzer::Cell, panzer::Point, panzer::Dim>(parameter_name, 
+			Teuchos::rcp(new PHX::MDALayout<panzer::Cell,panzer::IP,panzer::Dim>(ncell, npoint, nitems)) );
+		this->addEvaluatedField(target_field);
+	}
 
     std::string n = "Parameter Evaluator";
     this->setName(n);
@@ -75,21 +81,37 @@ postRegistrationSetup( typename panzer::Traits::SetupData /*workset*/,
   PHX::FieldManager<panzer::Traits>&  fm)
 {
   using namespace PHX;
-  this->utils.setFieldData(target_field,fm);
+  if( nitems==1 )
+	this->utils.setFieldData(target_field0,fm);
+  else
+    this->utils.setFieldData(target_field,fm);
 
   //TEUCHOS_ASSERT(static_cast<std::size_t>(target_field.extent(2)) == _size);
 
   if( pFunc->isConstant() ) {
     auto param_val = (*pFunc)();
-	auto target_field_v = target_field.get_static_view();
-    auto target_field_h = Kokkos::create_mirror_view(target_field_v);
 	
-    for (std::size_t cell=0; cell < target_field_v.extent(0); ++cell) {
-		for (std::size_t pt=0; pt<target_field_v.extent(1); ++pt)
-			for( unsigned int k=0; k<nitems; ++k )
-				target_field_h(cell,pt,k) = param_val[k];
+	if( nitems==1 ) {
+		auto target_field_v = target_field0.get_static_view();
+		auto target_field_h = Kokkos::create_mirror_view(target_field_v);
+	
+		for (std::size_t cell=0; cell < target_field_v.extent(0); ++cell) {
+			for (std::size_t pt=0; pt<target_field_v.extent(1); ++pt)
+					target_field_h(cell,pt) = param_val[0];
+		}
+		Kokkos::deep_copy(target_field_v, target_field_h);
+	} 
+	else {
+		auto target_field_v = target_field.get_static_view();
+		auto target_field_h = Kokkos::create_mirror_view(target_field_v);
+	
+		for (std::size_t cell=0; cell < target_field_v.extent(0); ++cell) {
+			for (std::size_t pt=0; pt<target_field_v.extent(1); ++pt)
+				for( unsigned int k=0; k<nitems; ++k )
+					target_field_h(cell,pt,k) = param_val[k];
+		}
+		Kokkos::deep_copy(target_field_v, target_field_h);
 	}
-	Kokkos::deep_copy(target_field_v, target_field_h);
   }
 }
 
@@ -100,16 +122,28 @@ evaluateFields(typename TRAITS::EvalData workset)
 {
 	if( pFunc->isConstant() ) return;
 
-  auto param_val = (*pFunc)();
-  auto target_field_v = target_field.get_static_view();
-  auto target_field_h = Kokkos::create_mirror_view(target_field_v);
+    auto param_val = (*pFunc)();
+	if( nitems==1 ) {
+		auto target_field_v = target_field0.get_static_view();
+		auto target_field_h = Kokkos::create_mirror_view(target_field_v);
   
-  for (int cell=0; cell < workset.num_cells; ++cell) {
-    for (std::size_t pt=0; pt<target_field_v.extent(1); ++pt)
-			for( unsigned int k=0; k<nitems; ++k )
-				target_field_h(cell,pt,k) = param_val[k];
-  }
-  Kokkos::deep_copy(target_field_v, target_field_h);
+		for (int cell=0; cell < workset.num_cells; ++cell) {
+			for (std::size_t pt=0; pt<target_field_v.extent(1); ++pt)
+						target_field_h(cell,pt) = param_val[0];
+		}
+		Kokkos::deep_copy(target_field_v, target_field_h);
+	}
+	else {
+		auto target_field_v = target_field.get_static_view();
+		auto target_field_h = Kokkos::create_mirror_view(target_field_v);
+  
+		for (int cell=0; cell < workset.num_cells; ++cell) {
+			for (std::size_t pt=0; pt<target_field_v.extent(1); ++pt)
+					for( unsigned int k=0; k<nitems; ++k )
+						target_field_h(cell,pt,k) = param_val[k];
+		}
+		Kokkos::deep_copy(target_field_v, target_field_h);
+	}
 
 }
 
