@@ -44,7 +44,7 @@
     <ParameterList name="Physics Blocks">
 
         <ParameterList name="solid">
-			<Parameter name="Material" type="string" value="MyMaterial"/> 
+			      <Parameter name="Material" type="string" value="MyMaterial"/> 
             <ParameterList name="EQ 0">
                 <Parameter name="Type" type="string" value="Energy"/> 
                 <Parameter name="Basis Type" type="string" value="HGrad"/> 
@@ -52,18 +52,17 @@
                 <Parameter name="Integration Order" type="int" value="2"/> 
                 <Parameter name="Model ID" type="string" value="fluid model"/>
             </ParameterList>
-
         </ParameterList>
 
     </ParameterList>
 	
-	<ParameterList name="Material">
+	  <ParameterList name="Material">
         <ParameterList name="MyMaterial">
             <ParameterList name="Thermal Conductivity">
                 <Parameter name="Value Type" type="string" value="Constant"/>
-				<ParameterList name="Constant">
-					<Parameter name="Value" type="Array(double)" value="{1.0}"/>
-				</ParameterList>
+			        	<ParameterList name="Constant">
+					        <Parameter name="Value" type="Array(double)" value="{1.0}"/>
+			        	</ParameterList>
             </ParameterList>
         </ParameterList>
     </ParameterList>
@@ -76,9 +75,6 @@
                 <Parameter name="Value" type="double" value="0.0"/>
             </ParameterList>
             <ParameterList name="DENSITY">
-                <Parameter name="Value" type="double" value="0.0"/>
-            </ParameterList>
-            <ParameterList name="HEAT_CAPACITY">
                 <Parameter name="Value" type="double" value="0.0"/>
             </ParameterList>
             <ParameterList name="Global Statistics">

@@ -346,6 +346,7 @@ buildMaterialModels(const Teuchos::RCP<panzer::IntegrationRule>& ir,
                     PHX::FieldManager<panzer::Traits>& fm) const
 {
   std::vector< Teuchos::RCP<PHX::Evaluator<panzer::Traits> > >  evaluators;
+  if( material_name.empty() )  return evaluators;
   
   if (global_data->functors.find(material_name)==global_data->functors.end()) {
     std::stringstream msg;

@@ -41,12 +41,6 @@ User_App Parameters:
       Volume Integral: { }
       SOURCE_TEMPERATURE: 
         Value: 0.00000000000000000e+00
-      Heat Capacity: 
-        Value: 1.00000000000000000e+00
-      DENSITY: 
-        Value: 1.00000000000000000e+00
-      HEAT_CAPACITY: 
-        Value: 1.00000000000000000e+00
   User Data: { }
   Dirichlet Conditions: 
     child0: 

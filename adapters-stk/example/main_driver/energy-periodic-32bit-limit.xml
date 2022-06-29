@@ -60,7 +60,7 @@
     <ParameterList name="Physics Blocks">
 
         <ParameterList name="solid">
-
+			<Parameter name="Material" type="string" value="MyMaterial"/>
             <ParameterList name="EQ 0">
                 <Parameter name="Type" type="string" value="Energy"/> 
                 <Parameter name="Basis Type" type="string" value="HGrad"/> 
@@ -73,6 +73,29 @@
         </ParameterList>
 
     </ParameterList>
+	
+	<ParameterList name="Material">
+        <ParameterList name="MyMaterial">
+            <ParameterList name="Thermal Conductivity">
+              <Parameter name="Value Type" type="string" value="Constant"/>
+				      <ParameterList name="Constant">
+					      <Parameter name="Value" type="Array(double)" value="{1.0}"/>
+				      </ParameterList>
+            </ParameterList>
+            <ParameterList name="Density">
+              <Parameter name="Value Type" type="string" value="Constant"/>
+				      <ParameterList name="Constant">
+					      <Parameter name="Value" type="Array(double)" value="{1.0}"/>
+				      </ParameterList>
+            </ParameterList>
+            <ParameterList name="Heat Capacity">
+              <Parameter name="Value Type" type="string" value="Constant"/>
+				      <ParameterList name="Constant">
+					      <Parameter name="Value" type="Array(double)" value="{1.0}"/>
+				      </ParameterList>
+            </ParameterList>
+        </ParameterList>
+    </ParameterList>
 
     <ParameterList name="Closure Models">
  
@@ -84,16 +107,7 @@
             <ParameterList name="SOURCE_TEMPERATURE">
                 <Parameter name="Type" type="string" value="Parameter"/>
             </ParameterList>
-            <ParameterList name="Heat Capacity">
-                <Parameter name="Value" type="double" value="1.0"/>
-            </ParameterList>
-            <ParameterList name="Thermal Conductivity">
-                <Parameter name="Value" type="double" value="1.0"/>
-            </ParameterList>
             <ParameterList name="DENSITY">
-                <Parameter name="Value" type="double" value="1.0"/>
-            </ParameterList>
-            <ParameterList name="HEAT_CAPACITY">
                 <Parameter name="Value" type="double" value="1.0"/>
             </ParameterList>
             <ParameterList name="Global Statistics">
