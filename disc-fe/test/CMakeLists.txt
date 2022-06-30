@@ -1,7 +1,7 @@
 ADD_SUBDIRECTORY(core_tests)
 ADD_SUBDIRECTORY(equation_set)
 ADD_SUBDIRECTORY(closure_model)
-ADD_SUBDIRECTORY(closure_model_composite)
+#ADD_SUBDIRECTORY(closure_model_composite)
 ADD_SUBDIRECTORY(physics_block)
 #ADD_SUBDIRECTORY(epetra_gatherscatter)
 ADD_SUBDIRECTORY(la_factory)
