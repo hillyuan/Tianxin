@@ -94,9 +94,6 @@ namespace panzer {
     void evaluateNeumannBCs(const panzer::AssemblyEngineInArgs& input_arguments);
 
     void evaluateInterfaceBCs(const panzer::AssemblyEngineInArgs& input_arguments);
-
-    //! This method returns the global counter used to indicate which rows are boundary conditions
-    Teuchos::RCP<LinearObjContainer> evaluateDirichletBCs(const panzer::AssemblyEngineInArgs& input_arguments);
 	
 	void evaluateDirichletCondition(const panzer::AssemblyEngineInArgs& input_arguments);
 	void evaluateNeumannCondition(const panzer::AssemblyEngineInArgs& input_arguments);

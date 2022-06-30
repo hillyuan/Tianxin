@@ -50,7 +50,6 @@
 #include "Panzer_BCStrategy_Factory_Defines.hpp"
 
 // Add my bcstrategies here
-#include "Example_BCStrategy_Dirichlet_Constant.hpp"
 #include "Example_BCStrategy_Neumann_Constant.hpp"
 #include "Example_BCStrategy_Interface_WeakDirichletMatch.hpp"
 #include "Example_BCStrategy_Interface_NeumannMatch.hpp"
@@ -58,8 +57,6 @@
 
 namespace Example {
   
-PANZER_DECLARE_BCSTRATEGY_TEMPLATE_BUILDER(BCStrategy_Dirichlet_Constant,
-  BCStrategy_Dirichlet_Constant)
 PANZER_DECLARE_BCSTRATEGY_TEMPLATE_BUILDER(BCStrategy_Neumann_Constant,
   BCStrategy_Neumann_Constant)
 PANZER_DECLARE_BCSTRATEGY_TEMPLATE_BUILDER(
@@ -81,8 +78,6 @@ struct BCStrategyFactory : public panzer::BCStrategyFactory {
       
       bool found = false;
 
-      PANZER_BUILD_BCSTRATEGY_OBJECTS("Constant",
-        BCStrategy_Dirichlet_Constant)
       PANZER_BUILD_BCSTRATEGY_OBJECTS("Neumann Constant",
         BCStrategy_Neumann_Constant)
       PANZER_BUILD_BCSTRATEGY_OBJECTS("Weak Dirichlet Match Interface",
