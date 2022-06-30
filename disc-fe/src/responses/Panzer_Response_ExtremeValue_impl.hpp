@@ -190,33 +190,6 @@ setSolnVectorSpace(const Teuchos::RCP<const Thyra::VectorSpaceBase<double> > & s
 }
 #endif
 
-// Do nothing unless derivatives are required
-template <typename EvalT>
-void Response_ExtremeValue<EvalT>::
-adjustForDirichletConditions(const GlobalEvaluationData & /* localBCRows */, const GlobalEvaluationData & /* globalBCRows */) { }
-
-// Do nothing unless derivatives are required
-template < >
-void Response_ExtremeValue<panzer::Traits::Jacobian>::
-adjustForDirichletConditions(const GlobalEvaluationData & localBCRows,const GlobalEvaluationData & globalBCRows)
-{
-  linObjFactory_->adjustForDirichletConditions(Teuchos::dyn_cast<const LinearObjContainer>(localBCRows),
-                                               Teuchos::dyn_cast<const LinearObjContainer>(globalBCRows),
-                                               *ghostedContainer_,true,true);
-}
-
-#ifdef Panzer_BUILD_HESSIAN_SUPPORT
-// Do nothing unless derivatives are required
-template < >
-void Response_ExtremeValue<panzer::Traits::Hessian>::
-adjustForDirichletConditions(const GlobalEvaluationData & localBCRows,const GlobalEvaluationData & globalBCRows)
-{
-  linObjFactory_->adjustForDirichletConditions(Teuchos::dyn_cast<const LinearObjContainer>(localBCRows),
-                                               Teuchos::dyn_cast<const LinearObjContainer>(globalBCRows),
-                                               *ghostedContainer_,true,true);
-}
-#endif
-
 }
 
 #endif

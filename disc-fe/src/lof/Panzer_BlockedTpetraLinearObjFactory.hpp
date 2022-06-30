@@ -129,17 +129,6 @@ public:
    virtual void ghostToGlobalContainer(const LinearObjContainer & ghostContainer,
                                        LinearObjContainer & container,int) const;
 
-   /** Adjust the residual vector and Jacobian matrix (if they exist) for applied
-     * dirichlet conditions. The adjustment considers if a boundary condition was
-     * set globally and locally and based on that result adjust the ghosted matrix
-     * and residual vector so that when they are summed across processors they resulting
-     * Dirichlet condition is correct.
-     */
-   virtual void adjustForDirichletConditions(const LinearObjContainer & localBCRows,
-                                             const LinearObjContainer & globalBCRows,
-                                             LinearObjContainer & ghostedObjs,
-                                             bool zeroVectorRows=false, bool adjustX = false) const;
-
    /** Build a GlobalEvaluationDataContainer that handles all domain communication.
      * This is used primarily for gather operations and hides the allocation and usage
      * of the ghosted vector from the user.
@@ -340,12 +329,6 @@ protected:
    mutable Teuchos::RCP<Thyra::ProductVectorSpaceBase<ScalarT> > ghostedDomainSpace_;
 
 /*************** Tpetra based methods/members *******************/
-
-   void adjustForDirichletConditions(const VectorType & local_bcs,
-                                     const VectorType & global_bcs,
-                                     const Teuchos::Ptr<VectorType> & f,
-                                     const Teuchos::Ptr<CrsMatrixType> & A,
-                                     bool zeroVectorRows) const;
 
    void ghostToGlobalTpetraVector(int i,const VectorType & in,VectorType & out) const;
    void ghostToGlobalTpetraMatrix(int blockRow,const CrsMatrixType & in,CrsMatrixType & out) const;
