@@ -441,7 +441,7 @@ void checkInterfaceConnections (const Teuchos::RCP<panzer::ConnManager>& conn_mg
 }
 
 void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb, std::vector<panzer::BC>& bcs,
-                        const ProblemOptions& po);
+                        const ProblemOptions& po, Teuchos::ParameterList& pdl);
 
 // calls MPI_Init and MPI_Finalize
 int main (int argc, char* argv[])
@@ -586,8 +586,10 @@ int main (int argc, char* argv[])
     const Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
     std::vector<panzer::BC> bcs;
     std::vector<RCP<panzer::PhysicsBlock> > physicsBlocks;
+	Teuchos::ParameterList pdl("Dirichlet BC");
     {
-      testInitialization(ipb, bcs, po);
+      testInitialization(ipb, bcs, po, pdl);
+	  pdl.print();
 
       std::map<std::string,std::string> block_ids_to_physics_ids;
       std::map<std::string,Teuchos::RCP<const shards::CellTopology> > block_ids_to_cell_topo;
@@ -741,13 +743,13 @@ int main (int argc, char* argv[])
 
     // setup field manager builder
     /////////////////////////////////////////////////////////////
-
     Teuchos::RCP<panzer::FieldManagerBuilder> fmb =
       Teuchos::rcp(new panzer::FieldManagerBuilder);
     fmb->setWorksetContainer(wkstContainer);
     fmb->setupVolumeFieldManagers(physicsBlocks,cm_factory,closure_models,*linObjFactory,user_data);
     fmb->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,
                               *linObjFactory,user_data);
+	fmb->setupDiricheltFieldManagers(pdl,mesh,dofManager);
     fmb->writeVolumeGraphvizDependencyFiles("volume", physicsBlocks);
     fmb->writeBCGraphvizDependencyFiles("bc");
 
@@ -786,8 +788,8 @@ int main (int argc, char* argv[])
     // write linear system
     if (false) {
       Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeSparseFile("a_op.mm", *ep_container->get_A());
-      Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("x_vec.mm", *ep_container->get_x());
-      Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("b_vec.mm", *ep_container->get_f());
+      Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("ax_vec.mm", *ep_container->get_x());
+      Tpetra::MatrixMarket::Writer<TpetraCrsMatrix>::writeDenseFile("af_vec.mm", *ep_container->get_f());
     }
 
     if (po.check_error) {
@@ -864,7 +866,7 @@ int main (int argc, char* argv[])
 }
 
 void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb, std::vector<panzer::BC>& bcs,
-                        const ProblemOptions& po)
+                        const ProblemOptions& po, Teuchos::ParameterList& pdl)
 {
   const char* const pb_strings[2] = {"Poisson Physics Left", "Poisson Physics Right"};
   const double dleft = 0.5, dright = -0.3;
@@ -883,7 +885,7 @@ void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb, std::ve
     }
 
     const std::string t1_name = strint(po.dof_names[0], 1), t2_name = strint(po.dof_names[0], 2);
-    {
+    /*{
       panzer::BCType bctype = panzer::BCT_Dirichlet;
       std::string sideset_id = po.ss_names[0];
       std::string element_block_id = po.eb_names[0];
@@ -906,6 +908,27 @@ void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb, std::ve
       p.set("Value",value);
       panzer::BC bc(bc_id++, bctype, sideset_id, element_block_id, dof_name, strategy, p);
       bcs.push_back(bc);
+    }*/
+	
+	Teuchos::ParameterList& pdl1 = pdl.sublist("D1");
+	{
+	  pdl1.set("ElementSet Name",po.eb_names[0]);
+      pdl1.set("NodeSet Name",po.ss_names[0]);
+	  pdl1.set("Value Type","Constant");
+      pdl1.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( t1_name ));
+	  Teuchos::ParameterList pl_sub("Constant");
+	  pl_sub.set("Value",dleft);
+	  pdl1.set("Constant",pl_sub);
+    }
+	Teuchos::ParameterList& pdl2 = pdl.sublist("D2");
+	{
+	  pdl2.set("ElementSet Name",po.eb_names[1]);
+      pdl2.set("NodeSet Name",po.ss_names[2]);
+	  pdl2.set("Value Type","Constant");
+      pdl2.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( t2_name ));
+	  Teuchos::ParameterList pl_sub2("Constant");
+	  pl_sub2.set("Value",dright);
+	  pdl2.set("Constant",pl_sub2);
     }
 
     // There is no reason to turn off either of these, but in early development
@@ -925,7 +948,7 @@ void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb, std::ve
       p.set("Strategy", "Neumann Match Interface");
       bcs.push_back(panzer::BC(bc_id++, p));
     } else {
-      panzer::BCType bctype = panzer::BCT_Dirichlet;
+      /*panzer::BCType bctype = panzer::BCT_Dirichlet;
       std::string sideset_id = po.ss_names[1];
       std::string element_block_id = po.eb_names[0];
       std::string dof_name = t1_name;
@@ -935,6 +958,17 @@ void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb, std::ve
       p.set("Value",value);
       panzer::BC bc(bc_id++, bctype, sideset_id, element_block_id, dof_name, strategy, p);
       bcs.push_back(bc);
+	  
+	  Teuchos::ParameterList& pdl3 = pdl.sublist("D3");
+	  {
+		pdl3.set("ElementSet Name",po.eb_names[0]);
+		pdl3.set("NodeSet Name",po.ss_names[1]);
+		pdl3.set("Value Type","Constant");
+		pdl3.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( t1_name ));
+		Teuchos::ParameterList pl_sub3("Constant");
+		pl_sub3.set("Value",-0.4);
+		pdl3.set("Constant",pl_sub3);
+      }*/
     }
 
     if (weak_dirichlet_match) {
@@ -948,7 +982,7 @@ void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb, std::ve
       p.set("Strategy", "Weak Dirichlet Match Interface");
       bcs.push_back(panzer::BC(bc_id++, p));
     } else {
-      panzer::BCType bctype = panzer::BCT_Dirichlet;
+      /*panzer::BCType bctype = panzer::BCT_Dirichlet;
       std::string sideset_id = po.ss_names[1];
       std::string element_block_id = po.eb_names[1];
       std::string dof_name = t2_name;
@@ -958,6 +992,17 @@ void testInitialization(const Teuchos::RCP<Teuchos::ParameterList>& ipb, std::ve
       p.set("Value",value);
       panzer::BC bc(bc_id++, bctype, sideset_id, element_block_id, dof_name, strategy, p);
       bcs.push_back(bc);
+	  
+	  Teuchos::ParameterList& pdl4 = pdl.sublist("D4");
+	  {
+		pdl4.set("ElementSet Name",po.eb_names[1]);
+		pdl4.set("NodeSet Name",po.ss_names[1]);
+		pdl4.set("Value Type","Constant");
+		pdl4.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( t2_name ));
+		Teuchos::ParameterList pl_sub4("Constant");
+		pl_sub4.set("Value",0.4);
+		pdl4.set("Constant",pl_sub4);
+      }*/
     }
   }
 

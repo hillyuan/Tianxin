@@ -11,29 +11,30 @@ TRIBITS_ADD_ADVANCED_TEST(
   PoissonInterfaceTpetra_2d_MPI_4
   EXCLUDE_IF_NOT_TRUE ${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS
   TEST_0 EXEC PoissonInterfaceTpetra
-    ARGS --nx=5 --nonlinear --test-jacobian
+    ARGS --nx=5 --nonlinear
     PASS_REGULAR_EXPRESSION "PASS BASICS"
     NUM_MPI_PROCS 4
   TEST_1 EXEC PoissonInterfaceTpetra
-    ARGS --nx=5 --linear --test-jacobian
+    ARGS --nx=5 --linear
     PASS_REGULAR_EXPRESSION "PASS BASICS"
     NUM_MPI_PROCS 4
   COMM mpi)
 
-TRIBITS_ADD_ADVANCED_TEST(
-  PoissonInterfaceTpetra_2d_diffsideids_MPI_1
-  EXCLUDE_IF_NOT_TRUE ${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS
-  TEST_0 EXEC PoissonInterfaceTpetra
-    ARGS --test-jacobian --mesh-filename=diffsideids.exo
-    PASS_REGULAR_EXPRESSION "PASS BASICS"
-    NUM_MPI_PROCS 1
-  COMM serial mpi)
+# No nodeset definition in mesh file
+#TRIBITS_ADD_ADVANCED_TEST(
+#  PoissonInterfaceTpetra_2d_diffsideids_MPI_1
+#  EXCLUDE_IF_NOT_TRUE ${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS
+#  TEST_0 EXEC PoissonInterfaceTpetra
+#    ARGS --mesh-filename=diffsideids.exo
+#    PASS_REGULAR_EXPRESSION "PASS BASICS"
+#    NUM_MPI_PROCS 1
+#  COMM serial mpi)
 
 TRIBITS_ADD_ADVANCED_TEST(
   PoissonInterfaceTpetra_3d_MPI_4
   EXCLUDE_IF_NOT_TRUE ${PARENT_PACKAGE_NAME}_ADD_EXPENSIVE_CUDA_TESTS
   TEST_0 EXEC PoissonInterfaceTpetra
-    ARGS --3d --nx=3 --nonlinear --test-jacobian
+    ARGS --3d --nx=3 --nonlinear
     PASS_REGULAR_EXPRESSION "PASS BASICS"
     NUM_MPI_PROCS 4
   TEST_1 EXEC PoissonInterfaceTpetra
