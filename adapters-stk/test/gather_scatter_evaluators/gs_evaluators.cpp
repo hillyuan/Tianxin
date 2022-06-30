@@ -70,6 +70,7 @@ using Teuchos::rcp;
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "Panzer_STK_GatherFields.hpp"
 #include "Panzer_STKConnManager.hpp"
+#include "Panzer_ParameterLibraryUtilities.hpp"
 
 #include "user_app_EquationSetFactory.hpp"
 #include "user_app_ClosureModel_Factory_TemplateBuilder.hpp"
@@ -106,6 +107,7 @@ namespace panzer {
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
     // Physics block
     Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
+	physics_block.set("Material","Cu");
     {
       Teuchos::ParameterList& p = physics_block.sublist("a");
       p.set("Type","Energy");
@@ -123,8 +125,42 @@ namespace panzer {
       p.set("Basis Order",1);
     }
 	
+	Teuchos::ParameterList material_models("Material");
+	Teuchos::ParameterList& Cu = material_models.sublist("Cu");
+	{
+		Teuchos::ParameterList& therm = Cu.sublist("Thermal Conductivity");
+		therm.set("Value Type","Constant");
+		Teuchos::ParameterList& fn = therm.sublist("Constant");
+		fn.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1.0 ));
+		
+		Teuchos::ParameterList& dens = Cu.sublist("Density");
+		dens.set("Value Type","Constant");
+		Teuchos::ParameterList& fn1 = dens.sublist("Constant");
+		fn1.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1.0 ));
+		
+		Teuchos::ParameterList& hc = Cu.sublist("Heat Capacity");
+		hc.set("Value Type","Constant");
+		Teuchos::ParameterList& fn2 = hc.sublist("Constant");
+		fn2.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1.0 ));
+		
+		Teuchos::ParameterList& therm1 = Cu.sublist("ION_Thermal Conductivity");
+		therm1.set("Value Type","Constant");
+		Teuchos::ParameterList& fn3 = therm1.sublist("Constant");
+		fn3.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1.0 ));
+		
+		Teuchos::ParameterList& dens1 = Cu.sublist("ION_Density");
+		dens1.set("Value Type","Constant");
+		Teuchos::ParameterList& fn4 = dens1.sublist("Constant");
+		fn4.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1.0 ));
+		
+		Teuchos::ParameterList& hc1 = Cu.sublist("ION_Heat Capacity");
+		hc1.set("Value Type","Constant");
+		Teuchos::ParameterList& fn5 = hc1.sublist("Constant");
+		fn5.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1.0 ));
+	}
+	
 	Teuchos::ParameterList pldiric("Dirichlet");
-   {	
+    {	
 	   Teuchos::ParameterList& p0 = pldiric.sublist("a");  // noname sublist
 	   p0.set("SideSet Name","left");
 	   p0.set("Value Type","Constant");
@@ -165,6 +201,7 @@ namespace panzer {
       block_ids_to_cell_topo["eblock-1_0"] = mesh->getCellTopology("eblock-1_0");
 
       Teuchos::RCP<panzer::GlobalData> gd = panzer::createGlobalData();
+	  panzer::createAndRegisterFunctor<double>(material_models,gd->functors);
 
       int default_integration_order = 1;
 

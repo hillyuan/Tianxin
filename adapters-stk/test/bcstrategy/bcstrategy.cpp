@@ -62,6 +62,7 @@
 #include "Panzer_DOFManagerFactory.hpp"
 #include "Panzer_GlobalData.hpp"
 #include "TianXin_Dirichlet.hpp"
+#include "Panzer_ParameterLibraryUtilities.hpp"
 
 #include "user_app_EquationSetFactory.hpp"
 #include "user_app_ClosureModel_Factory_TemplateBuilder.hpp"
@@ -92,6 +93,7 @@ namespace panzer {
 
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
     Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
+	physics_block.set("Material","Cu");
     {
       Teuchos::ParameterList& p = physics_block.sublist("a");
       p.set("Type","Energy");
@@ -111,6 +113,25 @@ namespace panzer {
 	  pl_dirichlet.set("Constant",pl_sub);
     }
 	pl_dirichlet.print();
+	
+	Teuchos::ParameterList material_models("Material");
+	Teuchos::ParameterList& Cu = material_models.sublist("Cu");
+	{
+		Teuchos::ParameterList& therm = Cu.sublist("Thermal Conductivity");
+		therm.set("Value Type","Constant");
+		Teuchos::ParameterList& fn = therm.sublist("Constant");
+		fn.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1.0 ));
+		
+		Teuchos::ParameterList& dens = Cu.sublist("Density");
+		dens.set("Value Type","Constant");
+		Teuchos::ParameterList& fn1 = dens.sublist("Constant");
+		fn1.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1.0 ));
+		
+		Teuchos::ParameterList& hc = Cu.sublist("Heat Capacity");
+		hc.set("Value Type","Constant");
+		Teuchos::ParameterList& fn2 = hc.sublist("Constant");
+		fn2.set<Teuchos::Array<double> >("Value",Teuchos::tuple<double>( 1.0 ));
+	}
 
     Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
 
@@ -127,6 +148,7 @@ namespace panzer {
       block_ids_to_cell_topo["eblock-0_0"] = mesh->getCellTopology("eblock-0_0");
 
       Teuchos::RCP<panzer::GlobalData> gd = panzer::createGlobalData();
+	  panzer::createAndRegisterFunctor<double>(material_models,gd->functors);
 
       const int default_integration_order = 1;
 

@@ -72,7 +72,7 @@ TRIBITS_ADD_ADVANCED_TEST(
 TRIBITS_ADD_ADVANCED_TEST(
   main_driver_energy-neumann
   TEST_0 EXEC main_driver 
-    ARGS  --i=energy-neumann.xml --flux-calc
+    ARGS  --i=energy-neumann.xml
     PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."
     NUM_MPI_PROCS 1
   )
