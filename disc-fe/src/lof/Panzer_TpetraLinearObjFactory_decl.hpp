@@ -57,7 +57,6 @@
 #include "Panzer_LinearObjFactory.hpp"
 #include "Panzer_TpetraLinearObjContainer.hpp"
 #include "Panzer_ScatterResidual_Tpetra.hpp"
-#include "Panzer_ScatterDirichletResidual_Tpetra.hpp"
 #include "Panzer_GatherSolution_Tpetra.hpp"
 #include "Panzer_GatherTangent_Tpetra.hpp"
 #include "Panzer_GatherOrientation.hpp"
@@ -154,11 +153,6 @@ public:
    template <typename EvalT>
    Teuchos::RCP<panzer::CloneableEvaluator > buildGatherOrientation() const
    { return Teuchos::rcp(new GatherOrientation<EvalT,Traits,LocalOrdinalT,GlobalOrdinalT>(gidProvider_)); }
-
-   //! Use preconstructed dirichlet scatter evaluators
-   template <typename EvalT>
-   Teuchos::RCP<panzer::CloneableEvaluator> buildScatterDirichlet() const
-   { return Teuchos::rcp(new ScatterDirichletResidual_Tpetra<EvalT,Traits,LocalOrdinalT,GlobalOrdinalT,NodeT>(gidProvider_)); }
 
 /*************** From ThyraObjFactory *******************/
 

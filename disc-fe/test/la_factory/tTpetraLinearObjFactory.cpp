@@ -261,31 +261,6 @@ TEUCHOS_UNIT_TEST(tTpetraLinearObjFactory, gather_scatter_constr)
          TEST_EQUALITY(fields[1]->dataLayout().extent_int(1),Teuchos::as<int>(4)); // for Q1
       }
 
-      // scatter dirichlet test
-      {
-         evaluator = la_factory->buildScatterDirichlet<EvalType>(scatterDirichletParams);
-
-         out << "SCATTER DIRICHLET RES NAME: \"" << evaluator->getName() << "\"" << std::endl;
-         TEST_ASSERT(evaluator!=Teuchos::null);
-         RCP<ScatterDirichletResidual_Tpetra<EvalType,panzer::Traits,int,panzer::GlobalOrdinal> > scatterResidual 
-               = rcp_dynamic_cast<ScatterDirichletResidual_Tpetra<EvalType,panzer::Traits,int,panzer::GlobalOrdinal> >(evaluator);
-         TEST_ASSERT(scatterResidual!=Teuchos::null);
-
-         const std::vector<RCP<PHX::FieldTag> > & evalFields = scatterResidual->evaluatedFields();
-         TEST_EQUALITY(evalFields.size(),1); // this is a dummy holder for the sake of the field manager
-   
-         const std::vector<RCP<PHX::FieldTag> > & fields = scatterResidual->dependentFields();
-         TEST_EQUALITY(fields.size(),2); // these store the residual values
-   
-         TEST_EQUALITY(fields[0]->name(),"Residual_ux");
-         TEST_EQUALITY(fields[1]->name(),"Residual_p");
-   
-         TEST_EQUALITY(fields[0]->dataLayout().extent_int(0),Teuchos::as<int>(numCells));
-         TEST_EQUALITY(fields[0]->dataLayout().extent_int(1),Teuchos::as<int>(4)); // for Q1
-   
-         TEST_EQUALITY(fields[1]->dataLayout().extent_int(0),Teuchos::as<int>(numCells));
-         TEST_EQUALITY(fields[1]->dataLayout().extent_int(1),Teuchos::as<int>(4)); // for Q1
-      }
    }
 
    {
@@ -338,31 +313,6 @@ TEUCHOS_UNIT_TEST(tTpetraLinearObjFactory, gather_scatter_constr)
          TEST_EQUALITY(fields[1]->dataLayout().extent_int(1),Teuchos::as<int>(4)); // for Q1
       }
 
-      // scatter dirichlet test
-      {
-         evaluator = la_factory->buildScatterDirichlet<EvalType>(scatterDirichletParams);
-
-         out << "SCATTER DIRICHLET RES NAME: \"" << evaluator->getName() << "\"" << std::endl;
-         TEST_ASSERT(evaluator!=Teuchos::null);
-         RCP<ScatterDirichletResidual_Tpetra<EvalType,panzer::Traits,int,panzer::GlobalOrdinal> > scatterResidual 
-               = rcp_dynamic_cast<ScatterDirichletResidual_Tpetra<EvalType,panzer::Traits,int,panzer::GlobalOrdinal> >(evaluator);
-         TEST_ASSERT(scatterResidual!=Teuchos::null);
-
-         const std::vector<RCP<PHX::FieldTag> > & evalFields = scatterResidual->evaluatedFields();
-         TEST_EQUALITY(evalFields.size(),1); // this is a dummy holder for the sake of the field manager
-   
-         const std::vector<RCP<PHX::FieldTag> > & fields = scatterResidual->dependentFields();
-         TEST_EQUALITY(fields.size(),2); // these store the residual values
-   
-         TEST_EQUALITY(fields[0]->name(),"Residual_ux");
-         TEST_EQUALITY(fields[1]->name(),"Residual_p");
-   
-         TEST_EQUALITY(fields[0]->dataLayout().extent_int(0),Teuchos::as<int>(numCells));
-         TEST_EQUALITY(fields[0]->dataLayout().extent_int(1),Teuchos::as<int>(4)); // for Q1
-   
-         TEST_EQUALITY(fields[1]->dataLayout().extent_int(0),Teuchos::as<int>(numCells));
-         TEST_EQUALITY(fields[1]->dataLayout().extent_int(1),Teuchos::as<int>(4)); // for Q1
-      }
    }
 }
 

@@ -63,9 +63,7 @@
 #include "Panzer_GatherSolution_BlockedEpetra.hpp"
 #include "Panzer_GatherTangent_BlockedEpetra.hpp"
 #include "Panzer_ScatterResidual_BlockedEpetra.hpp"
-#include "Panzer_ScatterDirichletResidual_BlockedEpetra.hpp"
 #include "Panzer_ScatterResidual_Epetra.hpp"
-#include "Panzer_ScatterDirichletResidual_Epetra.hpp"
 #include "Panzer_GatherSolution_Epetra.hpp"
 #include "Panzer_GatherTangent_Epetra.hpp"
 #include "Panzer_GatherOrientation.hpp"
@@ -181,18 +179,6 @@ public:
    template <typename EvalT>
    Teuchos::RCP<panzer::CloneableEvaluator > buildGatherOrientation() const
   { return Teuchos::rcp(new GatherOrientation<EvalT,Traits,LocalOrdinalT,panzer::GlobalOrdinal>(rowDOFManagerContainer_->getFieldDOFManagers())); }
-
-   //! Use preconstructed dirichlet scatter evaluators
-   template <typename EvalT>
-   Teuchos::RCP<panzer::CloneableEvaluator> buildScatterDirichlet() const
-   { 
-     if(!colDOFManagerContainer_->containsBlockedDOFManager() &&
-        !rowDOFManagerContainer_->containsBlockedDOFManager())
-       return Teuchos::rcp(new ScatterDirichletResidual_Epetra<EvalT,Traits,LocalOrdinalT,int>(rowDOFManagerContainer_->getFieldDOFManagers()[0],
-                                                                                               colDOFManagerContainer_->getFieldDOFManagers()[0])); 
-     return Teuchos::rcp(new ScatterDirichletResidual_BlockedEpetra<EvalT,Traits,LocalOrdinalT,int>(rowDOFManagerContainer_->getFieldDOFManagers(),
-                                                                                                    colDOFManagerContainer_->getFieldDOFManagers())); 
-   }
 
 /*************** Generic helper functions for container setup *******************/
    

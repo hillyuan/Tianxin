@@ -214,7 +214,7 @@ buildAndRegisterScatterEvaluators(PHX::FieldManager<panzer::Traits>& fm,
      fm.registerEvaluator<EvalT>(op);
   }
 
-  {
+  /*{
     RCP<std::map<std::string,std::string> > resToField 
        = rcp(new std::map<std::string,std::string>);
     (*resToField)[outPrefix+residualField] = fieldName_;
@@ -240,7 +240,7 @@ buildAndRegisterScatterEvaluators(PHX::FieldManager<panzer::Traits>& fm,
 
     PHX::Tag<EvalT::ScalarT> tag(scatterName, Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0)));
     fm.requireField<EvalT>(tag);
-  }
+  }*/
 }
 
 #endif

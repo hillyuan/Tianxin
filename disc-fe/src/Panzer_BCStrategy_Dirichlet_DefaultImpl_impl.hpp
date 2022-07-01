@@ -184,9 +184,9 @@ buildAndRegisterScatterEvaluators(PHX::FieldManager<panzer::Traits>& fm,
 
     p.set("Check Apply BC",check_apply_bc);
 
-    RCP< PHX::Evaluator<panzer::Traits> > op = lof.buildScatterDirichlet<EvalT>(p);
+   // RCP< PHX::Evaluator<panzer::Traits> > op = lof.buildScatterDirichlet<EvalT>(p);
 
-    this->template registerEvaluator<EvalT>(fm, op);
+   // this->template registerEvaluator<EvalT>(fm, op);
 
     // Require variables
     {

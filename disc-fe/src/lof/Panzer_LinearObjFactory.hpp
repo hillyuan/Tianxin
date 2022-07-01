@@ -74,7 +74,6 @@ class GlobalIndexer; // forward declaration
   * simply calls 
      <code>buildGather(const Teuchos::ParameterList & pl) const</code>,
      <code>buildScatter(const Teuchos::ParameterList & pl) const</code>, or
-     <code>buildScatterDirichlet(const Teuchos::ParameterList & pl) const</code>. 
   *
   * To implement a version of this class an author must overide all 
   * the linear algebra construction functions. The new version should also
@@ -86,7 +85,6 @@ class GlobalIndexer; // forward declaration
          template <typename EvalT> Teuchos::RCP<panzer::CloneableEvaluator> buildGather() const;
          template <typename EvalT> Teuchos::RCP<panzer::CloneableEvaluator> buildGatherDomain() const;
          template <typename EvalT> Teuchos::RCP<panzer::CloneableEvaluator> buildGatherOrientation() const;
-         template <typename EvalT> Teuchos::RCP<panzer::CloneableEvaluator> buildScatterDirichlet() const;
       \endcode
   * This builds the correct scatter/gather/scatter-dirichlet evaluator objects and returns
   * them as a <code>CloneableEvaluator</code> (These evaluators must overide the <code>CloneableEvaluator::clone</code>
@@ -96,7 +94,6 @@ class GlobalIndexer; // forward declaration
      <code>buildGatherDomain(const Teuchos::ParameterList & pl) const</code>,
      <code>buildGatherOrientation(const Teuchos::ParameterList & pl) const</code>,
      <code>buildScatter(const Teuchos::ParameterList & pl) const</code>, or
-     <code>buildScatterDirichlet(const Teuchos::ParameterList & pl) const</code>
   * functions.
   */
 template <typename Traits>
@@ -116,7 +113,6 @@ public:
          template <typename EvalT> Teuchos::RCP<panzer::CloneableEvaluator> buildGather() const;
          template <typename EvalT> Teuchos::RCP<panzer::CloneableEvaluator> buildGatherDomain() const;
          template <typename EvalT> Teuchos::RCP<panzer::CloneableEvaluator> buildGatherOrientation() const;
-         template <typename EvalT> Teuchos::RCP<panzer::CloneableEvaluator> buildScatterDirichlet() const;
       \endcode
       */
     template <typename BuilderT>
@@ -226,11 +222,7 @@ public:
    Teuchos::RCP<PHX::Evaluator<Traits> > buildGatherOrientation(const Teuchos::ParameterList & pl) const
    { return Teuchos::rcp_dynamic_cast<PHX::Evaluator<Traits> >(gatherOrientManager_->template getAsBase<EvalT>()->clone(pl)); }
 
-   //! Use preconstructed dirichlet scatter evaluators
-   template <typename EvalT>
-   Teuchos::RCP<PHX::Evaluator<Traits> > buildScatterDirichlet(const Teuchos::ParameterList & pl) const
-   { return Teuchos::rcp_dynamic_cast<PHX::Evaluator<Traits> >(scatterDirichletManager_->template getAsBase<EvalT>()->clone(pl)); }
-  
+
    //! Get the domain global indexer object associated with this factory
    virtual Teuchos::RCP<const panzer::GlobalIndexer> getDomainGlobalIndexer() const = 0;
 
@@ -248,7 +240,6 @@ private:
 
    // managers to build the scatter/gather evaluators
    Teuchos::RCP<Evaluator_TemplateManager> scatterManager_;
-   Teuchos::RCP<Evaluator_TemplateManager> scatterDirichletManager_;
    Teuchos::RCP<Evaluator_TemplateManager> gatherManager_;
    Teuchos::RCP<Evaluator_TemplateManager> gatherTangentManager_;
    Teuchos::RCP<Evaluator_TemplateManager> gatherDomainManager_;
@@ -263,17 +254,6 @@ private:
       
       template <typename EvalT> Teuchos::RCP<panzer::CloneableEvaluator> build() const 
       { return builder_->template buildScatter<EvalT>(); }
-   };
-
-   template <typename BuilderT>
-   struct ScatterDirichlet_Builder {
-      Teuchos::RCP<const BuilderT> builder_;
-
-      ScatterDirichlet_Builder(const Teuchos::RCP<const BuilderT> & builder) 
-         : builder_(builder) {}
-     
-      template <typename EvalT> Teuchos::RCP<panzer::CloneableEvaluator> build() const 
-      { return builder_->template buildScatterDirichlet<EvalT>(); }
    };
 
    template <typename BuilderT>
@@ -331,9 +311,6 @@ buildGatherScatterEvaluators(const BuilderT & builder)
 
    scatterManager_ = rcp(new Evaluator_TemplateManager);
    scatterManager_->buildObjects(Scatter_Builder<BuilderT>(rcpFromRef(builder)));
-
-   scatterDirichletManager_ = Teuchos::rcp(new Evaluator_TemplateManager);
-   scatterDirichletManager_->buildObjects(ScatterDirichlet_Builder<BuilderT>(rcpFromRef(builder)));
 
    gatherManager_ = Teuchos::rcp(new Evaluator_TemplateManager);
    gatherManager_->buildObjects(Gather_Builder<BuilderT>(rcpFromRef(builder)));

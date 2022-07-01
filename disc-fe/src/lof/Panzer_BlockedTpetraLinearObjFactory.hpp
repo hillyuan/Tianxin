@@ -65,7 +65,6 @@
 #include "Panzer_GatherSolution_BlockedTpetra.hpp"
 #include "Panzer_GatherTangent_BlockedTpetra.hpp"
 #include "Panzer_ScatterResidual_BlockedTpetra.hpp"
-#include "Panzer_ScatterDirichletResidual_BlockedTpetra.hpp"
 #include "Panzer_ThyraObjFactory.hpp"
 
 #include "Thyra_BlockedLinearOpBase.hpp"
@@ -167,11 +166,6 @@ public:
    template <typename EvalT>
    Teuchos::RCP<panzer::CloneableEvaluator > buildGatherOrientation() const
    { return Teuchos::rcp(new GatherOrientation<EvalT,Traits,LocalOrdinalT,GlobalOrdinalT>(nc2c_vector(blockedDOFManager_->getFieldDOFManagers()))); }
-
-   //! Use preconstructed dirichlet scatter evaluators
-   template <typename EvalT>
-   Teuchos::RCP<panzer::CloneableEvaluator> buildScatterDirichlet() const
-   { return Teuchos::rcp(new ScatterDirichletResidual_BlockedTpetra<EvalT,Traits,LocalOrdinalT,GlobalOrdinalT,NodeT>(blockedDOFManager_)); }
 
 /*************** Generic helper functions for container setup *******************/
 
