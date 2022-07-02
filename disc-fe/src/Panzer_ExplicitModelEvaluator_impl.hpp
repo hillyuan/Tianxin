@@ -70,13 +70,6 @@ ExplicitModelEvaluator(const Teuchos::RCP<Thyra::ModelEvaluator<Scalar> > & mode
   // extract a panzer::ModelEvaluator if appropriate
   panzerModel_ = rcp_dynamic_cast<panzer::ModelEvaluator<Scalar> >(model);
 
-  // extract a panzer::ModelEvaluator_Epetra if appropriate
-  RCP<Thyra::EpetraModelEvaluator> epME = rcp_dynamic_cast<Thyra::EpetraModelEvaluator>(model);
-  if(epME!=Teuchos::null)
-    panzerEpetraModel_ = rcp_dynamic_cast<const panzer::ModelEvaluator_Epetra>(epME->getEpetraModel());
-
-  // note at this point its possible that panzerModel_ = panzerEpetraModel_ = Teuchos::null
-
   buildArgsPrototypes();
 }
 
@@ -192,8 +185,6 @@ buildInverseMassMatrix(const Thyra::ModelEvaluatorBase::InArgs<Scalar> &inArgs) 
   // both epetra and Tpetra. 
   if(panzerModel_!=Teuchos::null)
     panzerModel_->setOneTimeDirichletBeta(1.0);
-  else if(panzerEpetraModel_!=Teuchos::null)
-    panzerEpetraModel_->setOneTimeDirichletBeta(1.0);
   else {
     // assuming the underlying model is a delegator, walk through
     // the decerator hierarchy until you find a panzer::ME or panzer::EpetraME.
@@ -261,22 +252,8 @@ setOneTimeDirichletBeta(double beta,const Thyra::ModelEvaluator<Scalar> & me) co
     panzerModel->setOneTimeDirichletBeta(beta);
     return;
   }
-  else {
-    Ptr<const Thyra::EpetraModelEvaluator> epModel = ptr_dynamic_cast<const Thyra::EpetraModelEvaluator>(ptrFromRef(me));
-    if(epModel!=Teuchos::null) {
-      Ptr<const panzer::ModelEvaluator_Epetra> panzerEpetraModel 
-          = ptr_dynamic_cast<const panzer::ModelEvaluator_Epetra>(epModel->getEpetraModel().ptr());
 
-      if(panzerEpetraModel!=Teuchos::null) {
-        panzerEpetraModel->setOneTimeDirichletBeta(beta);
-        return;
-      }
-    }
-  }
-
-  // if you get here then the ME is not a panzer::ME or panzer::EpetraME, check
-  // to see if its a delegator
- 
+  // if you get here then the ME is not a panzer::ME, check to see if its a delegator
   Ptr<const Thyra::ModelEvaluatorDelegatorBase<Scalar> > delegator
       = ptr_dynamic_cast<const Thyra::ModelEvaluatorDelegatorBase<Scalar> >(ptrFromRef(me));
   if(delegator!=Teuchos::null) {

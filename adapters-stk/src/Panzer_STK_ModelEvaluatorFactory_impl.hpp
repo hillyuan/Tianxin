@@ -65,7 +65,6 @@
 #include "Panzer_ThyraObjContainer.hpp"
 #include "Panzer_BlockedEpetraLinearObjFactory.hpp"
 #include "Panzer_BlockedTpetraLinearObjFactory.hpp"
-#include "Panzer_ModelEvaluator_Epetra.hpp"
 #include "Panzer_ModelEvaluator.hpp"
 #include "Panzer_ElementBlockIdToPhysicsIdMap.hpp"
 #include "Panzer_WorksetContainer.hpp"
@@ -295,7 +294,7 @@ namespace panzer_stk {
                                                                                    // global IDs in linear system
     bool use_load_balance = assembly_params.get<bool>("Load Balance DOFs");
     bool useTpetra = assembly_params.get<bool>("Use Tpetra");
-    bool useThyraME = !assembly_params.get<bool>("Use Epetra ME");
+    //bool useThyraME = !assembly_params.get<bool>("Use Epetra ME");
 
     // this is weird...we are accessing the solution control to determine if things are transient
     // it is backwards!
@@ -720,12 +719,11 @@ namespace panzer_stk {
     if(is_transient)
       t_init = this->getInitialTime(p.sublist("Initial Conditions").sublist("Transient Parameters"), *mesh);
 
-    if(blockedAssembly || useTpetra) // override the user request
-      useThyraME = true;
+    //if(blockedAssembly || useTpetra) // override the user request
+    //  useThyraME = true;
 
     Teuchos::RCP<Thyra::ModelEvaluatorDefaultBase<double> > thyra_me
-        = buildPhysicsModelEvaluator(useThyraME, // blockedAssembly || useTpetra, // this determines if a Thyra or Epetra ME is used
-                                     fmb,
+        = buildPhysicsModelEvaluator(fmb,
                                      m_response_library,
                                      linObjFactory,
                                      p_names,
@@ -1348,9 +1346,9 @@ namespace panzer_stk {
       // determine if this is a Epetra or Thyra ME
       Teuchos::RCP<Thyra::EpetraModelEvaluator> ep_thyra_me = Teuchos::rcp_dynamic_cast<Thyra::EpetraModelEvaluator>(physics_me);
       Teuchos::RCP<PanzerME> panzer_me = Teuchos::rcp_dynamic_cast<PanzerME>(physics_me);
-      bool useThyra = true;
-      if(ep_thyra_me!=Teuchos::null)
-        useThyra = false;
+     // bool useThyra = true;
+     // if(ep_thyra_me!=Teuchos::null)
+     //   useThyra = false;
 
       // get parameter names
       std::vector<Teuchos::RCP<Teuchos::Array<std::string> > > p_names(physics_me->Np());
@@ -1361,8 +1359,7 @@ namespace panzer_stk {
       }
 
       Teuchos::RCP<Thyra::ModelEvaluatorDefaultBase<double> > thyra_me
-          = buildPhysicsModelEvaluator(useThyra,
-                                       fmb,
+          = buildPhysicsModelEvaluator(fmb,
                                        response_library,
                                        m_lin_obj_factory,
                                        p_names,
@@ -1389,8 +1386,7 @@ namespace panzer_stk {
   template<typename ScalarT>
   Teuchos::RCP<Thyra::ModelEvaluatorDefaultBase<double> >
   ModelEvaluatorFactory<ScalarT>::
-  buildPhysicsModelEvaluator(bool buildThyraME,
-                             const Teuchos::RCP<panzer::FieldManagerBuilder> & fmb,
+  buildPhysicsModelEvaluator(const Teuchos::RCP<panzer::FieldManagerBuilder> & fmb,
                              const Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > & rLibrary,
                              const Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > & lof,
                              const std::vector<Teuchos::RCP<Teuchos::Array<std::string> > > & p_names,
@@ -1399,22 +1395,8 @@ namespace panzer_stk {
                              const Teuchos::RCP<panzer::GlobalData> & global_data,
                              bool is_transient,double t_init) const
   {
-    Teuchos::RCP<Thyra::ModelEvaluatorDefaultBase<double> > thyra_me;
-    if(!buildThyraME) {
-      Teuchos::RCP<panzer::ModelEvaluator_Epetra> ep_me
-          = Teuchos::rcp(new panzer::ModelEvaluator_Epetra(fmb,rLibrary,lof, p_names,p_values, global_data, is_transient));
-
-      if (is_transient)
-        ep_me->set_t_init(t_init);
-
-      // Build Thyra Model Evaluator
-      thyra_me = Thyra::epetraModelEvaluator(ep_me,solverFactory);
-    }
-    else {
-      thyra_me = Teuchos::rcp(new panzer::ModelEvaluator<double>
+    Teuchos::RCP<Thyra::ModelEvaluatorDefaultBase<double> > thyra_me = Teuchos::rcp(new panzer::ModelEvaluator<double>
                   (fmb,rLibrary,lof,p_names,p_values,solverFactory,global_data,is_transient,t_init));
-    }
-
     return thyra_me;
   }
 
@@ -1537,28 +1519,9 @@ namespace panzer_stk {
     Teuchos::ParameterList & closure_models = p.sublist("Closure Models");
 
     // uninitialize the thyra model evaluator, its respone counts are wrong!
-    Teuchos::RCP<Thyra::EpetraModelEvaluator> thyra_me = Teuchos::rcp_dynamic_cast<Thyra::EpetraModelEvaluator>(m_physics_me);
     Teuchos::RCP<PanzerME> panzer_me = Teuchos::rcp_dynamic_cast<PanzerME>(m_physics_me);
-
-    if(thyra_me!=Teuchos::null && panzer_me==Teuchos::null) {
-      Teuchos::RCP<const EpetraExt::ModelEvaluator> const_ep_me;
-      Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<double> > solveFactory;
-      thyra_me->uninitialize(&const_ep_me,&solveFactory); // this seems dangerous!
-
-      // I don't need no const-ness!
-      Teuchos::RCP<EpetraExt::ModelEvaluator> ep_me = Teuchos::rcp_const_cast<EpetraExt::ModelEvaluator>(const_ep_me);
-      Teuchos::RCP<panzer::ModelEvaluator_Epetra> ep_panzer_me = Teuchos::rcp_dynamic_cast<panzer::ModelEvaluator_Epetra>(ep_me);
-
-      ep_panzer_me->buildResponses(m_physics_blocks,*m_eqset_factory,cm_factory,closure_models,user_data,write_graphviz_file,graphviz_file_prefix);
-
-      // reinitialize the thyra model evaluator, now with the correct responses
-      thyra_me->initialize(ep_me,solveFactory);
-
-      return;
-    }
-    else if(panzer_me!=Teuchos::null && thyra_me==Teuchos::null) {
+    if(panzer_me!=Teuchos::null) {
       panzer_me->buildResponses(m_physics_blocks,*m_eqset_factory,cm_factory,closure_models,user_data,write_graphviz_file,graphviz_file_prefix);
-
       return;
     }
 

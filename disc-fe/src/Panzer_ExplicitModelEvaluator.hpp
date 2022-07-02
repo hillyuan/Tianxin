@@ -49,7 +49,6 @@
 #include "Thyra_BlockedLinearOpBase.hpp"
 
 #include "Panzer_ModelEvaluator.hpp"
-#include "Panzer_ModelEvaluator_Epetra.hpp"
 
 namespace panzer {
 
@@ -139,9 +138,6 @@ private: // data members
 
   //! Access to the panzer model evaluator pointer (thyra version)
   Teuchos::RCP<const panzer::ModelEvaluator<Scalar> > panzerModel_;
-
-  //! Access to the epetra panzer model evaluator pointer 
-  Teuchos::RCP<const panzer::ModelEvaluator_Epetra> panzerEpetraModel_;
 
   mutable Teuchos::RCP<Thyra::LinearOpBase<Scalar> > mass_;
   mutable Teuchos::RCP<const Thyra::LinearOpBase<Scalar> > invMassMatrix_;

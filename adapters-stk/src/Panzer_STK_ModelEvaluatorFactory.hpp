@@ -63,7 +63,6 @@
 #include "Panzer_EquationSet_Factory.hpp"
 #include "Panzer_BCStrategy_Factory.hpp"
 #include "Panzer_ClosureModel_Factory_TemplateManager.hpp"
-#include "Panzer_ModelEvaluator_Epetra.hpp"
 #include "Panzer_ModelEvaluator.hpp"
 #include "Panzer_NodeType.hpp"
 
@@ -216,8 +215,7 @@ namespace panzer_stk {
     /** This method is to assist with construction of the model evaluators.
       */
     Teuchos::RCP<Thyra::ModelEvaluatorDefaultBase<double> >
-    buildPhysicsModelEvaluator(bool buildThyraME,
-                        const Teuchos::RCP<panzer::FieldManagerBuilder> & fmb,
+    buildPhysicsModelEvaluator(const Teuchos::RCP<panzer::FieldManagerBuilder> & fmb,
                         const Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > & rLibrary,
                         const Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > & lof,
                         const std::vector<Teuchos::RCP<Teuchos::Array<std::string> > > & p_names,
@@ -338,17 +336,8 @@ addResponse(const std::string & responseName,const std::vector<panzer::WorksetDe
 {
   typedef panzer::ModelEvaluator<double> PanzerME;
 
-  Teuchos::RCP<Thyra::EpetraModelEvaluator> thyra_ep_me = Teuchos::rcp_dynamic_cast<Thyra::EpetraModelEvaluator>(m_physics_me);
   Teuchos::RCP<PanzerME> panzer_me = Teuchos::rcp_dynamic_cast<PanzerME>(m_physics_me);
-
-  if(thyra_ep_me!=Teuchos::null && panzer_me==Teuchos::null) {
-    // I don't need no const-ness!
-    Teuchos::RCP<EpetraExt::ModelEvaluator> ep_me = Teuchos::rcp_const_cast<EpetraExt::ModelEvaluator>(thyra_ep_me->getEpetraModel());
-    Teuchos::RCP<panzer::ModelEvaluator_Epetra> ep_panzer_me = Teuchos::rcp_dynamic_cast<panzer::ModelEvaluator_Epetra>(ep_me);
-
-    return ep_panzer_me->addResponse(responseName,wkstDesc,builder);
-  }
-  else if(panzer_me!=Teuchos::null && thyra_ep_me==Teuchos::null) {
+  if(panzer_me!=Teuchos::null) {
     return panzer_me->addResponse(responseName,wkstDesc,builder);
   }
 

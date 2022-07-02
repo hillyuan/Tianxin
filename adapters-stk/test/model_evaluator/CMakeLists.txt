@@ -8,12 +8,12 @@ INCLUDE_DIRECTORIES(${PACKAGE_SOURCE_DIR}/test/bcstrategy)
 
 SET(UNIT_TEST_DRIVER ${PANZER_UNIT_TEST_MAIN})
 
-TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  model_evaluator
-  SOURCES model_evaluator.cpp ${UNIT_TEST_DRIVER}
-  COMM serial mpi
-  NUM_MPI_PROCS 4
-  )
+#TRIBITS_ADD_EXECUTABLE_AND_TEST(
+#  model_evaluator
+#  SOURCES model_evaluator.cpp ${UNIT_TEST_DRIVER}
+#  COMM serial mpi
+#  NUM_MPI_PROCS 4
+#  )
 
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
   model_evaluator_mass_check
