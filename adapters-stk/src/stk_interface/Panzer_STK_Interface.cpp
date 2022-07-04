@@ -2489,6 +2489,37 @@ void STK_Interface::getSideToElementsMap(Kokkos::View<panzer::GlobalOrdinal*[2]>
 	}
 }
 
+std::vector<panzer::LocalOrdinal> STK_Interface::getSideToElementsMap(const std::string& setname) const
+{
+	std::vector<panzer::LocalOrdinal> side2elements;
+	std::vector<std::size_t> sideIds;
+	stk::mesh::EntityRank siderank = metaData_->side_rank();
+	this->getAllSideSetIds( setname, sideIds );
+	for( const auto sid: sideIds )
+	{
+	  const stk::mesh::Entity& side = bulkData_->get_entity(siderank,sid);
+	//  const auto& side = bulkData_->identifier( sid );
+      unsigned numElems = bulkData_->num_elements(side);
+	  if( numElems<=0 ) continue;
+	  if( numElems>2 ) {
+			std::cout << numElems << "Three elements attached to a side, it is impossible!";
+			continue;
+	  }
+	  const stk::mesh::Entity* elems = bulkData_->begin_elements(side);
+	  panzer::LocalOrdinal f2e_l[2];
+	//  f2e(j,0) = -1; f2e(j,1) = -1;
+	  f2e_l[0] = -1; f2e_l[1] = -3;
+	  for (unsigned i=0; i<numElems; ++i) {
+			stk::mesh::Entity elem = elems[i];
+			const auto& gid = bulkData_->identifier( elem );
+			f2e_l[i] = localIDHash_.at(gid);
+	  }
+	  side2elements.emplace_back(f2e_l[0]);
+	  side2elements.emplace_back(f2e_l[1]);
+	}
+	return side2elements;
+}
+
 void STK_Interface::getElementSideRelation( std::vector<std::size_t>& elements,
  std::vector<panzer::LocalOrdinal>& side2elements, std::vector<panzer::LocalOrdinal>& element2sides ) const
 {
@@ -2538,7 +2569,7 @@ void STK_Interface::getElementSideRelation( std::vector<std::size_t>& elements,
       unsigned numElems = bulkData_->num_elements(side);
 	  if( numElems<=0 ) continue;
 	  if( numElems>2 ) {
-			std::cout << numElems << " elements attached to a side, it is impossible!";
+			std::cout << numElems << "Three elements attached to a side, it is impossible!";
 			continue;
 	  }
 	  const stk::mesh::Entity* elems = bulkData_->begin_elements(side);

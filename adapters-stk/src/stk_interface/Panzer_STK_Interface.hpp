@@ -594,7 +594,7 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus( const std::string&   key, const std::vector<int>& value);
+  addGlobalToExodus( const std::string& key, const std::vector<int>& value);
 
   /**
    *  \brief Add a `std::vector<double>` global variable to the information to
@@ -616,8 +616,7 @@ public:
    *  \param[in] value The value of the global variable you'll be adding.
    */
   void
-  addGlobalToExodus( const std::string&         key,
-    const std::vector<double>& value);
+  addGlobalToExodus( const std::string& key, const std::vector<double>& value);
 
    // Accessor functions
    //////////////////////////////////////////
@@ -743,6 +742,10 @@ public:
 
    //! get the global counts for the entity of specified rank
    std::size_t getEntityCounts(unsigned entityRank) const;
+   std::size_t getElementCount() const
+   {
+	   return getEntityCounts(this->getElementRank());
+   }
 
    //! get max entity ID of type entityRank
    stk::mesh::EntityId getMaxEntityId(unsigned entityRank) const;
@@ -1111,6 +1114,13 @@ public:
    
    /** Find two elements attched to Face */
    void getSideToElementsMap(Kokkos::View<panzer::GlobalOrdinal*[2]>&, Kokkos::View<panzer::LocalOrdinal*[2]>&) const;
+   
+   /** Find all side ids from a given element list
+     *
+     * \param[in] sideset name 
+     * \param[out] neighboring element index of each sides = number of sides *2
+    **/
+   std::vector<panzer::LocalOrdinal> getSideToElementsMap(const std::string&) const;
    
    /** Find all side ids from a given element list
      *

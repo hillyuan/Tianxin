@@ -232,6 +232,8 @@ int main(int argc, char *argv[])
 
       mesh->setupExodusFile("output.exo");
     }
+	panzer::ConstructElementalPhysics(physicsBlocks,mesh);
+	std::cout << "Size of elements=" << mesh->elementPhysics.size() << std::endl;
 
     // build worksets
     //////////////////////////////////////////////////////////////

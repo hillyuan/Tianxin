@@ -41,11 +41,18 @@
 #include <string>
 #include <vector>
 
+namespace panzer 
+{	
+class PhysicsBlock;
+}
+
 namespace TianXin {
 
 struct AbstractDiscretation {
 	virtual unsigned getDimension() const = 0;
+	virtual std::size_t getElementCount() const = 0;
 	virtual const double* getNodeCoordinates(std::size_t) const = 0;
+	virtual void getAllElementIDs(const std::string& blockID,std::vector<panzer::LocalOrdinal> & elements) const=0;
 	virtual void getAllEdgeSetIds(const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getAllEdgeSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getAllNodeSetIds(const std::string&, std::vector<std::size_t>&) const=0;
@@ -63,6 +70,11 @@ struct AbstractDiscretation {
 	virtual void getMyEdgeSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getMyFaceSetIds(const std::string&, std::vector<std::size_t>&) const=0;
 	virtual void getMyFaceSetIds(const std::string&, const std::string&, std::vector<std::size_t>&) const=0;
+	
+	virtual std::vector<panzer::LocalOrdinal> getSideToElementsMap(const std::string&) const=0;
+	
+	// PhysicsBlock each elements correspond to
+	std::vector< Teuchos::RCP<panzer::PhysicsBlock> > elementPhysics;
 };
 
 }

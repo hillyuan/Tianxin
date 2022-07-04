@@ -162,6 +162,24 @@ Teuchos::RCP<panzer::PhysicsBlock> panzer::findPhysicsBlock(const std::string el
 }
 
 // *******************************************************************
+void panzer::ConstructElementalPhysics(const std::vector<Teuchos::RCP<panzer::PhysicsBlock> > & physics_blocks,
+								Teuchos::RCP<TianXin::AbstractDiscretation> mesh)
+{
+	const auto& ne = mesh->getElementCount();
+	mesh->elementPhysics.resize(ne);
+	for( const auto& pb: physics_blocks )
+	{
+		std::vector<panzer::LocalOrdinal> elements;
+		mesh->getAllElementIDs( pb->elementBlockID(), elements );
+		for( const auto& ele : elements ) {
+			if( ele>=ne )
+				TEUCHOS_TEST_FOR_EXCEPTION(true,std::runtime_error,"Error: panzer::ConstructElementalPhysics(): The requested element id\"" << ele << "\" was invalid!");
+			mesh->elementPhysics[ele] = pb;
+		}
+	}
+}
+
+// *******************************************************************
 panzer::PhysicsBlock::
 PhysicsBlock(const Teuchos::RCP<Teuchos::ParameterList>& physics_block_plist,
              const std::string & element_block_id,

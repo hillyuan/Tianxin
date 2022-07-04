@@ -57,6 +57,7 @@
 #include "Panzer_FieldLibrary.hpp"
 #include "Panzer_EvaluatorsRegistrar.hpp"
 #include "Panzer_WorksetNeeds.hpp"
+#include "TianXin_AbstractDiscretation.hpp"
 
 namespace Teuchos {
   class ParameterList;
@@ -101,16 +102,19 @@ namespace panzer {
                          const Teuchos::RCP<Teuchos::ParameterList>& physics_blocks_plist,
                          std::vector<Teuchos::RCP<panzer::PhysicsBlock> > & physicsBlocks);
 
-  /** \brief Nonmember function for searching and returning a spcific physics block given an element block id. Throws an erro if the physics block is not found.
+  /** \brief Nonmember function for searching and returning a specific physics block given an element block id. Throws an error if the physics block is not found.
       \relates panzer::PhysicsBlock
 
       \param[in] element_block_id The name of the corresponding element block that this function will search for in the physics block vector.
       \param[in] physics_blocks Vector of physics blocks
-      ]param[in] throw_on_failure Optional parameter that determines if the function hsould throw on failure.  Default is true.  If set to false and the funtion fails to find the physics block, then a null RCP is returned.
+      ]param[in] throw_on_failure Optional parameter that determines if the function should throw on failure. Default is true. If set to false and the funtion fails to find the physics block, then a null RCP is returned.
   */
   Teuchos::RCP<panzer::PhysicsBlock> findPhysicsBlock(const std::string element_block_id,
                                                       const std::vector<Teuchos::RCP<panzer::PhysicsBlock> > & physics_blocks,
                                                       bool throw_on_failure = true);
+
+  void ConstructElementalPhysics(const std::vector<Teuchos::RCP<panzer::PhysicsBlock> > & physics_blocks,
+								Teuchos::RCP<TianXin::AbstractDiscretation> mesh);
 
   //! Object that contains information on the physics and discretization of a block of elements with the SAME topology.
   class PhysicsBlock : public EvaluatorsRegistrar {

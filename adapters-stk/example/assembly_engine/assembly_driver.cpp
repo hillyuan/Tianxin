@@ -273,7 +273,7 @@ int main(int argc,char * argv[])
 
       mesh_factory.completeMeshConstruction(*mesh,MPI_COMM_WORLD);
    }
-
+   panzer::ConstructElementalPhysics(physicsBlocks,mesh);
 
    // build worksets
    ////////////////////////////////////////////////////////
