@@ -39,6 +39,7 @@
 #define _TIANXIN_FUNCTOR_HPP
 
 #include <Teuchos_ParameterList.hpp>
+#include "TianXin_Factory.hpp"
 #include <vector>
 
 namespace TianXin {
@@ -58,6 +59,7 @@ struct GeneralFunctor
 	virtual unsigned int nitems() const =0;
 };
 
+typedef Factory<GeneralFunctor<double>,std::string,Teuchos::ParameterList> GeneralFunctorFactory;
 
 // **************************************************************
 // Constant variables
@@ -77,7 +79,9 @@ class ConstantFunctor : public GeneralFunctor<T>
 		std::vector<T> m_value;
 };
 
-
+namespace GeneralFunctorRegister {
+	 static bool const Constant_OK = GeneralFunctorFactory::Instance().template Register< ConstantFunctor<double> >( "Constant");
+}
 // **************************************************************
 // Table variables
 // **************************************************************

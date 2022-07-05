@@ -53,6 +53,9 @@ class WorksetFunctor
 
 typedef Factory<WorksetFunctor,std::string,Teuchos::ParameterList> WorksetFunctorFactory;
 
+#define REGISTER_WORKSET_FUNCTOR(CLASSNAME) \
+	static const auto CLASSNAME##register_result = WorksetFunctorFactory::Instance().Register<CLASSNAME>(#CLASSNAME); \
+
 // **************************************************************
 // Constat function
 // **************************************************************
@@ -67,7 +70,7 @@ class ConstantWorksetFunctor : public WorksetFunctor
     double m_value;
 };
 namespace FunctorRegister {
-	 static bool const ok = WorksetFunctorFactory::Instance().template Register< ConstantWorksetFunctor<double> >( "Constant");
+	 static bool const Constant_OK = WorksetFunctorFactory::Instance().template Register< ConstantWorksetFunctor<double> >( "Constant");
 }
 // **************************************************************
 // Linear function
@@ -84,7 +87,7 @@ class LinearWorksetFunctor : public WorksetFunctor
     double m_value;
 };
 namespace FunctorRegister {
-	static bool const ok1 = WorksetFunctorFactory::Instance().template Register< LinearWorksetFunctor<double> >( "Linear");
+	static bool const Linear_OK = WorksetFunctorFactory::Instance().template Register< LinearWorksetFunctor<double> >( "Linear");
 }
 
 // **************************************************************
@@ -102,7 +105,7 @@ class TimeTableFunctor : public WorksetFunctor
     std::vector<double> m_value;
 };
 namespace FunctorRegister {
-	static bool const ok2 = WorksetFunctorFactory::Instance().template Register< TimeTableFunctor<double> >( "TimeTable");
+	static bool const TimeTable_OK = WorksetFunctorFactory::Instance().template Register< TimeTableFunctor<double> >( "TimeTable");
 }
 
 // **************************************************************

@@ -35,70 +35,68 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef _TIANXIN_NEUMANN_EVALUATOR_HPP
-#define _TIANXIN_NEUMANN_EVALUATOR_HPP
+#ifndef _TIANXIN_NEUMANN_IMPL_HPP
+#define _TIANXIN_NEUMANN_IMPL_HPP
 
-#include "Phalanx_Evaluator_Macros.hpp"
-#include "Phalanx_MDField.hpp"
-
-#include "TianXin_WorksetFunctor.hpp"
-#include "TianXin_Factory.hpp"
-
-#include <memory>
+#include <cstddef>
+#include <string>
+#include <vector>
+#include "Panzer_BasisIRLayout.hpp"
+#include "Panzer_Workset_Utilities.hpp"
+#include "Intrepid2_FunctionSpaceTools.hpp"
+#include "Teuchos_RCP.hpp"
 
 namespace TianXin {
-    
-  /** \brief Evaluates a Neumann BC residual contribution
 
-      computes the surface integral term resulting from integration
-      by parts for a particular dof:
-
-      int(n \cdot (flux * phi) )
-  */
+//**********************************************************************
 template<typename EvalT, typename Traits>
-class NeumannBase : public PHX::EvaluatorWithBaseImpl<Traits>
+NeumannBase<EvalT, Traits>::
+NeumannBase( const Teuchos::ParameterList& p)
 {
-	using ScalarT = typename EvalT::ScalarT;
+  std::string residual_name = p.get<std::string>("Residual Name");
+  const Teuchos::RCP<const panzer::PureBasis> basis =
+    p.get< Teuchos::RCP<const panzer::PureBasis> >("Basis");
+  const Teuchos::RCP<const panzer::IntegrationRule> ir = 
+    p.get< Teuchos::RCP<const panzer::IntegrationRule> >("IR");
 
-public:
+  residual = PHX::MDField<ScalarT>(residual_name, basis->functional);
+  this->addEvaluatedField(residual);
+ 
+  basis_name = panzer::basisIRLayout(basis,*ir)->name();
+}
 
-    NeumannBase(const Teuchos::ParameterList& p);
-
-    void postRegistrationSetup(typename Traits::SetupData d,PHX::FieldManager<Traits>& fm);
-    virtual void evaluateFields(typename Traits::EvalData d) = 0;
-
-private:
-  
-    PHX::MDField<ScalarT> residual;
-  
-    // output
-    //Kokkos::DynRankView<ScalarT, PHX::Device> neumann;
-
-    std::string basis_name;
-    std::size_t basis_index;
-}; // end of class NeumannBase
-
-typedef Factory<NeumannBase,std::string,Teuchos::ParameterList> NeumannFunctorFactory;
-
-#define REGISTER_NEUMANN(CLASSNAME) \
-	static const auto CLASSNAME##register_result = NeumannFunctorFactory::Instance().Register<CLASSNAME>(#CLASSNAME); \
+//**********************************************************************
+template<typename EvalT, typename Traits>
+void
+NeumannBase<EvalT, Traits>::
+postRegistrationSetup( typename Traits::SetupData sd,
+  PHX::FieldManager<Traits>& /* fm */)
+{
+  basis_index = panzer::getBasisIndex(basis_name, (*sd.worksets_)[0], this->wda);
+}
 
 // **************************************************************
-// Scalar Flux, e.g. Heat Flux dT/dn
+// Flux
 // **************************************************************
-
 template<typename EvalT, typename Traits>
-class Flux : public NeumannBase<EvalT, Traits>
+Flux<EvalT, Traits>::Flux( const Teuchos::ParameterList& p)
+: NeumannBase<EvalT, Traits>(p)
 {
-  public:
-    Flux(const Teuchos::ParameterList& params );
-    void evaluateFields(typename Traits::EvalData d) final;
-  private:
-    std::unique_ptr<TianXin::WorksetFunctor> pFunc;
-};
-namespace NeumannRegister {
-	static bool const FLUX_ROK = NeumannFunctorFactory::Instance().template Register< Flux<panzer::Traits::Residual,panzer::Traits> >( "Flux");
-	static bool const FLUX_JOK = NeumannFunctorFactory::Instance().template Register< Flux<panzer::Traits::Jacobian,panzer::Traits> >( "Flux");
+  std::string n = "Neumann Flux Evaluator";
+  this->setName(n);
+  
+  auto& value_type = p.get<std::string>("Value Type","Constant");
+  this->pFunc = GeneralFunctorFactory::Instance().Create(value_type, p);
+}
+
+//**********************************************************************
+template<typename EvalT, typename Traits>
+void
+Flux<EvalT, Traits>::evaluateFields(typename Traits::EvalData d)
+{
+  //basis_index = panzer::getBasisIndex(basis_name, (*sd.worksets_)[0], this->wda);
+  // Grab the basis information.
+  //  basis_ = this->wda(workset).bases[basisIndex_]->weighted_basis_scalar;
 }
 
 

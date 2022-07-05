@@ -57,7 +57,6 @@
 #include "Panzer_IntegrationDescriptor.hpp"
 #include "Panzer_OrientationsInterface.hpp"
 #include "Panzer_BasisDescriptor.hpp"
-#include "Panzer_Evaluator_DomainInterface.hpp"
 #include "Panzer_Traits.hpp"
 #include "Panzer_Evaluator_WithBaseImpl.hpp"
 #include "Panzer_IntrepidBasisFactory.hpp"

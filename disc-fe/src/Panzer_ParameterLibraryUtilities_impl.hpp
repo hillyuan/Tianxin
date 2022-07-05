@@ -115,13 +115,14 @@ namespace panzer {
 			    std::string pname = ppname.substr(found+1);
 				auto& value_type = pp.get<std::string>("Value Type","Constant");
 				if( value_type.find("Parameter") != std::string::npos ) continue;
-				if( value_type == "Constant" ) {
-					pfl[pname] = std::shared_ptr<TianXin::GeneralFunctor<EvaluationType>>(new TianXin::ConstantFunctor<EvaluationType>(pll));
-				}
-				else if( value_type == "Table" ) {
+				pfl[pname] = TianXin::GeneralFunctorFactory::Instance().Create(value_type, pp);
+			//	if( value_type == "Constant" ) {
+			//		pfl[pname] = std::shared_ptr<TianXin::GeneralFunctor<EvaluationType>>(new TianXin::ConstantFunctor<EvaluationType>(pll));
+			//	}
+			//	else if( value_type == "Table" ) {
 			//	const auto& p2 = pp.sublist("Table");
 			//	_dataT.emplace( pname, std::make_shared<ConstantParamter<T>>(new ConstantParamter<T>(p2)) );
-				}
+			//	}
 			}
 			catch (std::exception& e) {
 				std::cout << e.what() << std::endl;
