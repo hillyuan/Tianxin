@@ -85,10 +85,10 @@ namespace panzer {
                     const int num_cells,
                     const int num_faces=-1);
 
-    // TODO: Move to protected
+    // Setup for FEM
     void setup(int cubature_degree, const panzer::CellData& cell_data);
 
-    // TODO: Move to protected
+    // Setup for control volume
     void setup_cv(const panzer::CellData& cell_data, std::string cv_type);
   
     //! Returns the order of integration (cubature degree in intrepid lingo)

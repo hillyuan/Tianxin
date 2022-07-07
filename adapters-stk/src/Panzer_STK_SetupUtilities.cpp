@@ -301,6 +301,60 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
   return Teuchos::null;
 }
 
+Teuchos::RCP<std::map<unsigned,panzer::Workset> >
+buildBCWorksets(const panzer_stk::STK_Interface & mesh,
+                const panzer::WorksetNeeds & needs,
+                const std::string & sidesetID)
+{
+  using namespace workset_utils;
+  using Teuchos::RCP;
+
+  std::vector<stk::mesh::Entity> sideEntities; 
+
+  try {
+     // grab local entities on this side
+     // ...catch any failure...primarily wrong side set and element block info
+     mesh.getMySides(sidesetID,sideEntities);
+  } 
+  catch(std::logic_error & e) {
+     std::stringstream ss;
+     ss << e.what() << "Element/Sideset block exception, could not finalize the mesh, printing block and sideset information:\n";
+     mesh.printMetaData(ss);
+     ss << std::endl;
+
+     TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
+  }
+  
+  std::vector<stk::mesh::Entity> elements;
+  std::vector<std::size_t> local_cell_ids;
+  std::vector<std::size_t> local_side_ids;
+/*  getSideElements(mesh, eblockID,
+		      sideEntities,local_side_ids,elements);
+
+  // loop over elements of this block
+  for(std::size_t elm=0;elm<elements.size();++elm) {
+	stk::mesh::Entity element = elements[elm];
+	
+	local_cell_ids.push_back(mesh.elementLocalId(element));
+  }
+
+  // only build workset if there are elements to worry about
+  // this may be processor dependent, so a defined boundary
+  // condition may have not elements and thus no contribution
+  // on this processor
+  if(elements.size()!=0) {
+      Teuchos::RCP<const shards::CellTopology> topo 
+         = mesh.getCellTopology(eblockID);
+
+      Kokkos::DynRankView<double,PHX::Device> vertices;
+      mesh.getElementVertices(local_cell_ids,eblockID,vertices);
+  
+      return panzer::buildBCWorkset(needs, eblockID, local_cell_ids, local_side_ids, vertices);
+  }*/
+  
+  return Teuchos::null;
+}
+
 namespace workset_utils { 
 
 void getSubcellElements(const panzer_stk::STK_Interface & mesh,

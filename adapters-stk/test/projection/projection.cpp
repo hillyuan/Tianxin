@@ -332,7 +332,7 @@ TEUCHOS_UNIT_TEST(L2Projection, ToNodal)
         Kokkos::DynRankView<Intrepid2::Orientation,PHX::Device> elemOrts("elemOrts", workset.numOwnedCells());
         Intrepid2::OrientationTools<PHX::Device>::getOrientation(elemOrts, ownedNodesGID, *cellTopology);
 
-        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
+        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells() ,
                                                 sourceGlobalIndexer->getElementBlockGIDCount(block));
         // Remove the ghosted cell ids or the call to getElementLocalIds will spill array bounds
         const auto cellLocalIdsNoGhost = Kokkos::subview(workset.cell_local_ids_k,std::make_pair(0,workset.numOwnedCells()));
@@ -607,7 +607,7 @@ TEUCHOS_UNIT_TEST(L2Projection, ToNodal)
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true);
       const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
-        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
+        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells() ,
                                                 targetGlobalIndexer->getElementBlockGIDCount(block));
         const auto cellLocalIdsNoGhost = Kokkos::subview(workset.cell_local_ids_k,std::make_pair(0,workset.numOwnedCells()));
         targetGlobalIndexer->getElementLIDs(cellLocalIdsNoGhost,localIds);
@@ -722,7 +722,7 @@ TEUCHOS_UNIT_TEST(L2Projection, ToNodal)
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true);
       const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
-        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
+        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells() ,
                                                 targetGlobalIndexer->getElementBlockGIDCount(block));
         const auto cellLocalIdsNoGhost = Kokkos::subview(workset.cell_local_ids_k,std::make_pair(0,workset.numOwnedCells()));
         targetGlobalIndexer->getElementLIDs(cellLocalIdsNoGhost,localIds);
@@ -1090,7 +1090,7 @@ TEUCHOS_UNIT_TEST(L2Projection, HighOrderTri)
       const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
 
-        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
+        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells() ,
                                                 sourceGlobalIndexer->getElementBlockGIDCount(block));
         // Remove the ghosted cell ids or the call to getElementLocalIds will spill array bounds
         const auto cellLocalIdsNoGhost = Kokkos::subview(workset.cell_local_ids_k,std::make_pair(0,workset.numOwnedCells()));
@@ -1218,7 +1218,7 @@ TEUCHOS_UNIT_TEST(L2Projection, HighOrderTri)
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true);
       const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
-        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
+        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells() ,
                                                 targetGlobalIndexer->getElementBlockGIDCount(block));
         const auto cellLocalIdsNoGhost = Kokkos::subview(workset.cell_local_ids_k,std::make_pair(0,workset.numOwnedCells()));
         targetGlobalIndexer->getElementLIDs(cellLocalIdsNoGhost,localIds);
@@ -1316,7 +1316,7 @@ TEUCHOS_UNIT_TEST(L2Projection, HighOrderTri)
       panzer::WorksetDescriptor wd(block,panzer::WorksetSizeType::ALL_ELEMENTS,true);
       const auto worksets = worksetContainer->generateWorksets(wd);
       for (const auto& workset : *worksets) {
-        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
+        PHX::View<LO**> localIds("projection unit test: LocalIds", workset.numOwnedCells()+workset.numGhostCells() ,
                                                 targetGlobalIndexer->getElementBlockGIDCount(block));
         const auto cellLocalIdsNoGhost = Kokkos::subview(workset.cell_local_ids_k,std::make_pair(0,workset.numOwnedCells()));
         targetGlobalIndexer->getElementLIDs(cellLocalIdsNoGhost,localIds);

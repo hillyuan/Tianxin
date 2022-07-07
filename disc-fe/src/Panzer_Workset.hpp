@@ -94,7 +94,6 @@ namespace panzer {
   class WorksetDetails {
   public:
     typedef PHX::MDField<double,Cell,NODE,Dim> CellCoordArray;
-	typedef PHX::MDField<double,Dim,NODE,Dim> NodeCoordArray;
 
     //! Default constructor
     WorksetDetails();
@@ -110,11 +109,9 @@ namespace panzer {
 
     // DEPRECATED - use: getLocalCellIDs()
     std::vector<size_t> cell_local_ids;
-	std::vector<size_t> nodeset_local_dofs;
 
     /// DEPRECATED - use: getCellVertices()
     CellCoordArray cell_vertex_coordinates;
-    NodeCoordArray nodeset_coordinates;
 
     /// DEPRECATED - use: getElementBlock()
     std::string block_id;

@@ -128,7 +128,7 @@ namespace panzer {
           Kokkos::deep_copy(kOffsets, kOffsets_h);
 
           // Local Ids
-          PHX::View<panzer::LocalOrdinal**> localIds("MassMatrix: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
+          PHX::View<panzer::LocalOrdinal**> localIds("MassMatrix: LocalIds", workset.numOwnedCells()+workset.numGhostCells(),
               targetGlobalIndexer_->getElementBlockGIDCount(block));
 
           // Remove the ghosted cell ids or the call to getElementLocalIds will spill array bounds
@@ -232,7 +232,7 @@ namespace panzer {
           Kokkos::deep_copy(kOffsets, kOffsets_h);
 
           // Local Ids
-          PHX::View<panzer::LocalOrdinal**> localIds("MassMatrix: LocalIds", workset.numOwnedCells()+workset.numGhostCells()+workset.numVirtualCells(),
+          PHX::View<panzer::LocalOrdinal**> localIds("MassMatrix: LocalIds", workset.numOwnedCells()+workset.numGhostCells(),
                                                   targetGlobalIndexer_->getElementBlockGIDCount(block));
 
           // Remove the ghosted cell ids or the call to getElementLocalIds will spill array bounds

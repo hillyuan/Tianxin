@@ -141,8 +141,7 @@ namespace panzer {
     const int num_owned_cells   = workset.numOwnedCells();
     const int num_ghost_cells   = workset.numGhostCells();
     const int num_real_cells    = num_owned_cells + num_ghost_cells;
-    const int num_virtual_cells = workset.numVirtualCells();
-    const int num_cells         = num_real_cells + num_virtual_cells;
+    const int num_cells         = num_real_cells;
 
     const int faces_per_cell    = 6; // hexahedron
     auto & face_connectivity    = workset.getFaceConnectivity();
