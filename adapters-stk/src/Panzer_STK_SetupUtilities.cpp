@@ -43,9 +43,11 @@
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "Panzer_Workset_Builder.hpp"
 #include "Teuchos_Assert.hpp"
+#include "Panzer_CommonArrayFactories.hpp"
 
 #include <stk_mesh/base/Selector.hpp>
 #include <stk_mesh/base/GetEntities.hpp>
+#include <stk_mesh/base/SideSetEntry.hpp>
 
 namespace panzer_stk {
 
@@ -306,12 +308,11 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
                 const panzer::WorksetNeeds & needs,
                 const std::string & sidesetID)
 {
-  using namespace workset_utils;
-  using Teuchos::RCP;
+	panzer::MDFieldArrayFactory mdArrayFactory("",true);
+	
+  stk::mesh::SideSet sideset =  mesh.getSTKSideset(sidesetID);
 
-  std::vector<stk::mesh::Entity> sideEntities; 
-
-  try {
+ /* try {
      // grab local entities on this side
      // ...catch any failure...primarily wrong side set and element block info
      mesh.getMySides(sidesetID,sideEntities);
@@ -323,36 +324,49 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
      ss << std::endl;
 
      TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
-  }
+  }*/
   
   std::vector<stk::mesh::Entity> elements;
   std::vector<std::size_t> local_cell_ids;
   std::vector<std::size_t> local_side_ids;
-/*  getSideElements(mesh, eblockID,
-		      sideEntities,local_side_ids,elements);
-
-  // loop over elements of this block
-  for(std::size_t elm=0;elm<elements.size();++elm) {
-	stk::mesh::Entity element = elements[elm];
-	
-	local_cell_ids.push_back(mesh.elementLocalId(element));
+  
+  std::vector<stk::mesh::SideSetEntry>::const_iterator itr=sideset.begin();
+  /* P.A.: Get cell toplogy (belongs to first element). For covenient, we suppose all elements have the same topo*/
+  //const auto& topo = stk::mesh::get_cell_topology(bulkData_->bucket(itr->element).topology());
+  
+ // std::vector<SideSetEntry>::iterator lowerBound = std::lower_bound(sideset->begin(), sideset->end(), SideSetEntry(entity, 0));
+ // std::vector<SideSetEntry>::iterator upperBound = std::upper_bound( sideset->begin(), sideset->end(), SideSetEntry(entity, INVALID_CONNECTIVITY_ORDINAL));
+  for(itr=sideset.begin();itr!=sideset.end();++itr) {
+	  const auto& ele = itr->element;
+	  local_cell_ids.emplace_back(mesh.elementLocalId(ele));
+	  local_side_ids.emplace_back(itr->side);
   }
 
-  // only build workset if there are elements to worry about
-  // this may be processor dependent, so a defined boundary
-  // condition may have not elements and thus no contribution
-  // on this processor
-  if(elements.size()!=0) {
-      Teuchos::RCP<const shards::CellTopology> topo 
-         = mesh.getCellTopology(eblockID);
+  // It is supposed that all elements in sideset have the same topology
+  if(local_cell_ids.empty()) return Teuchos::null;
 
-      Kokkos::DynRankView<double,PHX::Device> vertices;
-      mesh.getElementVertices(local_cell_ids,eblockID,vertices);
+
+    Kokkos::DynRankView<double,PHX::Device> vertices;
+    mesh.getElementVertices(local_cell_ids, vertices);
+	
+/*	workset->cell_vertex_coordinates = mdArrayFactory.buildStaticArray<double,panzer::Cell,panzer::NODE,panzer::Dim>("cvc",
+        vertices.extent(0), vertices.extent(1), vertices.extent(2));
+	auto coords_view = workset->cell_vertex_coordinates.get_view();
+	Kokkos::deep_copy(coords_view, vertices);
+	
+	for (std::size_t cell = 0; cell < local_cell_ids.size(); ++cell) {
+      workset->cell_local_ids.push_back(local_cell_ids[cell]);
+	}
+	workset->num_cells = local_cell_ids.size();
+	workset->subcell_dim = needs.cellData.baseCellDimension() - 1;
+    workset->subcell_index = local_side_ids[0];    // need modification
+	
+	panzer::populateValueArrays(workset->num_cells,true,needs,*workset); // populate "side" values*/
+	
+	std::string eblockID("");
   
-      return panzer::buildBCWorkset(needs, eblockID, local_cell_ids, local_side_ids, vertices);
-  }*/
+  return panzer::buildBCWorkset(needs, eblockID, local_cell_ids, local_side_ids, vertices);
   
-  return Teuchos::null;
 }
 
 namespace workset_utils { 

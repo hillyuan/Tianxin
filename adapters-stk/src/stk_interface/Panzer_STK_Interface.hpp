@@ -53,6 +53,7 @@
 #include <stk_mesh/base/FieldBase.hpp>
 #include <stk_mesh/base/MetaData.hpp>
 #include <stk_mesh/base/CoordinateSystems.hpp>
+#include <stk_mesh/base/SideSetEntry.hpp>
 #include <stk_search/PeriodicBoundarySearch.hpp>
 
 #include "Kokkos_Core.hpp"
@@ -728,6 +729,13 @@ public:
    {
      auto itr = sidesets_.find(name);
      return (itr != sidesets_.end()) ? itr->second : nullptr;
+   }
+   
+   stk::mesh::SideSet getSTKSideset(const std::string & name) const
+   {
+     stk::mesh::Part * part=this->getSideset(name);
+	 //EXPECT_TRUE(bulkData_->does_sideset_exist(*part));
+	 return bulkData_->get_sideset(*part);
    }
 
    //! get the side set count

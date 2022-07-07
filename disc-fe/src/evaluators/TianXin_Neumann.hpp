@@ -101,6 +101,27 @@ namespace NeumannRegister {
 	static bool const FLUX_JOK = NeumannFunctorFactory::Instance().template Register< Flux<panzer::Traits::Jacobian,panzer::Traits> >( "Flux");
 }
 
+// **************************************************************
+// Pressure act upon surface
+// **************************************************************
+
+template<typename EvalT, typename Traits>
+class Pressure : public NeumannBase<EvalT, Traits>
+{
+  public:
+    Pressure(const Teuchos::ParameterList& params );
+    void evaluateFields(typename Traits::EvalData d) final;
+  private:
+    std::unique_ptr<TianXin::WorksetFunctor> pFunc;
+	int quad_order, quad_index;
+	std::size_t num_qp, num_dim;
+	PHX::MDField<ScalarT,Cell,Point,Dim> normals;
+};
+namespace NeumannRegister {
+	static bool const FLUX_ROK = NeumannFunctorFactory::Instance().template Register< Pressure<panzer::Traits::Residual,panzer::Traits> >( "Pressure");
+	static bool const FLUX_JOK = NeumannFunctorFactory::Instance().template Register< Pressure<panzer::Traits::Jacobian,panzer::Traits> >( "Pressure");
+}
+
 
 }
 
