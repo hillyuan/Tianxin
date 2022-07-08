@@ -466,18 +466,20 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 
 	    // Copy the physics block for side integrations
 	    Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
-		const std::string Identifier= sublist.get<std::string>("Type");;
-		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> = 
-			TianXin::NeumannFunctorFactory::Instance().Create(Identifier, sublist);
+		const std::string Identifier= sublist.get<std::string>("Type");
+		//std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
+		//	TianXin::NeumannResidualFactory::Instance().Create(Identifier, sublist);
+		//std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
+		//	TianXin::NeumannJacobianFactory::Instance().Create(Identifier, sublist);
 	}
 
 	panzer::Traits::SD setupData;
 
-	std::vector<PHX::index_size_type> derivative_dimensions;
+	/*std::vector<PHX::index_size_type> derivative_dimensions;
     derivative_dimensions.push_back(1);
     phx_dirichlet_field_manager_->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
     phx_dirichlet_field_manager_->setKokkosExtendedDataTypeDimensions<panzer::Traits::Tangent>(derivative_dimensions);
-    phx_dirichlet_field_manager_->postRegistrationSetup(setupData);
+    phx_dirichlet_field_manager_->postRegistrationSetup(setupData);*/
 }
 
 //=======================================================================

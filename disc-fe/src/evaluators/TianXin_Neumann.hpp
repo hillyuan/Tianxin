@@ -59,7 +59,7 @@ namespace TianXin {
 template<typename EvalT, typename Traits>
 class NeumannBase : public PHX::EvaluatorWithBaseImpl<Traits>
 {
-	using ScalarT = typename EvalT::ScalarT;
+    using ScalarT = typename EvalT::ScalarT;
 
 public:
 
@@ -78,15 +78,14 @@ protected:
 	
 	std::unique_ptr<TianXin::WorksetFunctor> pFunc;
 	int quad_order, quad_index;
-	std::size_t num_qp, num_dim;
+	std::size_t num_cell, num_qp, num_dim;
 	PHX::MDField<ScalarT,panzer::Cell,panzer::Point,panzer::Dim> normals;
 	//Kokkos::DynRankView<ScalarT, PHX::Device> normal_lengths_buffer;
 }; // end of class NeumannBase
 
-typedef Factory<NeumannBase,std::string,Teuchos::ParameterList> NeumannFunctorFactory;
+//typedef Factory<NeumannBase<panzer::Traits::Residual,panzer::Traits>,std::string,Teuchos::ParameterList> NeumannResidualFactory;
+//typedef Factory<NeumannBase<panzer::Traits::Jacobian,panzer::Traits>,std::string,Teuchos::ParameterList> NeumannJacobianFactory;
 
-#define REGISTER_NEUMANN(CLASSNAME) \
-	static const auto CLASSNAME##register_result = NeumannFunctorFactory::Instance().Register<CLASSNAME>(#CLASSNAME); \
 
 // **************************************************************
 // Scalar Flux, e.g. Heat Flux dT/dn
@@ -95,15 +94,14 @@ typedef Factory<NeumannBase,std::string,Teuchos::ParameterList> NeumannFunctorFa
 template<typename EvalT, typename Traits>
 class Flux : public NeumannBase<EvalT, Traits>
 {
+  using ScalarT = typename EvalT::ScalarT;
   public:
     Flux(const Teuchos::ParameterList& params );
     void evaluateFields(typename Traits::EvalData d) final;
-  private:
-    std::unique_ptr<TianXin::WorksetFunctor> pFunc;
 };
 namespace NeumannRegister {
-	static bool const FLUX_ROK = NeumannFunctorFactory::Instance().template Register< Flux<panzer::Traits::Residual,panzer::Traits> >( "Flux");
-	static bool const FLUX_JOK = NeumannFunctorFactory::Instance().template Register< Flux<panzer::Traits::Jacobian,panzer::Traits> >( "Flux");
+//	static bool const FLUX_ROK = NeumannResidualFactory::Instance().template Register< Flux<panzer::Traits::Residual,panzer::Traits> >( "Flux");
+//	static bool const FLUX_JOK = NeumannJacobianFactory::Instance().template Register< Flux<panzer::Traits::Jacobian,panzer::Traits> >( "Flux");
 }
 
 // **************************************************************
@@ -129,5 +127,7 @@ namespace NeumannRegister {
 */
 
 }
+
+#include "TianXin_Neumann_impl.hpp"
 
 #endif

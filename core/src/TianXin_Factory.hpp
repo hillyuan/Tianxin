@@ -90,7 +90,7 @@ namespace TianXin {
             return associations_.erase(id) != 0;
         }
 
-        std::unique_ptr<AbstractProduct> Create(const IdentifierType& id, CreatorParmTList& param)
+        std::unique_ptr<AbstractProduct> Create(const IdentifierType& id, const CreatorParmTList& param)
         {
 			auto iter = associations_.find(id);
 			if (iter == associations_.end()) return std::unique_ptr<AbstractProduct>(nullptr);
