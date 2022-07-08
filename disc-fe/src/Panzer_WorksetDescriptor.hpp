@@ -197,6 +197,15 @@ public:
     TEUCHOS_TEST_FOR_EXCEPTION(sideset_2_=="",std::runtime_error,
                                "WorksetDescriptor constr: Side set 1 name must be non-empty!");
   }
+  
+  WorksetDescriptor(const Teuchos::ParameterList& pl)
+  : worksetSize_(WorksetSizeType::CLASSIC_MODE),
+    applyOrientations_(false),
+    sideAssembly_(true)
+  {
+    elementBlock_ = pl.get<std::string>("Element block");
+	sideset_ = pl.get<std::string>("Sideset ID");
+  }
 
   //! Copy constructor
   WorksetDescriptor(const WorksetDescriptor & src) = default;

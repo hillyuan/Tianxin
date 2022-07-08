@@ -147,6 +147,7 @@ public:
 
    //! Access, and construction of side worksets
    Teuchos::RCP<std::map<unsigned,Workset> > getSideWorksets(const WorksetDescriptor & desc);
+   Teuchos::RCP<Workset> getSideWorkset(const WorksetDescriptor & desc);
 
    /** Set the global indexer. This is used solely for accessing the
      * orientations.
@@ -221,6 +222,8 @@ private:
 
    WorksetMap worksets_;
    SideMap sideWorksets_;
+   // one side - one workset. We donot consider worksetSize here (How about two physical BC upon one siderset?
+   std::unordered_map<WorksetDescriptor,Teuchos::RCP<Workset>> sidesetWorksets_;
 
    std::size_t worksetSize_;
 

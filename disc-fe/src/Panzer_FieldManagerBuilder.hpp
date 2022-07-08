@@ -182,6 +182,10 @@ namespace panzer {
 	
 	void setupDiricheltFieldManagers(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const Teuchos::RCP<const panzer::GlobalIndexer> & indexer );
+	  
+	void setupNeumannFieldManagers(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+	  const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
+      const panzer::LinearObjFactory<panzer::Traits> & lo_factory );
 
     void writeVolumeGraphvizDependencyFiles(std::string filename_prefix,
 					    const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks) const;

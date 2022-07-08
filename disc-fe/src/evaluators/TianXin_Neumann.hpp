@@ -39,6 +39,7 @@
 #define _TIANXIN_NEUMANN_EVALUATOR_HPP
 
 #include "Phalanx_Evaluator_Macros.hpp"
+#include "Phalanx_Evaluator_Factory.hpp"
 #include "Phalanx_MDField.hpp"
 
 #include "TianXin_WorksetFunctor.hpp"
@@ -78,7 +79,7 @@ protected:
 	std::unique_ptr<TianXin::WorksetFunctor> pFunc;
 	int quad_order, quad_index;
 	std::size_t num_qp, num_dim;
-	PHX::MDField<ScalarT,Cell,Point,Dim> normals;
+	PHX::MDField<ScalarT,panzer::Cell,panzer::Point,panzer::Dim> normals;
 	//Kokkos::DynRankView<ScalarT, PHX::Device> normal_lengths_buffer;
 }; // end of class NeumannBase
 

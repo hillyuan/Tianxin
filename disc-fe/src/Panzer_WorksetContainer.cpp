@@ -200,6 +200,35 @@ WorksetContainer::getSideWorksets(const WorksetDescriptor & desc)
    return worksetMap;
 }
 
+//! Access, and construction of side worksets
+Teuchos::RCP<Workset>
+WorksetContainer::getSideWorkset(const WorksetDescriptor & desc)
+{
+   Teuchos::RCP<Workset> worksetPtr;
+
+   // this is the key for the workset map
+   auto itr = sidesetWorksets_.find(desc);
+
+   if(itr==sidesetWorksets_.end()) {
+      worksetPtr = wkstFactory_->getSideWorkset(desc, lookupNeeds(desc.getElementBlock(0)));
+
+      // apply orientations to the worksets for this side
+    //  if(worksetPtr!=Teuchos::null)
+    //    applyOrientations(desc,*worksetMap);
+
+    //  if(worksetPtr!=Teuchos::null)
+    //    setIdentifiers(desc,*worksetMap);
+
+      // store map for reuse in the future
+      sidesetWorksets_[desc] = worksetPtr;
+   }
+   else {
+      worksetPtr = itr->second;
+   }
+
+   return worksetPtr;
+}
+
 
 void WorksetContainer::
 setGlobalIndexer(const Teuchos::RCP<const panzer::GlobalIndexer> & ugi)

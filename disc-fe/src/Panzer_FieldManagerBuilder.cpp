@@ -65,7 +65,7 @@
 #include "Panzer_EquationSet_Factory.hpp"
 #include "Panzer_GlobalIndexer.hpp"
 
-//#include "EpetraExt_BlockMapOut.h"
+#include "TianXin_Neumann.hpp"
 
 //=======================================================================
 //=======================================================================
@@ -403,6 +403,72 @@ setupDiricheltFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP
 			Teuchos::rcp( new TianXin::DirichletEvalautor<panzer::Traits::Jacobian, panzer::Traits>(sublist, mesh, indexer) );
 		phx_dirichlet_field_manager_->registerEvaluator<panzer::Traits::Jacobian>(je);
 		phx_dirichlet_field_manager_->requireField<panzer::Traits::Jacobian>(*je->evaluatedFields()[0]);
+	}
+
+	panzer::Traits::SD setupData;
+
+	std::vector<PHX::index_size_type> derivative_dimensions;
+    derivative_dimensions.push_back(1);
+    phx_dirichlet_field_manager_->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
+    phx_dirichlet_field_manager_->setKokkosExtendedDataTypeDimensions<panzer::Traits::Tangent>(derivative_dimensions);
+    phx_dirichlet_field_manager_->postRegistrationSetup(setupData);
+}
+
+//=======================================================================
+//=======================================================================
+void panzer::FieldManagerBuilder::
+setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+      const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
+      const panzer::LinearObjFactory<panzer::Traits> & lo_factory )
+{
+	TEUCHOS_TEST_FOR_EXCEPTION(getWorksetContainer()==Teuchos::null,std::logic_error,
+                            "panzer::FMB::setupBCFieldManagers: method function getWorksetContainer() returns null. "
+                            "Plase call setWorksetContainer() before calling this method");
+
+	if( !phx_neumann_field_manager_ )
+		 phx_neumann_field_manager_ = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
+
+    Teuchos::RCP<const panzer::GlobalIndexer> globalIndexer = lo_factory.getRangeGlobalIndexer();
+
+    // for convenience build a map (element block id => physics block)
+    std::map<std::string,Teuchos::RCP<panzer::PhysicsBlock> > physicsBlocks_map;
+    {
+       std::vector<Teuchos::RCP<panzer::PhysicsBlock> >::const_iterator blkItr;
+       for(blkItr=physicsBlocks.begin();blkItr!=physicsBlocks.end();++blkItr) {
+          Teuchos::RCP<panzer::PhysicsBlock> pb = *blkItr;
+          std::string blockId = pb->elementBlockID();
+
+          // add block id, physics block pair to the map
+          physicsBlocks_map.insert(std::make_pair(blockId,pb));
+       }
+    }
+
+    // ***************************
+    // Neumans
+    // ***************************
+	for (Teuchos::ParameterList::ConstIterator bc_pl=pl.begin(); bc_pl != pl.end(); ++bc_pl) {
+		TEUCHOS_TEST_FOR_EXCEPTION( !(bc_pl->second.isList()), std::logic_error,
+				"Error - All objects in the Dirichlet Conditions sublist must be sublists!" );
+		Teuchos::ParameterList& sublist = Teuchos::getValue<Teuchos::ParameterList>(bc_pl->second);
+		
+		WorksetDescriptor wd(sublist);
+		const Teuchos::RCP<panzer::Workset> currentWkst = getWorksetContainer()->getSideWorkset(wd);
+		if (currentWkst.is_null()) continue;
+		
+		const std::string element_block_id = wd.getElementBlock();
+		const auto& volume_pb_itr = physicsBlocks_map.find(element_block_id);
+        TEUCHOS_TEST_FOR_EXCEPTION(volume_pb_itr==physicsBlocks_map.end(),std::logic_error,
+				 "panzer::FMB::setupBCFieldManagers: Cannot find physics block corresponding to element block \"" << element_block_id << "\"");
+		
+		Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(element_block_id)->second;
+        Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
+		const panzer::CellData side_cell_data(currentWkst->num_cells,currentWkst->subcell_index,volume_cell_topology);
+
+	    // Copy the physics block for side integrations
+	    Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
+		const std::string Identifier= sublist.get<std::string>("Type");;
+		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> = 
+			TianXin::NeumannFunctorFactory::Instance().Create(Identifier, sublist);
 	}
 
 	panzer::Traits::SD setupData;

@@ -304,7 +304,7 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
 }
 
 Teuchos::RCP<panzer::Workset>
-buildBCWorksets(const panzer_stk::STK_Interface & mesh,
+buildBCWorkset(const panzer_stk::STK_Interface & mesh,
                 const panzer::WorksetNeeds & needs,
                 const std::string & sidesetID)
 {
@@ -371,7 +371,7 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
 	workset->local_side_ordinals = local_side_ordinals;
 	workset->num_cells = local_cell_ids.size();
 	workset->subcell_dim = needs.cellData.baseCellDimension() - 1;
-    //workset->subcell_index = local_side_ids[0];    this varibale should be deleted? in case local_side_ordinals be defined
+    workset->subcell_index = local_side_ids[0];   //used to determine subcell topo. Should it be deleted? in case local_side_ordinals be defined
 	
 	panzer::populateValueArrays(workset->num_cells,true,needs,*workset); // populate "side" values
 	

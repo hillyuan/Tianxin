@@ -82,6 +82,13 @@ public:
    getSideWorksets(const panzer::WorksetDescriptor & desc,
                    const panzer::WorksetNeeds & needs_a,
                    const panzer::WorksetNeeds & needs_b) const;
+				   
+   /** Build sets of boundary condition worksets
+     */
+   virtual
+   Teuchos::RCP<panzer::Workset> 
+   getSideWorkset(const panzer::WorksetDescriptor & desc,
+                   const panzer::WorksetNeeds & needs) const final;
 
    /** Build workssets specified by the workset descriptor.
      */
