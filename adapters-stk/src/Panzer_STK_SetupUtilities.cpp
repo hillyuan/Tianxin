@@ -303,13 +303,14 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
   return Teuchos::null;
 }
 
-Teuchos::RCP<std::map<unsigned,panzer::Workset> >
+Teuchos::RCP<panzer::Workset>
 buildBCWorksets(const panzer_stk::STK_Interface & mesh,
                 const panzer::WorksetNeeds & needs,
                 const std::string & sidesetID)
 {
 	panzer::MDFieldArrayFactory mdArrayFactory("",true);
 	
+	Teuchos::RCP<panzer::Workset> workset = Teuchos::rcp(new panzer::Workset);
   stk::mesh::SideSet sideset =  mesh.getSTKSideset(sidesetID);
 
  /* try {
@@ -349,23 +350,35 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
     Kokkos::DynRankView<double,PHX::Device> vertices;
     mesh.getElementVertices(local_cell_ids, vertices);
 	
-/*	workset->cell_vertex_coordinates = mdArrayFactory.buildStaticArray<double,panzer::Cell,panzer::NODE,panzer::Dim>("cvc",
-        vertices.extent(0), vertices.extent(1), vertices.extent(2));
+	workset->cell_vertex_coordinates = mdArrayFactory.buildStaticArray<double,panzer::Cell,panzer::NODE,panzer::Dim>(
+        "WorksetCoord", vertices.extent(0), vertices.extent(1), vertices.extent(2));
 	auto coords_view = workset->cell_vertex_coordinates.get_view();
 	Kokkos::deep_copy(coords_view, vertices);
 	
+	auto cell_local_ids_k = PHX::View<int*>("Workset:cell_local_ids", local_cell_ids.size());
+	auto cell_local_ids_k_h = Kokkos::create_mirror_view(workset->cell_local_ids_k);
+	auto local_side_ordinals = PHX::View<int*>("Workset:side_ordinals", local_cell_ids.size());
+	auto local_side_ids_h = Kokkos::create_mirror_view(workset->local_side_ordinals);
+	
 	for (std::size_t cell = 0; cell < local_cell_ids.size(); ++cell) {
       workset->cell_local_ids.push_back(local_cell_ids[cell]);
+	  cell_local_ids_k_h(cell) = local_cell_ids[cell];
+	  local_side_ids_h(cell) = local_side_ids[cell];
 	}
+	Kokkos::deep_copy(cell_local_ids_k, cell_local_ids_k_h);
+	Kokkos::deep_copy(local_side_ordinals, local_side_ids_h);
+	workset->cell_local_ids_k = cell_local_ids_k;
+	workset->local_side_ordinals = local_side_ordinals;
 	workset->num_cells = local_cell_ids.size();
 	workset->subcell_dim = needs.cellData.baseCellDimension() - 1;
-    workset->subcell_index = local_side_ids[0];    // need modification
+    //workset->subcell_index = local_side_ids[0];    this varibale should be deleted? in case local_side_ordinals be defined
 	
-	panzer::populateValueArrays(workset->num_cells,true,needs,*workset); // populate "side" values*/
+	panzer::populateValueArrays(workset->num_cells,true,needs,*workset); // populate "side" values
 	
-	std::string eblockID("");
+	return workset;
+//	std::string eblockID("");
   
-  return panzer::buildBCWorkset(needs, eblockID, local_cell_ids, local_side_ids, vertices);
+ // return panzer::buildBCWorkset(needs, eblockID, local_cell_ids, local_side_ids, vertices);
   
 }
 

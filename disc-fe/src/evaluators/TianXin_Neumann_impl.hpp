@@ -62,6 +62,10 @@ NeumannBase( const Teuchos::ParameterList& p)
 
   residual = PHX::MDField<ScalarT>(residual_name, basis->functional);
   this->addEvaluatedField(residual);
+  quad_order = ir->cubature_degree;
+  normals = PHX::MDField<ScalarT,Cell,Point,Dim>(name, ir->dl_vector);
+  auto& value_type = p.get<std::string>("Value Type","Constant");
+  this->pFunc = GeneralFunctorFactory::Instance().Create(value_type, p);
  
   basis_name = panzer::basisIRLayout(basis,*ir)->name();
 }
@@ -74,7 +78,24 @@ postRegistrationSetup( typename Traits::SetupData sd,
   PHX::FieldManager<Traits>& /* fm */)
 {
   basis_index = panzer::getBasisIndex(basis_name, (*sd.worksets_)[0]);
+  num_cell  = normals.extent(1);
+  num_qp  = normals.extent(1);
+  num_dim = normals.extent(2);
+  quad_index =  panzer::getIntegrationRuleIndex(quad_order,(*sd.worksets_)[0], this->wda);
 }
+
+//**********************************************************************
+template<typename EvalT, typename Traits>
+void
+NeumannBase<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
+{
+    auto normal_view = normals.get_view();
+	Intrepid2::CellTools<PHX::exec_space>::getPhysicalSideNormals( normal_view,
+              workset.int_rules[quad_index]->jac.get_view(),
+              workset.local_side_ordinals, workset.int_rules[quad_index]->int_rule->topology);
+	Kokkos::deep_copy(normals, normal_view);
+}
+
 
 // **************************************************************
 // Flux
@@ -85,9 +106,6 @@ Flux<EvalT, Traits>::Flux( const Teuchos::ParameterList& p)
 {
   std::string n = "Neumann Flux Evaluator";
   this->setName(n);
-  
-  auto& value_type = p.get<std::string>("Value Type","Constant");
-  this->pFunc = GeneralFunctorFactory::Instance().Create(value_type, p);
 }
 
 //**********************************************************************
@@ -95,13 +113,17 @@ template<typename EvalT, typename Traits>
 void
 Flux<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
 {
+  NeumannBase::evaluateFields(workset);
+  
+  Kokkos::DynRankView<ScalarT, PHX::Device> normal_lengths =Kokkos::createDynRankView(normals.get_view(),"normal_lengths", num_cell*num_qp);
+  Intrepid2::RealSpaceTools<PHX::Device>::vectorNorm( normal_lengths,　normals, Intrepid2::NORM_TWO);
   auto weighted_basis_scalar = workset.bases[this->basis_index]->weighted_basis_scalar.get_static_view();
   auto residual_v = residual.get_static_view();
   auto val = this->pFunc();
   Kokkos::parallel_for("Neuman_nResidual", workset.num_cells, KOKKOS_LAMBDA (const index_t cell) {
     for (std::size_t basis = 0; basis < residual_v.extent(1); ++basis) {
       for (std::size_t qp = 0; qp < l_num_ip; ++qp) {
-        residual_v(cell,basis) += val*weighted_basis_scalar(cell,basis,qp);
+        residual_v(cell,basis) += val*weighted_basis_scalar(cell,basis,qp)*normal_lengths(cell,qp);
       }
     }
   });
@@ -126,9 +148,6 @@ Pressure<EvalT, Traits>::Pressure( const Teuchos::ParameterList& p)
   Teuchos::RCP<PHX::DataLayout> vector_dl = ir->dl_vector;
   quad_order = ir->cubature_degree;
   normals = PHX::MDField<ScalarT,Cell,Point,Dim>(name, vector_dl);
-  
-  auto& value_type = p.get<std::string>("Value Type","Constant");
-  this->pFunc = GeneralFunctorFactory::Instance().Create(value_type, p);
 }
 
 //**********************************************************************
@@ -144,7 +163,7 @@ postRegistrationSetup( typename Traits::SetupData sd, PHX::FieldManager<Traits>&
 }
 
 //**********************************************************************
-template<typename EvalT, typename Traits>
+/*template<typename EvalT, typename Traits>
 void
 Pressure<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
 {
@@ -171,7 +190,7 @@ Pressure<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
   //     integrate<ScalarT>(residual.get_view(),
   //                        normals.get_view(), 
   //                        workset.bases[basis_index])->weighted_basis_scalar.get_view());
-}
+}*/
 
 
 }

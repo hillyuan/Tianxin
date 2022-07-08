@@ -93,8 +93,6 @@ namespace panzer {
     */
   class WorksetDetails {
   public:
-    typedef PHX::MDField<double,Cell,NODE,Dim> CellCoordArray;
-
     //! Default constructor
     WorksetDetails();
 
@@ -106,12 +104,15 @@ namespace panzer {
 
     // DEPRECATED - use: getLocalCellIDs()
     PHX::View<const int*> cell_local_ids_k;
+	
+	// Side ordinal for SidetSet definition. In Intrepid2, side is defined as elementid + side ordinal
+	PHX::View<const int*> local_side_ordinals;
 
     // DEPRECATED - use: getLocalCellIDs()
     std::vector<size_t> cell_local_ids;
 
     /// DEPRECATED - use: getCellVertices()
-    CellCoordArray cell_vertex_coordinates;
+    PHX::MDField<double,Cell,NODE,Dim> cell_vertex_coordinates;
 
     /// DEPRECATED - use: getElementBlock()
     std::string block_id;
@@ -166,8 +167,7 @@ namespace panzer {
     {return subcell_dim;}
 
     /// Get the vertices for the cells
-    CellCoordArray
-    getCellVertices() const
+    PHX::MDField<double,Cell,NODE,Dim> getCellVertices() const
     {return cell_vertex_coordinates;}
 
     /// Get the local cell IDs for the workset

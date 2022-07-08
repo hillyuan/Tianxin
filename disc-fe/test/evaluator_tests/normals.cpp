@@ -96,7 +96,7 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(normals,test2d,EvalType)
   // coords.resize(numCells,numVerts,dim);
   MDFieldArrayFactory af("",true);
   workset->cell_vertex_coordinates = af.buildStaticArray<double,Cell,NODE,Dim>("coords",numCells,numVerts,dim);
-  Workset::CellCoordArray coords = workset->cell_vertex_coordinates;
+  PHX::MDField<double,Cell,NODE,Dim> coords = workset->cell_vertex_coordinates;
 
   Kokkos::parallel_for(1, KOKKOS_LAMBDA (int) {
       coords(0,0,0) = 1.0; coords(0,0,1) = 0.0;

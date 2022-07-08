@@ -65,17 +65,21 @@ public:
     NeumannBase(const Teuchos::ParameterList& p);
 
     void postRegistrationSetup(typename Traits::SetupData d,PHX::FieldManager<Traits>& fm);
-    virtual void evaluateFields(typename Traits::EvalData d) = 0;
+    virtual void evaluateFields(typename Traits::EvalData d);
 
-private:
-  
+protected:
+    // output  
     PHX::MDField<ScalarT> residual;
-  
-    // output
-    //Kokkos::DynRankView<ScalarT, PHX::Device> neumann;
 
+    // common data used by neumann calculation
     std::string basis_name;
     std::size_t basis_index;
+	
+	std::unique_ptr<TianXin::WorksetFunctor> pFunc;
+	int quad_order, quad_index;
+	std::size_t num_qp, num_dim;
+	PHX::MDField<ScalarT,Cell,Point,Dim> normals;
+	//Kokkos::DynRankView<ScalarT, PHX::Device> normal_lengths_buffer;
 }; // end of class NeumannBase
 
 typedef Factory<NeumannBase,std::string,Teuchos::ParameterList> NeumannFunctorFactory;
@@ -105,7 +109,7 @@ namespace NeumannRegister {
 // Pressure act upon surface
 // **************************************************************
 
-template<typename EvalT, typename Traits>
+/*template<typename EvalT, typename Traits>
 class Pressure : public NeumannBase<EvalT, Traits>
 {
   public:
@@ -114,14 +118,14 @@ class Pressure : public NeumannBase<EvalT, Traits>
   private:
     std::unique_ptr<TianXin::WorksetFunctor> pFunc;
 	int quad_order, quad_index;
-	std::size_t num_qp, num_dim;
+	std::size_t num_cell,num_qp, num_dim;
 	PHX::MDField<ScalarT,Cell,Point,Dim> normals;
 };
 namespace NeumannRegister {
 	static bool const FLUX_ROK = NeumannFunctorFactory::Instance().template Register< Pressure<panzer::Traits::Residual,panzer::Traits> >( "Pressure");
 	static bool const FLUX_JOK = NeumannFunctorFactory::Instance().template Register< Pressure<panzer::Traits::Jacobian,panzer::Traits> >( "Pressure");
 }
-
+*/
 
 }
 

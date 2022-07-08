@@ -103,7 +103,7 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(integrator_scalar_side,test2d,EvalType)
   // coords.resize(numCells,numVerts,dim);
   MDFieldArrayFactory af("",true);
   workset->cell_vertex_coordinates = af.buildStaticArray<double,Cell,NODE,Dim>("coords",numCells,numVerts,dim);
-  Workset::CellCoordArray coords = workset->cell_vertex_coordinates;
+  PHX::MDField<double,Cell,NODE,Dim> coords = workset->cell_vertex_coordinates;
   auto coords_v = coords.get_static_view();
   Kokkos::parallel_for(1, KOKKOS_LAMBDA (int) {
       coords_v(0,0,0) = 1.0; coords_v(0,0,1) = 0.0;
@@ -236,7 +236,7 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(integrator_scalar_side,test3d,EvalType)
   // coords.resize(numCells,numVerts,dim);
   MDFieldArrayFactory af("",true);
   workset->cell_vertex_coordinates = af.buildStaticArray<double,Cell,NODE,Dim>("coords",numCells,numVerts,dim);
-  Workset::CellCoordArray coords = workset->cell_vertex_coordinates;
+  PHX::MDField<double,Cell,NODE,Dim> coords = workset->cell_vertex_coordinates;
   auto coords_v = coords.get_static_view();
   Kokkos::parallel_for(1, KOKKOS_LAMBDA (int) {
       coords_v(0,0,0) = 1.0; coords_v(0,0,1) = 0.0; coords_v(0,0,2) = 0.0;
@@ -387,7 +387,7 @@ TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(integrator_scalar,test3d,EvalType)
   // coords.resize(numCells,numVerts,dim);
   MDFieldArrayFactory af("",true);
   workset->cell_vertex_coordinates = af.buildStaticArray<double,Cell,NODE,Dim>("coords",numCells,numVerts,dim);
-  Workset::CellCoordArray coords = workset->cell_vertex_coordinates;
+  PHX::MDField<double,Cell,NODE,Dim> coords = workset->cell_vertex_coordinates;
   auto coords_v = coords.get_static_view();
   Kokkos::parallel_for(1, KOKKOS_LAMBDA (int) {
       coords_v(0,0,0) = 1.0; coords_v(0,0,1) = 0.0; coords_v(0,0,2) = 0.0;

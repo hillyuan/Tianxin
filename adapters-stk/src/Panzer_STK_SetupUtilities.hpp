@@ -135,7 +135,7 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
                 const std::string & eblockID,
                 const std::string & sidesetID);
 				
-Teuchos::RCP<std::map<unsigned,panzer::Workset> >
+Teuchos::RCP<panzer::Workset>
 buildBCWorksets(const panzer_stk::STK_Interface & mesh,
                 const panzer::WorksetNeeds & needs,
                 const std::string & sidesetID);
