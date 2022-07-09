@@ -83,8 +83,8 @@ protected:
 	//Kokkos::DynRankView<ScalarT, PHX::Device> normal_lengths_buffer;
 }; // end of class NeumannBase
 
-//typedef Factory<NeumannBase<panzer::Traits::Residual,panzer::Traits>,std::string,Teuchos::ParameterList> NeumannResidualFactory;
-//typedef Factory<NeumannBase<panzer::Traits::Jacobian,panzer::Traits>,std::string,Teuchos::ParameterList> NeumannJacobianFactory;
+typedef Factory<NeumannBase<panzer::Traits::Residual,panzer::Traits>,std::string,Teuchos::ParameterList> NeumannResidualFactory;
+typedef Factory<NeumannBase<panzer::Traits::Jacobian,panzer::Traits>,std::string,Teuchos::ParameterList> NeumannJacobianFactory;
 
 
 // **************************************************************
@@ -100,8 +100,8 @@ class Flux : public NeumannBase<EvalT, Traits>
     void evaluateFields(typename Traits::EvalData d) final;
 };
 namespace NeumannRegister {
-//	static bool const FLUX_ROK = NeumannResidualFactory::Instance().template Register< Flux<panzer::Traits::Residual,panzer::Traits> >( "Flux");
-//	static bool const FLUX_JOK = NeumannJacobianFactory::Instance().template Register< Flux<panzer::Traits::Jacobian,panzer::Traits> >( "Flux");
+	static bool const FLUX_ROK = NeumannResidualFactory::Instance().template Register< Flux<panzer::Traits::Residual,panzer::Traits> >( "Flux");
+	static bool const FLUX_JOK = NeumannJacobianFactory::Instance().template Register< Flux<panzer::Traits::Jacobian,panzer::Traits> >( "Flux");
 }
 
 // **************************************************************

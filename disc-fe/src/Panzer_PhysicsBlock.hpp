@@ -244,6 +244,7 @@ namespace panzer {
 
     //! Returns the unique set of bases, key is the unique panzer::PureBasis::name() of the basis
     const std::map<std::string,Teuchos::RCP<panzer::PureBasis> >& getBases() const;
+	Teuchos::RCP<panzer::PureBasis> getBasisForDOF(const std::string& dof_name) const;
 
     //! Returns the unique set of point rules, key is the unique panzer::PointRule::name()
     const std::map<int,Teuchos::RCP<panzer::IntegrationRule> >& getIntegrationRules() const;
@@ -280,6 +281,9 @@ namespace panzer {
 	
 	void setMaterialName(const std::string name)
 	{ m_material_id = name; }
+	
+	int getIntegrationOrder() const
+	{ return m_default_integration_order; }
 
   protected:
     void initialize(const Teuchos::RCP<Teuchos::ParameterList>& input_parameters,

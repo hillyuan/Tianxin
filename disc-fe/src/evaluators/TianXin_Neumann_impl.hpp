@@ -119,7 +119,7 @@ Flux<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
   
   Kokkos::DynRankView<ScalarT, PHX::Device> normal_lengths =Kokkos::createDynRankView(
 	this->normals.get_view(),"normal_lengths", this->num_cell*this->num_qp);
- // Intrepid2::RealSpaceTools<PHX::Device>::vectorNorm( normal_lengths,　normals, Intrepid2::NORM_TWO);
+  Intrepid2::RealSpaceTools<PHX::Device>::vectorNorm(normal_lengths,this->normals.get_view(),Intrepid2::NORM_TWO);
   auto weighted_basis_scalar = workset.bases[this->basis_index]->weighted_basis_scalar.get_static_view();
   auto residual_v = this->residual.get_static_view();
   const double val = (*(this->pFunc))(workset);

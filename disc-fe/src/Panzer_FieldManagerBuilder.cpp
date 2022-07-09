@@ -465,21 +465,31 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 		const panzer::CellData side_cell_data(currentWkst->num_cells,currentWkst->subcell_index,volume_cell_topology);
 
 	    // Copy the physics block for side integrations
-	    Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
+	    //Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
+		Teuchos::ParameterList plist(sublist);
+		const std::string dof_name= sublist.get<std::string>("DOF Name");
+		plist.set("Basis", volume_pb->getBasisForDOF(dof_name));
+		const int integration_order = volume_pb->getIntegrationOrder();
+		Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
+		plist.set("IR", ir);
 		const std::string Identifier= sublist.get<std::string>("Type");
-		//std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
-		//	TianXin::NeumannResidualFactory::Instance().Create(Identifier, sublist);
-		//std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
-		//	TianXin::NeumannJacobianFactory::Instance().Create(Identifier, sublist);
+		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
+			TianXin::NeumannResidualFactory::Instance().Create(Identifier, plist);
+		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
+			TianXin::NeumannJacobianFactory::Instance().Create(Identifier, plist);
+		const auto p_evalr = Teuchos::rcp(evalr.get());
+		phx_neumann_field_manager_->template registerEvaluator<panzer::Traits::Residual>(p_evalr);
+		phx_neumann_field_manager_->requireField<panzer::Traits::Residual>(*evalr->evaluatedFields()[0]);
 	}
 
-	panzer::Traits::SD setupData;
+	Traits::SD setupData;
+	/*Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
+	worksets->push_back();
+	setupData.worksets_ = worksets;
+        setupData.orientations_ = getWorksetContainer()->getOrientations();
 
-	/*std::vector<PHX::index_size_type> derivative_dimensions;
-    derivative_dimensions.push_back(1);
-    phx_dirichlet_field_manager_->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
-    phx_dirichlet_field_manager_->setKokkosExtendedDataTypeDimensions<panzer::Traits::Tangent>(derivative_dimensions);
-    phx_dirichlet_field_manager_->postRegistrationSetup(setupData);*/
+	// setup derivative information
+	setKokkosExtendedDataTypeDimensions(element_block_id,*globalIndexer,user_data,fm);*/
 }
 
 //=======================================================================

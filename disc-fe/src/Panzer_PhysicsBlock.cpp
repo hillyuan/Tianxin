@@ -819,6 +819,15 @@ panzer::PhysicsBlock::getBases() const
   return m_bases;
 }
 
+// ***********************************************************************
+Teuchos::RCP<panzer::PureBasis> 
+panzer::PhysicsBlock::getBasisForDOF(const std::string& dof_name) const
+{
+  auto it = m_bases.find(dof_name);
+  TEUCHOS_ASSERT(it != m_bases.end());
+  return it->second;
+}
+
 // *******************************************************************
 const std::map<int,Teuchos::RCP<panzer::IntegrationRule> >&
 panzer::PhysicsBlock::getIntegrationRules() const
