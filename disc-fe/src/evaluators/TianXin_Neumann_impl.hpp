@@ -91,10 +91,11 @@ void
 NeumannBase<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
 {
     auto normal_view = normals.get_view();
-	/*Intrepid2::CellTools<PHX::exec_space>::getPhysicalSideNormals( normal_view,
+	Kokkos::DynRankView<const int,PHX::Device> side_ordinal(workset.local_side_ordinals);
+	Intrepid2::CellTools<PHX::exec_space>::getPhysicalSideNormals( normal_view,
               workset.int_rules[quad_index]->jac.get_view(),
-              workset.local_side_ordinals, workset.int_rules[quad_index]->int_rule->topology);
-	Kokkos::deep_copy(normals, normal_view);*/
+              side_ordinal, *(workset.int_rules[quad_index]->int_rule->topology));
+	//Kokkos::deep_copy(normals, normal_view);
 }
 
 

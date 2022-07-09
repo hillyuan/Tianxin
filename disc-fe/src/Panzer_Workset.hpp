@@ -103,10 +103,10 @@ namespace panzer {
     int subcell_dim;
 
     // DEPRECATED - use: getLocalCellIDs()
-    PHX::View<const int*> cell_local_ids_k;
+    Kokkos::View<const int*> cell_local_ids_k;
 	
 	// Side ordinal for SidetSet definition. In Intrepid2, side is defined as elementid + side ordinal
-	PHX::View<const int*> local_side_ordinals;
+	Kokkos::View<const int*> local_side_ordinals;
 
     // DEPRECATED - use: getLocalCellIDs()
     std::vector<size_t> cell_local_ids;
