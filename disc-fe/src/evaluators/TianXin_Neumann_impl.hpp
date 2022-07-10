@@ -73,6 +73,17 @@ NeumannBase( const Teuchos::ParameterList& p)
 
 //**********************************************************************
 template<typename EvalT, typename Traits>
+Teuchos::RCP< PHX::Evaluator<Traits> >
+NeumannBase<EvalT, Traits>::
+buildScatter( const Teuchos::ParameterList& p, const panzer::LinearObjFactory<Traits>& lof)
+{
+	// modify plist here
+	Teuchos::RCP< PHX::Evaluator<Traits> > op = lof.template buildScatter<EvalT>(p);
+	return op;
+}
+
+//**********************************************************************
+template<typename EvalT, typename Traits>
 void
 NeumannBase<EvalT, Traits>::
 postRegistrationSetup( typename Traits::SetupData sd,

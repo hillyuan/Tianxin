@@ -483,6 +483,15 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 		fm->template registerEvaluator<panzer::Traits::Jacobian>(Teuchos::rcp(evalj.get()));
 		fm->requireField<panzer::Traits::Jacobian>(*evalj->evaluatedFields()[0]);
 		
+		// scatters
+		auto sr = evalr->buildScatter(plist,lo_factory);
+		fm->template registerEvaluator<panzer::Traits::Residual>(sr);
+		auto sj = evalj->buildScatter(plist,lo_factory);
+		fm->template registerEvaluator<panzer::Traits::Jacobian>(sj);
+		
+		// gather
+		side_pb->buildAndRegisterGatherAndOrientationEvaluators(*fm,lo_factory,user_data);
+		
 		Traits::SD setupData;
 	    Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
 	    worksets->push_back(*currentWkst);

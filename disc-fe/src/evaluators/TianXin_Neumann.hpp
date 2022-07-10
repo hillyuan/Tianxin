@@ -44,6 +44,7 @@
 
 #include "TianXin_WorksetFunctor.hpp"
 #include "TianXin_Factory.hpp"
+#include "Panzer_LinearObjFactory.hpp"
 
 #include <memory>
 
@@ -67,6 +68,9 @@ public:
 
     void postRegistrationSetup(typename Traits::SetupData d,PHX::FieldManager<Traits>& fm);
     virtual void evaluateFields(typename Traits::EvalData d);
+	
+	Teuchos::RCP< PHX::Evaluator<Traits> > buildScatter(const Teuchos::ParameterList& p,
+		const panzer::LinearObjFactory<Traits>& lof);
 
 protected:
     // output  
