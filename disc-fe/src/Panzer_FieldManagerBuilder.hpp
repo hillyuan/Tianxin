@@ -111,7 +111,7 @@ namespace panzer {
 	void setDirichletFieldManager(std::shared_ptr< PHX::FieldManager<panzer::Traits> > pfm)
 	{phx_dirichlet_field_manager_=pfm;}
 	  
-	const std::shared_ptr< PHX::FieldManager<panzer::Traits> >
+	const std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > >
     getNeumannFieldManager() const { return phx_neumann_field_manager_; }
 
     //! Look up field manager by an element block ID
@@ -129,6 +129,9 @@ namespace panzer {
 
     const std::vector<WorksetDescriptor> &
     getVolumeWorksetDescriptors() const { return volume_workset_desc_; }
+	
+	const std::vector<WorksetDescriptor> &
+    getNeumannWorksetDescriptors() const { return neumann_workset_desc_; }
 
     const std::map<panzer::BC,
 		   std::map<unsigned,PHX::FieldManager<panzer::Traits> >,
@@ -185,7 +188,8 @@ namespace panzer {
 	  
 	void setupNeumannFieldManagers(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
 	  const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
-      const panzer::LinearObjFactory<panzer::Traits> & lo_factory );
+      const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
+      const Teuchos::ParameterList& user_data );
 
     void writeVolumeGraphvizDependencyFiles(std::string filename_prefix,
 					    const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks) const;
@@ -230,6 +234,7 @@ namespace panzer {
       *        the appropriate set of worksets for each field manager.
       */
     std::vector<WorksetDescriptor> volume_workset_desc_;
+	std::vector<WorksetDescriptor> neumann_workset_desc_;
 
     /*! \brief Field managers for the boundary conditions
 
@@ -242,7 +247,7 @@ namespace panzer {
       panzer::LessBC> bc_field_managers_;
 	  
 	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_dirichlet_field_manager_;
-	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_neumann_field_manager_;
+	std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > > phx_neumann_field_manager_;
 	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_sourceterm_field_manager_;
 
     Teuchos::RCP<WorksetContainer> worksetContainer_;

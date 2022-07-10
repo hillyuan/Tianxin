@@ -116,9 +116,6 @@ void panzer::FieldManagerBuilder::setupVolumeFieldManagers(
                                             const GenericEvaluatorFactory & gEvalFact,
                                             bool closureModelByEBlock)
 {
-  using Teuchos::RCP;
-  using Teuchos::rcp;
-
   TEUCHOS_TEST_FOR_EXCEPTION(getWorksetContainer()==Teuchos::null,std::logic_error,
                             "panzer::FMB::setupVolumeFieldManagers: method function getWorksetContainer() returns null. "
                             "Plase call setWorksetContainer() before calling this method");
@@ -130,7 +127,7 @@ void panzer::FieldManagerBuilder::setupVolumeFieldManagers(
   Teuchos::RCP<const panzer::GlobalIndexer> globalIndexer = lo_factory.getRangeGlobalIndexer();
 
   for (std::size_t blkInd=0;blkInd<physicsBlocks.size();++blkInd) {
-    RCP<panzer::PhysicsBlock> pb = physicsBlocks[blkInd];
+    Teuchos::RCP<panzer::PhysicsBlock> pb = physicsBlocks[blkInd];
     const WorksetDescriptor wd = wkstDesc[blkInd];
 
     Traits::SD setupData;
@@ -410,7 +407,7 @@ setupDiricheltFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP
 	std::vector<PHX::index_size_type> derivative_dimensions;
     derivative_dimensions.push_back(1);
     phx_dirichlet_field_manager_->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
-    phx_dirichlet_field_manager_->setKokkosExtendedDataTypeDimensions<panzer::Traits::Tangent>(derivative_dimensions);
+    //phx_dirichlet_field_manager_->setKokkosExtendedDataTypeDimensions<panzer::Traits::Tangent>(derivative_dimensions);
     phx_dirichlet_field_manager_->postRegistrationSetup(setupData);
 }
 
@@ -419,14 +416,12 @@ setupDiricheltFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP
 void panzer::FieldManagerBuilder::
 setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
-      const panzer::LinearObjFactory<panzer::Traits> & lo_factory )
+      const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
+      const Teuchos::ParameterList& user_data)
 {
 	TEUCHOS_TEST_FOR_EXCEPTION(getWorksetContainer()==Teuchos::null,std::logic_error,
                             "panzer::FMB::setupBCFieldManagers: method function getWorksetContainer() returns null. "
                             "Plase call setWorksetContainer() before calling this method");
-
-	if( !phx_neumann_field_manager_ )
-		 phx_neumann_field_manager_ = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
 
     Teuchos::RCP<const panzer::GlobalIndexer> globalIndexer = lo_factory.getRangeGlobalIndexer();
 
@@ -451,6 +446,9 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 				"Error - All objects in the Dirichlet Conditions sublist must be sublists!" );
 		Teuchos::ParameterList& sublist = Teuchos::getValue<Teuchos::ParameterList>(bc_pl->second);
 		
+		std::shared_ptr<PHX::FieldManager<panzer::Traits> > fm
+          = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
+		
 		WorksetDescriptor wd(sublist);
 		const Teuchos::RCP<panzer::Workset> currentWkst = getWorksetContainer()->getSideWorkset(wd);
 		if (currentWkst.is_null()) continue;
@@ -463,33 +461,46 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 		Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(element_block_id)->second;
         Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
 		const panzer::CellData side_cell_data(currentWkst->num_cells,currentWkst->subcell_index,volume_cell_topology);
+		//auto nd = side_cell_data.getCellTopology()->getNodeCount();
 
 	    // Copy the physics block for side integrations
-	    //Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
+	    Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
 		Teuchos::ParameterList plist(sublist);
 		const std::string dof_name= sublist.get<std::string>("DOF Name");
-		plist.set("Basis", volume_pb->getBasisForDOF(dof_name));
-		const int integration_order = volume_pb->getIntegrationOrder();
+		Teuchos::RCP<panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);
+		plist.set<Teuchos::RCP<panzer::PureBasis>>("Basis", basis);
+		const int integration_order = side_pb->getIntegrationOrder();
 		Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
-		plist.set("IR", ir);
+		plist.set<Teuchos::RCP<panzer::IntegrationRule>>("IR", ir);
 		const std::string Identifier= sublist.get<std::string>("Type");
 		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
 			TianXin::NeumannResidualFactory::Instance().Create(Identifier, plist);
 		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
 			TianXin::NeumannJacobianFactory::Instance().Create(Identifier, plist);
 		const auto p_evalr = Teuchos::rcp(evalr.get());
-		phx_neumann_field_manager_->template registerEvaluator<panzer::Traits::Residual>(p_evalr);
-		phx_neumann_field_manager_->requireField<panzer::Traits::Residual>(*evalr->evaluatedFields()[0]);
-	}
-
-	Traits::SD setupData;
-	/*Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
-	worksets->push_back();
-	setupData.worksets_ = worksets;
+		fm->template registerEvaluator<panzer::Traits::Residual>(p_evalr);
+		fm->requireField<panzer::Traits::Residual>(*evalr->evaluatedFields()[0]);
+		fm->template registerEvaluator<panzer::Traits::Jacobian>(Teuchos::rcp(evalj.get()));
+		fm->requireField<panzer::Traits::Jacobian>(*evalj->evaluatedFields()[0]);
+		
+		Traits::SD setupData;
+	    Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
+	    worksets->push_back(*currentWkst);
+	    setupData.worksets_ = worksets;
         setupData.orientations_ = getWorksetContainer()->getOrientations();
 
-	// setup derivative information
-	setKokkosExtendedDataTypeDimensions(element_block_id,*globalIndexer,user_data,fm);*/
+	   // For Kokkos extended types (Sacado FAD) set derivtive array size
+	    //std::vector<PHX::index_size_type> derivative_dimensions;
+        //derivative_dimensions.push_back(basis->cardinality());   
+	    //fm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
+		setKokkosExtendedDataTypeDimensions(element_block_id,*globalIndexer,user_data,*fm);
+		fm->postRegistrationSetup(setupData);
+		
+		neumann_workset_desc_.push_back(wd);
+		phx_neumann_field_manager_.push_back(fm);
+	}
+
+	
 }
 
 //=======================================================================

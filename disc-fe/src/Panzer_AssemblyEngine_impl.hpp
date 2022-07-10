@@ -334,17 +334,50 @@ template <typename EvalT>
 void panzer::AssemblyEngine<EvalT>::
 evaluateNeumannCondition(const panzer::AssemblyEngineInArgs& in)
 {
+  Teuchos::RCP<panzer::WorksetContainer> wkstContainer = m_field_manager_builder->getWorksetContainer();
+
   panzer::Workset workset;
   panzer::Traits::PED ped;
-  ped.gedc->addDataObject("Ghosted Container",in.ghostedContainer_);
+  ped.gedc->addDataObject("Solution Gather Container",in.ghostedContainer_);
+  ped.gedc->addDataObject("Residual Scatter Container",in.ghostedContainer_);
+  ped.first_sensitivities_name  = in.first_sensitivities_name;
+  ped.second_sensitivities_name = in.second_sensitivities_name;
   in.fillGlobalEvaluationDataContainer(*(ped.gedc));
 	
-  const std::shared_ptr< PHX::FieldManager<panzer::Traits> > pfm = m_field_manager_builder->getNeumannFieldManager();
-  if( pfm ) {
+  const std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > >
+	nfm = m_field_manager_builder->getNeumannFieldManager();
+  const std::vector<WorksetDescriptor> & wkstDesc = m_field_manager_builder->getNeumannWorksetDescriptors();
+  /*if( pfm ) {
   	pfm->template preEvaluate<EvalT>(ped);
   	pfm->template evaluateFields<EvalT>(workset);
   	pfm->template postEvaluate<EvalT>(NULL);
-  } 
+  } */
+  // Loop over volume field managers
+  for (std::size_t block = 0; block < nfm.size(); ++block) {
+    const WorksetDescriptor & wd = wkstDesc[block];
+    std::shared_ptr< PHX::FieldManager<panzer::Traits> > fm = nfm[block];
+    std::vector<panzer::Workset>& w = *wkstContainer->getWorksets(wd);
+
+    fm->template preEvaluate<EvalT>(ped);
+
+    // Loop over worksets in this element block
+    for (std::size_t i = 0; i < w.size(); ++i) {
+      panzer::Workset& workset = w[i];
+
+      workset.alpha = in.alpha;
+      workset.beta = in.beta;
+      workset.time = in.time;
+      workset.step_size = in.step_size;
+      workset.stage_number = in.stage_number;
+      workset.gather_seeds = in.gather_seeds;
+      workset.evaluate_transient_terms = in.evaluate_transient_terms;
+
+
+      fm->template evaluateFields<EvalT>(workset);
+    }
+
+    fm->template postEvaluate<EvalT>(NULL);
+  }
 }
 
 #endif
