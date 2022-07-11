@@ -55,7 +55,8 @@ template<typename EvalT, typename Traits>
 NeumannBase<EvalT, Traits>::
 NeumannBase( const Teuchos::ParameterList& p)
 {
-  std::string residual_name = p.get<std::string>("Residual Name");
+  residual_name = p.get<std::string>("Residual Name");
+  dof_name = p.get<std::string>("DOF Name");
   const Teuchos::RCP<const panzer::PureBasis> basis =
     p.get< Teuchos::RCP<const panzer::PureBasis> >("Basis");
   const Teuchos::RCP<const panzer::IntegrationRule> ir = 

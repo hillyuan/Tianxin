@@ -467,6 +467,8 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 	    Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
 		Teuchos::ParameterList plist(sublist);
 		const std::string dof_name= sublist.get<std::string>("DOF Name");
+		//RCP<const panzer::FieldLibrary> fieldLib = physicsBlock.getFieldLibrary();
+  //RCP<const panzer::PureBasis> basis = fieldLib->lookupBasis("TEMPERATURE");
 		Teuchos::RCP<panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);
 		plist.set<Teuchos::RCP<panzer::PureBasis>>("Basis", basis);
 		const int integration_order = side_pb->getIntegrationOrder();

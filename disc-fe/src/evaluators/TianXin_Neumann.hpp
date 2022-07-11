@@ -77,6 +77,8 @@ protected:
     PHX::MDField<ScalarT> residual;
 
     // common data used by neumann calculation
+	std::string residual_name;
+	std::string dof_name;
     std::string basis_name;
     std::size_t basis_index;
 	
