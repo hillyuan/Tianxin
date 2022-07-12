@@ -730,11 +730,22 @@ public:
      auto itr = sidesets_.find(name);
      return (itr != sidesets_.end()) ? itr->second : nullptr;
    }
-   
+
+   /* Build in mesher does not construct STKSideSet, This function doesn't work right now*/  
    stk::mesh::SideSet getSTKSideset(const std::string & name) const
    {
-     stk::mesh::Part * part=this->getSideset(name);
-	 //EXPECT_TRUE(bulkData_->does_sideset_exist(*part));
+	 stk::mesh::Part * part=this->getSideset(name);
+	 auto& parentPart = stk::mesh::get_sideset_parent(*part);
+	 bool exist = bulkData_->does_sideset_exist(parentPart);
+	 if( !exist ) {
+		 bulkData_->create_sideset(parentPart);
+		 // we need addd side items here sideset.add(elemententity, sideOrdinal);
+	 }
+	 
+	 //sidesets = bulkData_->get_sidesets();
+	 // std::cout << "Size= " << sidesets.size() << std::endl;
+	 // for( auto s : sidesets )
+	//	  std::cout <<  s->get_name() << std::endl;
 	 return bulkData_->get_sideset(*part);
    }
 

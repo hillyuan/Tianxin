@@ -138,6 +138,7 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
 Teuchos::RCP<panzer::Workset>
 buildBCWorkset(const panzer_stk::STK_Interface & mesh,
                 const panzer::WorksetNeeds & needs,
+                const std::string & eblockID,
                 const std::string & sidesetID);
 
 // namespace may not be neccssary in the future, currently avoids

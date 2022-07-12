@@ -204,7 +204,7 @@ public:
     sideAssembly_(true)
   {
     elementBlock_ = pl.get<std::string>("Element block");
-	sideset_ = pl.get<std::string>("Sideset ID");
+	sideset_ = pl.get<std::string>("SideSet Name");
   }
 
   //! Copy constructor

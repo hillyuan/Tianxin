@@ -73,7 +73,7 @@ getSideWorkset(const panzer::WorksetDescriptor & desc,
 {
   TEUCHOS_ASSERT(desc.useSideset());
 
-  return panzer_stk::buildBCWorkset(*mesh_,needs,desc.getSideset());
+  return panzer_stk::buildBCWorkset(*mesh_,needs,desc.getElementBlock(0),desc.getSideset());
 }
 
 Teuchos::RCP<std::map<unsigned,panzer::Workset> > WorksetFactory::

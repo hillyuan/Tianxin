@@ -306,14 +306,16 @@ buildBCWorksets(const panzer_stk::STK_Interface & mesh,
 Teuchos::RCP<panzer::Workset>
 buildBCWorkset(const panzer_stk::STK_Interface & mesh,
                 const panzer::WorksetNeeds & needs,
+				const std::string & eblockID,
                 const std::string & sidesetID)
 {
 	panzer::MDFieldArrayFactory mdArrayFactory("",true);
 	
 	Teuchos::RCP<panzer::Workset> workset = Teuchos::rcp(new panzer::Workset);
-  stk::mesh::SideSet sideset =  mesh.getSTKSideset(sidesetID);
+  //stk::mesh::SideSet sideset =  mesh.getSTKSideset(sidesetID);
 
- /* try {
+  std::vector<stk::mesh::Entity> sideEntities; 
+  try {
      // grab local entities on this side
      // ...catch any failure...primarily wrong side set and element block info
      mesh.getMySides(sidesetID,sideEntities);
@@ -325,23 +327,29 @@ buildBCWorkset(const panzer_stk::STK_Interface & mesh,
      ss << std::endl;
 
      TEUCHOS_TEST_FOR_EXCEPTION_PURE_MSG(true,std::logic_error,ss.str());
-  }*/
+  }
+
   
   std::vector<stk::mesh::Entity> elements;
   std::vector<std::size_t> local_cell_ids;
   std::vector<std::size_t> local_side_ids;
-  
-  std::vector<stk::mesh::SideSetEntry>::const_iterator itr=sideset.begin();
+  workset_utils::getSideElements(mesh, eblockID, sideEntities,local_side_ids,elements);
+  // loop over elements of this block
+  for(const auto& ele : elements) {
+	local_cell_ids.push_back(mesh.elementLocalId(ele));
+  }
+ 
+ // std::vector<stk::mesh::SideSetEntry>::const_iterator itr=sideset.begin();
   /* P.A.: Get cell toplogy (belongs to first element). For covenient, we suppose all elements have the same topo*/
   //const auto& topo = stk::mesh::get_cell_topology(bulkData_->bucket(itr->element).topology());
   
  // std::vector<SideSetEntry>::iterator lowerBound = std::lower_bound(sideset->begin(), sideset->end(), SideSetEntry(entity, 0));
  // std::vector<SideSetEntry>::iterator upperBound = std::upper_bound( sideset->begin(), sideset->end(), SideSetEntry(entity, INVALID_CONNECTIVITY_ORDINAL));
-  for(itr=sideset.begin();itr!=sideset.end();++itr) {
-	  const auto& ele = itr->element;
-	  local_cell_ids.emplace_back(mesh.elementLocalId(ele));
-	  local_side_ids.emplace_back(itr->side);
-  }
+ // for(itr=sideset.begin();itr!=sideset.end();++itr) {
+//	  const auto& ele = itr->element;
+//	  local_cell_ids.emplace_back(mesh.elementLocalId(ele));
+//	  local_side_ids.emplace_back(itr->side);
+//  }
 
   // It is supposed that all elements in sideset have the same topology
   if(local_cell_ids.empty()) return Teuchos::null;
@@ -356,9 +364,9 @@ buildBCWorkset(const panzer_stk::STK_Interface & mesh,
 	Kokkos::deep_copy(coords_view, vertices);
 	
 	auto cell_local_ids_k = PHX::View<int*>("Workset:cell_local_ids", local_cell_ids.size());
-	auto cell_local_ids_k_h = Kokkos::create_mirror_view(workset->cell_local_ids_k);
+	auto cell_local_ids_k_h = Kokkos::create_mirror_view(cell_local_ids_k);
 	auto local_side_ordinals = PHX::View<int*>("Workset:side_ordinals", local_cell_ids.size());
-	auto local_side_ids_h = Kokkos::create_mirror_view(workset->local_side_ordinals);
+	auto local_side_ids_h = Kokkos::create_mirror_view(local_side_ordinals);
 	
 	for (std::size_t cell = 0; cell < local_cell_ids.size(); ++cell) {
       workset->cell_local_ids.push_back(local_cell_ids[cell]);
