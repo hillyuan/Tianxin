@@ -62,10 +62,11 @@ NeumannBase( const Teuchos::ParameterList& p)
   const Teuchos::RCP<const panzer::IntegrationRule> ir = 
     p.get< Teuchos::RCP<const panzer::IntegrationRule> >("IR");
 
-  residual = PHX::MDField<ScalarT>(residual_name, basis->functional);
-  this->addEvaluatedField(residual);
+  //residual = PHX::MDField<ScalarT>(residual_name, basis->functional);
+  //this->addEvaluatedField(residual);
   quad_order = ir->cubature_degree;
   normals = PHX::MDField<ScalarT,panzer::Cell,panzer::Point,panzer::Dim>("normal", ir->dl_vector);
+  this->addEvaluatedField(normals);
   auto& value_type = p.get<std::string>("Value Type");
   pFunc = WorksetFunctorFactory::Instance().Create(value_type, p);
  

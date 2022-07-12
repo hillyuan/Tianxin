@@ -61,7 +61,7 @@
 #include "Panzer_AssemblyEngine_TemplateBuilder.hpp"
 #include "Panzer_DOFManagerFactory.hpp"
 #include "Panzer_GlobalData.hpp"
-#include "TianXin_Dirichlet.hpp"
+#include "TianXin_Neumann.hpp"
 #include "Panzer_ParameterLibraryUtilities.hpp"
 
 #include "user_app_EquationSetFactory.hpp"
@@ -172,10 +172,12 @@ namespace panzer {
     // Numann BC
 	Teuchos::ParameterList pl_neumann("Neumann BC");
 	{
+	  pl_neumann.set<std::string>("Type","Flux");
 	  pl_neumann.set("Element block","eblock-0_0");
       pl_neumann.set("SideSet Name","left");
 	  pl_neumann.set("Value Type","Constant");
       pl_neumann.set<std::string>("DOF Name","TEMPERATURE");
+	  pl_neumann.set<std::string>("Residual Name","Residual");
 	  Teuchos::ParameterList pl_sub("Constant");
 	  pl_sub.set("Value",5.0);
 	  pl_neumann.set("Constant",pl_sub);
@@ -194,6 +196,37 @@ namespace panzer {
 	const std::string dof_name= pl_neumann.get<std::string>("DOF Name");
     Teuchos::RCP<const panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);
 	std::cout << basis->cardinality()<< ", " << basis->numCells()<< ", " << basis->dimension() << ", " << basis->type() << std::endl;
+    const int integration_order = side_pb->getIntegrationOrder();
+	Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
+	ir->print(std::cout);
+	pl_neumann.set<Teuchos::RCP<const panzer::PureBasis>>("Basis", basis);
+	pl_neumann.set<Teuchos::RCP<const panzer::IntegrationRule>>("IR", ir.getConst());
+	const std::string Identifier= pl_neumann.get<std::string>("Type");
+	std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
+			TianXin::NeumannResidualFactory::Instance().Create(Identifier, pl_neumann);
+	std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
+			TianXin::NeumannJacobianFactory::Instance().Create(Identifier, pl_neumann);
+	Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());
+	nfm->template registerEvaluator<panzer::Traits::Residual>(re);
+	nfm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
+	Teuchos::RCP<PHX::Evaluator<panzer::Traits> > je = Teuchos::rcp(evalj.release());
+	nfm->template registerEvaluator<panzer::Traits::Residual>(je);
+	nfm->requireField<panzer::Traits::Residual>(*je->evaluatedFields()[0]);
+	
+	Traits::SD setupData;
+	Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
+	worksets->push_back(*wkst);
+	setupData.worksets_ = worksets;
+	std::vector<PHX::index_size_type> derivative_dimensions;
+	derivative_dimensions.push_back(basis->cardinality());   
+	nfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
+	
+	//nfm->postRegistrationSetup(setupData);
+
+    panzer::Traits::PED preEvalData;
+    //nfm->preEvaluate<EvalType>(preEvalData);
+    //nfm->evaluateFields<EvalType>(*wkst);
+    //nfm->postEvaluate<EvalType>(0);
   }
 
 }
