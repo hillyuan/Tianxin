@@ -244,7 +244,7 @@ namespace panzer {
 
     //! Returns the unique set of bases, key is the unique panzer::PureBasis::name() of the basis
     const std::map<std::string,Teuchos::RCP<panzer::PureBasis> >& getBases() const;
-	Teuchos::RCP<panzer::PureBasis> getBasisForDOF(const std::string& dof_name) const;
+	Teuchos::RCP<const panzer::PureBasis> getBasisForDOF(const std::string& dof_name) const;
 
     //! Returns the unique set of point rules, key is the unique panzer::PointRule::name()
     const std::map<int,Teuchos::RCP<panzer::IntegrationRule> >& getIntegrationRules() const;

@@ -820,12 +820,15 @@ panzer::PhysicsBlock::getBases() const
 }
 
 // ***********************************************************************
-Teuchos::RCP<panzer::PureBasis> 
+Teuchos::RCP<const panzer::PureBasis> 
 panzer::PhysicsBlock::getBasisForDOF(const std::string& dof_name) const
 {
-  auto it = m_bases.find(dof_name);
-  TEUCHOS_ASSERT(it != m_bases.end());
-  return it->second;
+//	for (const auto &item : m_bases) {
+//        std::cout << "[" << item.first << "," << item.second << "]\n";
+//    }
+//  auto it = m_bases.find(dof_name);
+//  TEUCHOS_ASSERT(it != m_bases.end());
+  return m_field_lib->lookupBasis( dof_name );
 }
 
 // *******************************************************************

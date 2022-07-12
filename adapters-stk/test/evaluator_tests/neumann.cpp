@@ -175,7 +175,7 @@ namespace panzer {
 	  pl_neumann.set("Element block","eblock-0_0");
       pl_neumann.set("SideSet Name","left");
 	  pl_neumann.set("Value Type","Constant");
-      pl_neumann.set<Teuchos::Array<std::string> >("DOF Names",Teuchos::tuple<std::string>( "TEMPERATURE" ));
+      pl_neumann.set<std::string>("DOF Name","TEMPERATURE");
 	  Teuchos::ParameterList pl_sub("Constant");
 	  pl_sub.set("Value",5.0);
 	  pl_neumann.set("Constant",pl_sub);
@@ -190,7 +190,10 @@ namespace panzer {
     Teuchos::RCP<const shards::CellTopology> volume_cell_topology = physicsBlocks[0]->cellData().getCellTopology();
 	const panzer::CellData side_cell_data(wkst->num_cells,1,volume_cell_topology);
 	Teuchos::RCP<panzer::PhysicsBlock> side_pb = physicsBlocks[0]->copyWithCellData(side_cell_data);
-
+	
+	const std::string dof_name= pl_neumann.get<std::string>("DOF Name");
+    Teuchos::RCP<const panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);
+	std::cout << basis->cardinality()<< ", " << basis->numCells()<< ", " << basis->dimension() << ", " << basis->type() << std::endl;
   }
 
 }
