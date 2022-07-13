@@ -505,14 +505,11 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > rj = Teuchos::rcp(evalj.release());
 		fm->template registerEvaluator<panzer::Traits::Jacobian>(rj);
 		fm->requireField<panzer::Traits::Jacobian>(*rj->evaluatedFields()[0]);
-
-		// scatters
-		
-	//	fm->template registerEvaluator<panzer::Traits::Jacobian>(sj);
+		fm->template registerEvaluator<panzer::Traits::Jacobian>(sj);
 		{
-		//	PHX::Tag<typename panzer::Traits::Jacobian::ScalarT> tagj(scatterNamej,
-		//			      Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0)));
-		//	fm->template requireField<panzer::Traits::Jacobian>(tagj);
+			PHX::Tag<typename panzer::Traits::Jacobian::ScalarT> tagj(scatterNamej,
+					      Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0)));
+			fm->template requireField<panzer::Traits::Jacobian>(tagj);
 		}
 	
 		// gather
