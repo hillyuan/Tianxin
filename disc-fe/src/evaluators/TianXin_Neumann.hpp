@@ -87,6 +87,10 @@ protected:
 	std::size_t num_cell, num_qp, num_dim;
 	PHX::MDField<ScalarT,panzer::Cell,panzer::Point,panzer::Dim> normals;
 	//Kokkos::DynRankView<ScalarT, PHX::Device> normal_lengths_buffer;
+public:
+  // for testing purposes
+  const PHX::FieldTag & getFieldTag() const 
+  { return normals.fieldTag(); }
 }; // end of class NeumannBase
 
 typedef Factory<NeumannBase<panzer::Traits::Residual,panzer::Traits>,std::string,Teuchos::ParameterList> NeumannResidualFactory;

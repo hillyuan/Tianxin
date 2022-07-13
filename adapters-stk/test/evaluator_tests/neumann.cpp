@@ -53,13 +53,6 @@
 #include "Panzer_Workset_Builder.hpp"
 #include "Panzer_WorksetContainer.hpp"
 #include "Panzer_FieldManagerBuilder.hpp"
-#include "Panzer_STKConnManager.hpp"
-#include "Panzer_TpetraLinearObjFactory.hpp"
-#include "Panzer_AssemblyEngine.hpp"
-#include "Panzer_AssemblyEngine_InArgs.hpp"
-#include "Panzer_AssemblyEngine_TemplateManager.hpp"
-#include "Panzer_AssemblyEngine_TemplateBuilder.hpp"
-#include "Panzer_DOFManagerFactory.hpp"
 #include "Panzer_GlobalData.hpp"
 #include "TianXin_Neumann.hpp"
 #include "Panzer_ParameterLibraryUtilities.hpp"
@@ -69,21 +62,24 @@
 
 namespace panzer {
 
-  TEUCHOS_UNIT_TEST(bcstrategy, constant_Neumman_strategy)
+  TEUCHOS_UNIT_TEST(bcstrategy, constant_Neumman_evaluator)
   {
     using Teuchos::RCP;
-
-    // pause_to_attach();
 
     RCP<Teuchos::ParameterList> pl = rcp(new Teuchos::ParameterList);
     pl->set("X Blocks",1);
     pl->set("Y Blocks",1);
-    pl->set("X Elements",1);
+    pl->set("X Elements",2);
     pl->set("Y Elements",1);
+	pl->set("X0",0.0);
+    pl->set("Y0",0.0);
+	pl->set("Xf",2.0);
+    pl->set("Yf",1.0);
 
     panzer_stk::SquareQuadMeshFactory factory;
     factory.setParameterList(pl);
     RCP<panzer_stk::STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
+	mesh->writeToExodus("output.exo");
 //mesh->print(std::cout);
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
     Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
@@ -133,7 +129,7 @@ namespace panzer {
       Teuchos::RCP<panzer::GlobalData> gd = panzer::createGlobalData();
 	  panzer::createAndRegisterFunctor<double>(material_models,gd->functors);
 
-      const int default_integration_order = 1;
+      const int default_integration_order = 5;
 
       panzer::buildPhysicsBlocks(block_ids_to_physics_ids,
                                  block_ids_to_cell_topo,
@@ -161,13 +157,13 @@ namespace panzer {
     /////////////////////////////////////////////////////////////
 
     // build the connection manager
-    const Teuchos::RCP<panzer::ConnManager>
+  /*  const Teuchos::RCP<panzer::ConnManager>
       conn_manager = Teuchos::rcp(new panzer_stk::STKConnManager(mesh));
 
     Teuchos::RCP<const Teuchos::MpiComm<int> > tComm = Teuchos::rcp(new Teuchos::MpiComm<int>(MPI_COMM_WORLD));
     panzer::DOFManagerFactory globalIndexerFactory;
     RCP<panzer::GlobalIndexer> dofManager
-         = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);
+         = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);*/
 		 
     // Numann BC
 	Teuchos::ParameterList pl_neumann("Neumann BC");
@@ -182,7 +178,7 @@ namespace panzer {
 	  pl_sub.set("Value",5.0);
 	  pl_neumann.set("Constant",pl_sub);
     }
-	pl_neumann.print();
+	//pl_neumann.print();
 
     std::shared_ptr<PHX::FieldManager<panzer::Traits> > nfm
           = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
@@ -198,20 +194,24 @@ namespace panzer {
 	std::cout << basis->cardinality()<< ", " << basis->numCells()<< ", " << basis->dimension() << ", " << basis->type() << std::endl;
     const int integration_order = side_pb->getIntegrationOrder();
 	Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
-	ir->print(std::cout);
+	ir->print(std::cout);std::cout << std::endl;
 	pl_neumann.set<Teuchos::RCP<const panzer::PureBasis>>("Basis", basis);
 	pl_neumann.set<Teuchos::RCP<const panzer::IntegrationRule>>("IR", ir.getConst());
 	const std::string Identifier= pl_neumann.get<std::string>("Type");
 	std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
 			TianXin::NeumannResidualFactory::Instance().Create(Identifier, pl_neumann);
-	std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
-			TianXin::NeumannJacobianFactory::Instance().Create(Identifier, pl_neumann);
-	Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());
+	const PHX::FieldTag & ftr = evalr->getFieldTag();std::cout << ftr << std::endl;
+	PHX::MDField<typename panzer::Traits::Residual::ScalarT,panzer::Cell,panzer::Point,panzer::Dim> normals_r(ftr.name(),ir->dl_vector);
+	Teuchos::RCP<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits> > re = Teuchos::rcp(evalr.release());
 	nfm->template registerEvaluator<panzer::Traits::Residual>(re);
 	nfm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
+	
+	std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
+			TianXin::NeumannJacobianFactory::Instance().Create(Identifier, pl_neumann);
+	std::cout << evalj->getFieldTag() << std::endl;
 	Teuchos::RCP<PHX::Evaluator<panzer::Traits> > je = Teuchos::rcp(evalj.release());
-	nfm->template registerEvaluator<panzer::Traits::Residual>(je);
-	nfm->requireField<panzer::Traits::Residual>(*je->evaluatedFields()[0]);
+	nfm->template registerEvaluator<panzer::Traits::Jacobian>(je);
+	nfm->requireField<panzer::Traits::Jacobian>(*je->evaluatedFields()[0]);
 	
 	Traits::SD setupData;
 	Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
@@ -221,12 +221,29 @@ namespace panzer {
 	derivative_dimensions.push_back(basis->cardinality());   
 	nfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
 	
-	//nfm->postRegistrationSetup(setupData);
+	nfm->postRegistrationSetup(setupData);
 
     panzer::Traits::PED preEvalData;
-    //nfm->preEvaluate<EvalType>(preEvalData);
-    //nfm->evaluateFields<EvalType>(*wkst);
-    //nfm->postEvaluate<EvalType>(0);
+    nfm->preEvaluate<panzer::Traits::Residual>(preEvalData);
+    nfm->evaluateFields<panzer::Traits::Residual>(*wkst);
+    nfm->postEvaluate<panzer::Traits::Residual>(0);
+	
+	nfm->getFieldData<panzer::Traits::Residual>(normals_r);
+	normals_r.print(std::cout,false);std::cout << std::endl;
+	TEST_EQUALITY(normals_r.rank(),3);
+    TEST_EQUALITY(static_cast<int>(normals_r.size()),basis->numCells()*ir->num_points*basis->dimension());
+    auto normals_v = normals_r.get_static_view();
+    auto normals_h = Kokkos::create_mirror_view ( normals_v);
+    Kokkos::deep_copy(normals_h, normals_v);
+	
+	// check cell 0
+    {
+      double nx = Sacado::scalarValue(normals_h(0,0,0));
+      double ny = Sacado::scalarValue(normals_h(0,0,1));
+   
+      TEST_FLOATING_EQUALITY(nx,-0.5,1e-15);
+      TEST_FLOATING_EQUALITY(ny,0.0,1e-15);
+    }
   }
 
 }

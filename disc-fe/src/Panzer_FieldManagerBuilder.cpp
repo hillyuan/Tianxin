@@ -479,10 +479,10 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 			TianXin::NeumannResidualFactory::Instance().Create(Identifier, plist);
 		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
 			TianXin::NeumannJacobianFactory::Instance().Create(Identifier, plist);
-		const auto p_evalr = Teuchos::rcp(evalr.get());
+		const auto p_evalr = Teuchos::rcp(evalr.release());
 		fm->template registerEvaluator<panzer::Traits::Residual>(p_evalr);
 		fm->requireField<panzer::Traits::Residual>(*evalr->evaluatedFields()[0]);
-		fm->template registerEvaluator<panzer::Traits::Jacobian>(Teuchos::rcp(evalj.get()));
+		fm->template registerEvaluator<panzer::Traits::Jacobian>(Teuchos::rcp(evalj.release()));
 		fm->requireField<panzer::Traits::Jacobian>(*evalj->evaluatedFields()[0]);
 		
 		// scatters
