@@ -39,7 +39,6 @@
     </ParameterList>
 
     <ParameterList name="Physics Blocks">
-
         <ParameterList name="solid">
 			<Parameter name="Material" type="string" value="MyMaterial"/> 
             <ParameterList name="EQ 0">
@@ -50,7 +49,6 @@
                 <Parameter name="Model ID" type="string" value="fluid model"/>
             </ParameterList>
         </ParameterList>
-
     </ParameterList>
 	
 	<ParameterList name="Material">
@@ -83,13 +81,28 @@
     </ParameterList>
 
     <ParameterList name="User Data">
-
         <ParameterList name="IP Coordinates">
             <Parameter name="Integration Order" type="int" value="2"/> 
         </ParameterList>
-
     </ParameterList>
 
+<!--    <ParameterList name="Boundary Conditions">
+        <ParameterList>
+            <Parameter name="Type" type="string" value="Neumann"/> 
+            <Parameter name="Sideset ID" type="string" value="left"/> 
+            <Parameter name="Element Block ID" type="string" value="eblock-0_0"/> 
+            <Parameter name="Equation Set Name" type="string" value="TEMPERATURE"/> 
+            <Parameter name="Strategy" type="string" value="Neumann Constant"/>
+            <ParameterList name="Data">
+                <Parameter name="Integration Order" type="int" value="2"/>
+                <ParameterList name="Flux Values">
+                    <Parameter name="X" type="double" value="2.0"/>
+                    <Parameter name="Y" type="double" value="0.0"/>
+                </ParameterList>
+            </ParameterList>
+        </ParameterList>
+    </ParameterList>
+-->
     <ParameterList name="Neumann Conditions">
         <ParameterList>
             <Parameter name="Type" type="string" value="Flux"/> 
@@ -97,7 +110,7 @@
             <Parameter name="Element Block Name" type="string" value="eblock-0_0"/> 
             <Parameter name="DOF Name" type="string" value="TEMPERATURE"/> 
             <Parameter name="Residual Name" type="string" value="RESIDUAL_TEMPERATURE"/>
-			<Parameter name="Value Type" type="string" value="Constant"/>
+			      <Parameter name="Value Type" type="string" value="Constant"/>
             <ParameterList name="Constant">
                 <Parameter name="Value" type="double" value="2.0"/>
             </ParameterList>

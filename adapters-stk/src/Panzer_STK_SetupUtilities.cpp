@@ -375,6 +375,7 @@ buildBCWorkset(const panzer_stk::STK_Interface & mesh,
 	}
 	Kokkos::deep_copy(cell_local_ids_k, cell_local_ids_k_h);
 	Kokkos::deep_copy(local_side_ordinals, local_side_ids_h);
+	workset->block_id = eblockID;
 	workset->cell_local_ids_k = cell_local_ids_k;
 	workset->local_side_ordinals = local_side_ordinals;
 	workset->num_cells = local_cell_ids.size();

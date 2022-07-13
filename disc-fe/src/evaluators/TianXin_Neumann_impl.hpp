@@ -81,8 +81,17 @@ Teuchos::RCP< PHX::Evaluator<Traits> >
 NeumannBase<EvalT, Traits>::
 buildScatter( const Teuchos::ParameterList& p, const panzer::LinearObjFactory<Traits>& lof)
 {
+	Teuchos::ParameterList plist(p);
+	scatter_field_name = "Scatter_"+residual_name;
+	plist.set("Scatter Name", scatter_field_name);
+	Teuchos::RCP<std::vector<std::string> > names = Teuchos::rcp(new std::vector<std::string>);
+	names->emplace_back(residual_name);
+	plist.set("Dependent Names",names);
+	Teuchos::RCP< std::map<std::string,std::string> > names_map = Teuchos::rcp(new std::map<std::string,std::string>);
+    names_map->insert(std::pair<std::string,std::string>(residual_name,dof_name));
+    plist.set("Dependent Map", names_map);
 	// modify plist here
-	Teuchos::RCP< PHX::Evaluator<Traits> > op = lof.template buildScatter<EvalT>(p);
+	Teuchos::RCP< PHX::Evaluator<Traits> > op = lof.template buildScatter<EvalT>(plist);
 	return op;
 }
 

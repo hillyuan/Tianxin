@@ -467,39 +467,54 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 	    Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
 		Teuchos::ParameterList plist(sublist);
 		const std::string dof_name= sublist.get<std::string>("DOF Name");
+		
+		// ---- Define bais and ir -------
 		//RCP<const panzer::FieldLibrary> fieldLib = physicsBlock.getFieldLibrary();
   //RCP<const panzer::PureBasis> basis = fieldLib->lookupBasis("TEMPERATURE");
 		Teuchos::RCP<const panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);
 		plist.set<Teuchos::RCP<const panzer::PureBasis>>("Basis", basis);
-		const int integration_order = side_pb->getIntegrationOrder();
-		Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
+		const std::map<int,Teuchos::RCP< panzer::IntegrationRule > >& map_ir = side_pb->getIntegrationRules();
+        TEUCHOS_ASSERT(map_ir.size() == 1); 
+		Teuchos::RCP<panzer::IntegrationRule> ir = map_ir.begin()->second;
 		plist.set<Teuchos::RCP<const panzer::IntegrationRule>>("IR", ir.getConst());
+        //const int integration_order = ir.begin()->second->order();
+		//const int integration_order = side_pb->getIntegrationOrder();
+		//Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
+		
+		// ====== Residual evaluator ========
 		const std::string Identifier= sublist.get<std::string>("Type");
 		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
 			TianXin::NeumannResidualFactory::Instance().Create(Identifier, plist);
+		auto sr = evalr->buildScatter(plist,lo_factory);
+		const std::string& scatterNamer = evalr->getScatterFieldName();
 		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());
 		fm->template registerEvaluator<panzer::Traits::Residual>(re);
 		fm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
+		fm->template registerEvaluator<panzer::Traits::Residual>(sr);
+		{
+			PHX::Tag<typename panzer::Traits::Residual::ScalarT> tagr(scatterNamer,
+					      Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0)));
+			fm->template requireField<panzer::Traits::Residual>(tagr);
+		}
 		
+		// ====== Jacobian evaluator =======
 		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
 			TianXin::NeumannJacobianFactory::Instance().Create(Identifier, plist);
+		auto sj = evalj->buildScatter(plist,lo_factory);
+		const std::string& scatterNamej = evalj->getScatterFieldName();
 		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > rj = Teuchos::rcp(evalj.release());
 		fm->template registerEvaluator<panzer::Traits::Jacobian>(rj);
 		fm->requireField<panzer::Traits::Jacobian>(*rj->evaluatedFields()[0]);
-	//std::cout << "Construct Neumann\n";	
+
 		// scatters
-		const std::string res_name= sublist.get<std::string>("Residual Name");
-		std::string scattername = "Scatter_"+res_name;
-		plist.set("Scatter Name", scattername);
-		Teuchos::RCP<std::vector<std::string> > names = Teuchos::rcp(new std::vector<std::string>);
-		names->emplace_back(res_name);
-		plist.set("Dependent Names",names);
-		//plist.set("Dependent Names", Teuchos::Array<std::string>(res_name) );
-		auto sr = evalr->buildScatter(plist,lo_factory);
-		fm->template registerEvaluator<panzer::Traits::Residual>(sr);
-		auto sj = evalj->buildScatter(plist,lo_factory);
-		fm->template registerEvaluator<panzer::Traits::Jacobian>(sj);
 		
+	//	fm->template registerEvaluator<panzer::Traits::Jacobian>(sj);
+		{
+		//	PHX::Tag<typename panzer::Traits::Jacobian::ScalarT> tagj(scatterNamej,
+		//			      Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0)));
+		//	fm->template requireField<panzer::Traits::Jacobian>(tagj);
+		}
+	
 		// gather
 		side_pb->buildAndRegisterGatherAndOrientationEvaluators(*fm,lo_factory,user_data);
 		

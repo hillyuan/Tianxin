@@ -71,6 +71,11 @@ public:
 	
 	Teuchos::RCP< PHX::Evaluator<Traits> > buildScatter(const Teuchos::ParameterList& p,
 		const panzer::LinearObjFactory<Traits>& lof);
+		
+	std::string getScatterFieldName() const
+	{
+		return scatter_field_name;
+	}
 
 protected:
     // output  
@@ -80,6 +85,7 @@ protected:
 	std::string residual_name;
 	std::string dof_name;
     std::string basis_name;
+	std::string scatter_field_name;
     std::size_t basis_index, ir_index;
 	
 	std::unique_ptr<TianXin::WorksetFunctor> pFunc;
