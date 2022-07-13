@@ -61,7 +61,6 @@
 #include "Panzer_BasisIRLayout.hpp"
 #include "Panzer_BlockedDOFManager.hpp"
 #include "Panzer_BlockedEpetraLinearObjFactory.hpp"
-#include "Panzer_BlockedTpetraLinearObjFactory.hpp"
 #include "Panzer_DOFManager.hpp"
 #include "Panzer_EpetraVector_ReadOnly_GlobalEvaluationData.hpp"
 #include "Panzer_Evaluator_WithBaseImpl.hpp"
@@ -92,20 +91,7 @@
 typedef double ScalarT;
 using LocalOrdinalT = panzer::LocalOrdinal;
 using GlobalOrdinalT = panzer::GlobalOrdinal;
-typedef panzer::TpetraNodeType NodeT;
 
-typedef Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> VectorType;
-typedef Tpetra::Operator<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> OperatorType;
-typedef Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> CrsMatrixType;
-typedef Tpetra::CrsGraph<LocalOrdinalT,GlobalOrdinalT,NodeT> CrsGraphType;
-typedef Tpetra::Map<LocalOrdinalT,GlobalOrdinalT,NodeT> MapType;
-typedef Tpetra::Import<LocalOrdinalT,GlobalOrdinalT,NodeT> ImportType;
-typedef Tpetra::Export<LocalOrdinalT,GlobalOrdinalT,NodeT> ExportType;
-
-typedef Thyra::TpetraLinearOp<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> ThyraLinearOp;
-
-typedef panzer::BlockedTpetraLinearObjContainer<double,int,int> BLOC;
-typedef panzer::BlockedTpetraLinearObjFactory<panzer::Traits,double,int,int> BLOFact;
 
 namespace panzer {
 

@@ -4,16 +4,12 @@
        
         <Parameter name="Source" type="string" value="Inline Mesh" />
 
-        <ParameterList name="Exodus File">
-            <Parameter name="File Name" type="string" value="helios.exo" />
-        </ParameterList>
-
         <ParameterList name="Inline Mesh">
             <Parameter name="Mesh Dimension" type="int" value="2" />
             <ParameterList name="Mesh Factory Parameter List">
                 <Parameter name="X Blocks" type="int" value="1" />
                 <Parameter name="Y Blocks" type="int" value="1" />
-                <Parameter name="X Elements" type="int" value="20" />
+                <Parameter name="X Elements" type="int" value="1" />
                 <Parameter name="Y Elements" type="int" value="1" />
                 <Parameter name="X0" type="double" value="0.0" />
                 <Parameter name="Y0" type="double" value="0.0" />
@@ -38,13 +34,14 @@
 
     <ParameterList name="Assembly">
         <Parameter name="Workset Size" type="int" value="1"/>
+		<Parameter name="Default Integration Order" type="int" value="2"/>
 		<Parameter name="Use Tpetra" type="bool" value="true"/>
     </ParameterList>
 
     <ParameterList name="Physics Blocks">
 
         <ParameterList name="solid">
-			      <Parameter name="Material" type="string" value="MyMaterial"/> 
+			<Parameter name="Material" type="string" value="MyMaterial"/> 
             <ParameterList name="EQ 0">
                 <Parameter name="Type" type="string" value="Energy"/> 
                 <Parameter name="Basis Type" type="string" value="HGrad"/> 
@@ -56,7 +53,7 @@
 
     </ParameterList>
 	
-	  <ParameterList name="Material">
+	<ParameterList name="Material">
         <ParameterList name="MyMaterial">
             <ParameterList name="Thermal Conductivity">
                 <Parameter name="Value Type" type="string" value="Constant"/>
@@ -93,27 +90,21 @@
 
     </ParameterList>
 
-    <ParameterList name="Boundary Conditions">
-
+    <ParameterList name="Neumann Conditions">
         <ParameterList>
-            <Parameter name="Type" type="string" value="Neumann"/> 
-            <Parameter name="Sideset ID" type="string" value="left"/> 
-            <Parameter name="Element Block ID" type="string" value="eblock-0_0"/> 
-            <Parameter name="Equation Set Name" type="string" value="TEMPERATURE"/> 
-            <Parameter name="Strategy" type="string" value="Neumann Constant"/>
-            <ParameterList name="Data">
-                <Parameter name="Integration Order" type="int" value="2"/>
-                <ParameterList name="Flux Values">
-                    <Parameter name="X" type="double" value="2.0"/>
-                    <Parameter name="Y" type="double" value="0.0"/>
-                </ParameterList>
+            <Parameter name="Type" type="string" value="Flux"/> 
+            <Parameter name="SideSet Name" type="string" value="left"/> 
+            <Parameter name="Element Block Name" type="string" value="eblock-0_0"/> 
+            <Parameter name="DOF Name" type="string" value="TEMPERATURE"/> 
+            <Parameter name="Residual Name" type="string" value="RESIDUAL_TEMPERATURE"/>
+			<Parameter name="Value Type" type="string" value="Constant"/>
+            <ParameterList name="Constant">
+                <Parameter name="Value" type="double" value="2.0"/>
             </ParameterList>
         </ParameterList>
-
     </ParameterList>
 	
 	<ParameterList name="Dirichlet Conditions">
-
         <ParameterList>
             <Parameter name="NodeSet Name" type="string" value="right"/> 
             <Parameter name="DOF Names" type="Array(string)" value="{TEMPERATURE}"/> 
@@ -122,7 +113,6 @@
                 <Parameter name="Value" type="double" value="0.0"/>
             </ParameterList>
         </ParameterList>
-    
     </ParameterList>
 
     <ParameterList name="Output">

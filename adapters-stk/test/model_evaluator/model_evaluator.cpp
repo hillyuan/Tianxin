@@ -476,8 +476,7 @@ namespace panzer {
 
   }
 
-  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-			 std::vector<panzer::BC>& bcs)
+  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb)
   {
     // Physics block
     Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
@@ -498,50 +497,6 @@ namespace panzer {
       p.set("Basis Type","HGrad");
       p.set("Basis Order",1);
       p.set("Integration Order",1);
-    }
-
-
-    {
-      std::size_t bc_id = 0;
-      panzer::BCType neumann = BCT_Dirichlet;
-      std::string sideset_id = "left";
-      std::string element_block_id = "eblock-0_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 5.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name,
-		    strategy, p);
-      bcs.push_back(bc);
-    }
-    {
-      std::size_t bc_id = 1;
-      panzer::BCType neumann = BCT_Dirichlet;
-      std::string sideset_id = "right";
-      std::string element_block_id = "eblock-1_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 5.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name,
-		    strategy, p);
-      bcs.push_back(bc);
-    }
-    {
-      std::size_t bc_id = 2;
-      panzer::BCType neumann = BCT_Dirichlet;
-      std::string sideset_id = "top";
-      std::string element_block_id = "eblock-1_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 5.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name,
-		    strategy, p);
-      bcs.push_back(bc);
     }
   }
 
@@ -590,8 +545,7 @@ namespace panzer {
     RCP<const Teuchos::MpiComm<int> > tComm = Teuchos::rcp(new Teuchos::MpiComm<int>(MPI_COMM_WORLD));
 
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
-    std::vector<panzer::BC> bcs;
-    testInitialzation(ipb, bcs);
+    testInitialzation(ipb);
 
     ap.fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
 
@@ -599,7 +553,7 @@ namespace panzer {
     //////////////////////////////////////////////////////////////
     const std::size_t workset_size = 20;
     ap.eqset_factory = Teuchos::rcp(new user_app::MyFactory);
-    user_app::BCFactory bc_factory;
+    //user_app::BCFactory bc_factory;
     ap.gd = panzer::createGlobalData();
     {
       std::map<std::string,std::string> block_ids_to_physics_ids;
@@ -676,7 +630,7 @@ namespace panzer {
 
     ap.fmb->setWorksetContainer(wkstContainer);
     ap.fmb->setupVolumeFieldManagers(ap.physicsBlocks,ap.cm_factory,closure_models,*linObjFactory,ap.user_data);
-    ap.fmb->setupBCFieldManagers(bcs,ap.physicsBlocks,*ap.eqset_factory,ap.cm_factory,bc_factory,closure_models,*linObjFactory,ap.user_data);
+    //ap.fmb->setupBCFieldManagers(bcs,ap.physicsBlocks,*ap.eqset_factory,ap.cm_factory,bc_factory,closure_models,*linObjFactory,ap.user_data);
   }
 
 

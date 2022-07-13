@@ -53,17 +53,19 @@ namespace TianXin {
 //**********************************************************************
 template<typename EvalT, typename Traits>
 NeumannBase<EvalT, Traits>::
-NeumannBase( const Teuchos::ParameterList& p)
+NeumannBase( const Teuchos::ParameterList& plist)
 {
-  residual_name = p.get<std::string>("Residual Name");
+  Teuchos::ParameterList p(plist);
   dof_name = p.get<std::string>("DOF Name");
+  std::string resName("RESIDUAL_" + dof_name);
+  residual_name = p.get<std::string>("Residual Name",resName);
   const Teuchos::RCP<const panzer::PureBasis> basis =
     p.get< Teuchos::RCP<const panzer::PureBasis> >("Basis");
   const Teuchos::RCP<const panzer::IntegrationRule> ir = 
     p.get< Teuchos::RCP<const panzer::IntegrationRule> >("IR");
 
-  //residual = PHX::MDField<ScalarT>(residual_name, basis->functional);
-  //this->addEvaluatedField(residual);
+  residual = PHX::MDField<ScalarT>(residual_name, basis->functional);
+  this->addEvaluatedField(residual);
   quad_order = ir->cubature_degree;
   normals = PHX::MDField<ScalarT,panzer::Cell,panzer::Point,panzer::Dim>("normal", ir->dl_vector);
   this->addEvaluatedField(normals);
@@ -92,6 +94,7 @@ postRegistrationSetup( typename Traits::SetupData sd,
   PHX::FieldManager<Traits>& /* fm */)
 {
   basis_index = panzer::getBasisIndex(basis_name, (*sd.worksets_)[0]);
+  ir_index = panzer::getIntegrationRuleIndex(quad_order,(*sd.worksets_)[0]);
   num_cell  = normals.extent(1);
   num_qp  = normals.extent(1);
   num_dim = normals.extent(2);
@@ -101,13 +104,18 @@ postRegistrationSetup( typename Traits::SetupData sd,
 //**********************************************************************
 template<typename EvalT, typename Traits>
 void
-NeumannBase<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
+NeumannBase<EvalT, Traits>::calculateNormal(typename Traits::EvalData workset)
 {
     auto normal_view = normals.get_view();
 	Kokkos::DynRankView<const int,PHX::Device> side_ordinal(workset.local_side_ordinals);
 	Intrepid2::CellTools<PHX::exec_space>::getPhysicalSideNormals( normal_view,
               workset.int_rules[quad_index]->jac.get_view(),
               side_ordinal, *(workset.int_rules[quad_index]->int_rule->topology));
+	// normalize normal
+	Kokkos::DynRankView<ScalarT, PHX::Device> normal_lengths =Kokkos::createDynRankView(
+	   normal_view,"normal_lengths", this->num_cell*this->num_qp);
+    Intrepid2::RealSpaceTools<PHX::Device>::vectorNorm(normal_lengths,normal_view,Intrepid2::NORM_TWO);
+	Intrepid2::FunctionSpaceTools<PHX::Device>::scalarMultiplyDataData(normal_view, normal_lengths, normal_view, true);
 	//Kokkos::deep_copy(normals, normal_view);
 }
 
@@ -128,18 +136,16 @@ template<typename EvalT, typename Traits>
 void
 Flux<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
 {
-  NeumannBase<EvalT, Traits>::evaluateFields(workset);
-  
-  Kokkos::DynRankView<ScalarT, PHX::Device> normal_lengths =Kokkos::createDynRankView(
-	this->normals.get_view(),"normal_lengths", this->num_cell*this->num_qp);
-  Intrepid2::RealSpaceTools<PHX::Device>::vectorNorm(normal_lengths,this->normals.get_view(),Intrepid2::NORM_TWO);
+  //NeumannBase<EvalT, Traits>::calculateNormal(workset);
+
   auto weighted_basis_scalar = workset.bases[this->basis_index]->weighted_basis_scalar.get_static_view();
   auto residual_v = this->residual.get_static_view();
   const double val = (*(this->pFunc))(workset);
-  Kokkos::parallel_for("Neuman_nResidual", workset.num_cells, KOKKOS_LAMBDA (const std::size_t cell) {
+  Kokkos::parallel_for("Neumann_Residual", workset.num_cells, KOKKOS_LAMBDA (const std::size_t cell) {
     for (std::size_t basis = 0; basis < residual_v.extent(1); ++basis) {
       for (std::size_t qp = 0; qp < this->num_qp; ++qp) {
-        residual_v(cell,basis) += val*weighted_basis_scalar(cell,basis,qp)*normal_lengths(cell,qp);
+	//	  std::cout << basis <<", " << qp << "," << weighted_basis_scalar(cell,basis,qp) << "," << normal_lengths(cell,qp) << std::endl;
+        residual_v(cell,basis) += val*weighted_basis_scalar(cell,basis,qp);
       }
     }
   });

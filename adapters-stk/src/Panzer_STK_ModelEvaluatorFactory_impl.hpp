@@ -142,6 +142,7 @@ namespace panzer_stk {
       pl->sublist("Closure Models").disableRecursiveValidation();
       pl->sublist("Boundary Conditions").disableRecursiveValidation();
 	  pl->sublist("Dirichlet Conditions").disableRecursiveValidation();
+	  pl->sublist("Neumann Conditions").disableRecursiveValidation();
 	  pl->sublist("Material").disableRecursiveValidation();
       pl->sublist("Solution Control").disableRecursiveValidation();
       pl->set<bool>("Use Discrete Adjoint",false);
@@ -281,6 +282,7 @@ namespace panzer_stk {
     Teuchos::ParameterList & assembly_params = p.sublist("Assembly");
     Teuchos::ParameterList & solncntl_params = p.sublist("Solution Control");
 	Teuchos::ParameterList & dirichlet_params = p.sublist("Dirichlet Conditions");
+	Teuchos::ParameterList & neumann_params = p.sublist("Neumann Conditions");
     Teuchos::ParameterList & output_list = p.sublist("Output");
 
     Teuchos::ParameterList & user_data_params = p.sublist("User Data");
@@ -689,6 +691,8 @@ namespace panzer_stk {
                                      write_dot_files,dot_file_prefix,
 				     write_fm_files,fm_file_prefix);
 	  if( dirichlet_params.numParams()>0 ) fmb->setupDiricheltFieldManagers(dirichlet_params,m_mesh,m_global_indexer);
+	  if( neumann_params.numParams()>0 ) fmb->setupNeumannFieldManagers(neumann_params,m_mesh,physicsBlocks,
+					*linObjFactory,user_data_params);
     }
 
     // build response library

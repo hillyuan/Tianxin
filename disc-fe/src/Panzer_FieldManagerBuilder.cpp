@@ -473,19 +473,28 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 		plist.set<Teuchos::RCP<const panzer::PureBasis>>("Basis", basis);
 		const int integration_order = side_pb->getIntegrationOrder();
 		Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
-		plist.set<Teuchos::RCP<panzer::IntegrationRule>>("IR", ir);
+		plist.set<Teuchos::RCP<const panzer::IntegrationRule>>("IR", ir.getConst());
 		const std::string Identifier= sublist.get<std::string>("Type");
 		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
 			TianXin::NeumannResidualFactory::Instance().Create(Identifier, plist);
+		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());
+		fm->template registerEvaluator<panzer::Traits::Residual>(re);
+		fm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
+		
 		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
 			TianXin::NeumannJacobianFactory::Instance().Create(Identifier, plist);
-		const auto p_evalr = Teuchos::rcp(evalr.release());
-		fm->template registerEvaluator<panzer::Traits::Residual>(p_evalr);
-		fm->requireField<panzer::Traits::Residual>(*evalr->evaluatedFields()[0]);
-		fm->template registerEvaluator<panzer::Traits::Jacobian>(Teuchos::rcp(evalj.release()));
-		fm->requireField<panzer::Traits::Jacobian>(*evalj->evaluatedFields()[0]);
-		
+		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > rj = Teuchos::rcp(evalj.release());
+		fm->template registerEvaluator<panzer::Traits::Jacobian>(rj);
+		fm->requireField<panzer::Traits::Jacobian>(*rj->evaluatedFields()[0]);
+	//std::cout << "Construct Neumann\n";	
 		// scatters
+		const std::string res_name= sublist.get<std::string>("Residual Name");
+		std::string scattername = "Scatter_"+res_name;
+		plist.set("Scatter Name", scattername);
+		Teuchos::RCP<std::vector<std::string> > names = Teuchos::rcp(new std::vector<std::string>);
+		names->emplace_back(res_name);
+		plist.set("Dependent Names",names);
+		//plist.set("Dependent Names", Teuchos::Array<std::string>(res_name) );
 		auto sr = evalr->buildScatter(plist,lo_factory);
 		fm->template registerEvaluator<panzer::Traits::Residual>(sr);
 		auto sj = evalj->buildScatter(plist,lo_factory);

@@ -203,7 +203,7 @@ public:
     applyOrientations_(false),
     sideAssembly_(true)
   {
-    elementBlock_ = pl.get<std::string>("Element block");
+    elementBlock_ = pl.get<std::string>("Element Block Name");
 	sideset_ = pl.get<std::string>("SideSet Name");
   }
 

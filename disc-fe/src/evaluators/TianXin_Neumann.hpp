@@ -67,7 +67,7 @@ public:
     NeumannBase(const Teuchos::ParameterList& p);
 
     void postRegistrationSetup(typename Traits::SetupData d,PHX::FieldManager<Traits>& fm);
-    virtual void evaluateFields(typename Traits::EvalData d);
+    virtual void evaluateFields(typename Traits::EvalData d) = 0;
 	
 	Teuchos::RCP< PHX::Evaluator<Traits> > buildScatter(const Teuchos::ParameterList& p,
 		const panzer::LinearObjFactory<Traits>& lof);
@@ -80,17 +80,18 @@ protected:
 	std::string residual_name;
 	std::string dof_name;
     std::string basis_name;
-    std::size_t basis_index;
+    std::size_t basis_index, ir_index;
 	
 	std::unique_ptr<TianXin::WorksetFunctor> pFunc;
 	int quad_order, quad_index;
 	std::size_t num_cell, num_qp, num_dim;
 	PHX::MDField<ScalarT,panzer::Cell,panzer::Point,panzer::Dim> normals;
 	//Kokkos::DynRankView<ScalarT, PHX::Device> normal_lengths_buffer;
+	void calculateNormal(typename Traits::EvalData d);
 public:
   // for testing purposes
   const PHX::FieldTag & getFieldTag() const 
-  { return normals.fieldTag(); }
+  { return residual.fieldTag(); }
 }; // end of class NeumannBase
 
 typedef Factory<NeumannBase<panzer::Traits::Residual,panzer::Traits>,std::string,Teuchos::ParameterList> NeumannResidualFactory;

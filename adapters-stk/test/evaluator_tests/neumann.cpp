@@ -79,7 +79,7 @@ namespace panzer {
     panzer_stk::SquareQuadMeshFactory factory;
     factory.setParameterList(pl);
     RCP<panzer_stk::STK_Interface> mesh = factory.buildMesh(MPI_COMM_WORLD);
-	mesh->writeToExodus("output.exo");
+	//mesh->writeToExodus("output.exo");
 //mesh->print(std::cout);
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
     Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
@@ -129,7 +129,7 @@ namespace panzer {
       Teuchos::RCP<panzer::GlobalData> gd = panzer::createGlobalData();
 	  panzer::createAndRegisterFunctor<double>(material_models,gd->functors);
 
-      const int default_integration_order = 5;
+      const int default_integration_order = 1;
 
       panzer::buildPhysicsBlocks(block_ids_to_physics_ids,
                                  block_ids_to_cell_topo,
@@ -169,7 +169,7 @@ namespace panzer {
 	Teuchos::ParameterList pl_neumann("Neumann BC");
 	{
 	  pl_neumann.set<std::string>("Type","Flux");
-	  pl_neumann.set("Element block","eblock-0_0");
+	  pl_neumann.set("Element Block Name","eblock-0_0");
       pl_neumann.set("SideSet Name","left");
 	  pl_neumann.set("Value Type","Constant");
       pl_neumann.set<std::string>("DOF Name","TEMPERATURE");
@@ -201,7 +201,7 @@ namespace panzer {
 	std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
 			TianXin::NeumannResidualFactory::Instance().Create(Identifier, pl_neumann);
 	const PHX::FieldTag & ftr = evalr->getFieldTag();std::cout << ftr << std::endl;
-	PHX::MDField<typename panzer::Traits::Residual::ScalarT,panzer::Cell,panzer::Point,panzer::Dim> normals_r(ftr.name(),ir->dl_vector);
+	PHX::MDField<typename panzer::Traits::Residual::ScalarT> res_r(ftr.name(),basis->functional);
 	Teuchos::RCP<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits> > re = Teuchos::rcp(evalr.release());
 	nfm->template registerEvaluator<panzer::Traits::Residual>(re);
 	nfm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
@@ -228,22 +228,24 @@ namespace panzer {
     nfm->evaluateFields<panzer::Traits::Residual>(*wkst);
     nfm->postEvaluate<panzer::Traits::Residual>(0);
 	
-	nfm->getFieldData<panzer::Traits::Residual>(normals_r);
-	normals_r.print(std::cout,false);std::cout << std::endl;
-	TEST_EQUALITY(normals_r.rank(),3);
-    TEST_EQUALITY(static_cast<int>(normals_r.size()),basis->numCells()*ir->num_points*basis->dimension());
-    auto normals_v = normals_r.get_static_view();
-    auto normals_h = Kokkos::create_mirror_view ( normals_v);
-    Kokkos::deep_copy(normals_h, normals_v);
+	nfm->getFieldData<panzer::Traits::Residual>(res_r);
+	res_r.print(std::cout,false);std::cout << std::endl;
+	TEST_EQUALITY(res_r.rank(),2);
+    TEST_EQUALITY(static_cast<int>(res_r.size()),basis->numCells()*basis->cardinality());
+    auto res_v = res_r.get_static_view();
+    auto res_h = Kokkos::create_mirror_view ( res_v);
+    Kokkos::deep_copy(res_h, res_v);
 	
 	// check cell 0
-    {
-      double nx = Sacado::scalarValue(normals_h(0,0,0));
-      double ny = Sacado::scalarValue(normals_h(0,0,1));
-   
-      TEST_FLOATING_EQUALITY(nx,-0.5,1e-15);
-      TEST_FLOATING_EQUALITY(ny,0.0,1e-15);
-    }
+	//for(int v=0;v<basis->cardinality();v++)
+    //{
+	//	std::cout << "i= "<< v << "," << res_h(0,v) << std::endl;
+    //}
+	
+	TEST_FLOATING_EQUALITY(Sacado::scalarValue(res_h(0,0)),2.5,1e-15);
+	TEST_FLOATING_EQUALITY(Sacado::scalarValue(res_h(0,1)),0,1e-15);
+	TEST_FLOATING_EQUALITY(Sacado::scalarValue(res_h(0,2)),0,1e-15);
+	TEST_FLOATING_EQUALITY(Sacado::scalarValue(res_h(0,3)),2.5,1e-15);
   }
 
 }
