@@ -337,7 +337,6 @@ evaluateNeumannCondition(const panzer::AssemblyEngineInArgs& in)
 {
   Teuchos::RCP<panzer::WorksetContainer> wkstContainer = m_field_manager_builder->getWorksetContainer();
 
-  panzer::Workset workset;
   panzer::Traits::PED ped;
   ped.gedc->addDataObject("Solution Gather Container",in.ghostedContainer_);
   ped.gedc->addDataObject("Residual Scatter Container",in.ghostedContainer_);
@@ -359,10 +358,7 @@ evaluateNeumannCondition(const panzer::AssemblyEngineInArgs& in)
 
     fm->template preEvaluate<EvalT>(ped);
 
-    // Loop over worksets in this element block
-   // for (std::size_t i = 0; i < w.size(); ++i) {
-    //  panzer::Workset& workset = w[i];
-
+    {
       workset->alpha = in.alpha;
       workset->beta = in.beta;
       workset->time = in.time;
@@ -370,11 +366,9 @@ evaluateNeumannCondition(const panzer::AssemblyEngineInArgs& in)
       workset->stage_number = in.stage_number;
       workset->gather_seeds = in.gather_seeds;
       workset->evaluate_transient_terms = in.evaluate_transient_terms;
+	}
 
-
-      fm->template evaluateFields<EvalT>(*workset);
-   // }
-
+    fm->template evaluateFields<EvalT>(*workset);
     fm->template postEvaluate<EvalT>(NULL);
   }
 }

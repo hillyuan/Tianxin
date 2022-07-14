@@ -69,11 +69,8 @@
             <ParameterList name="SOURCE_TEMPERATURE">
                 <Parameter name="Value" type="double" value="0.0"/>
             </ParameterList>
-            <ParameterList name="DENSITY">
-                <Parameter name="Value" type="double" value="0.0"/>
-            </ParameterList>
             <ParameterList name="Global Statistics">
-                <Parameter name="Value" type="string" value="TEMPERATURE,DENSITY"/>
+                <Parameter name="Value" type="string" value="TEMPERATURE"/>
             </ParameterList>
 
         </ParameterList>
@@ -112,7 +109,7 @@
             <Parameter name="Residual Name" type="string" value="RESIDUAL_TEMPERATURE"/>
 			      <Parameter name="Value Type" type="string" value="Constant"/>
             <ParameterList name="Constant">
-                <Parameter name="Value" type="double" value="2.0"/>
+                <Parameter name="Value" type="double" value="-2.0"/>
             </ParameterList>
         </ParameterList>
     </ParameterList>

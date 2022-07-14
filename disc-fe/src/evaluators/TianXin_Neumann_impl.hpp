@@ -152,8 +152,8 @@ Flux<EvalT, Traits>::evaluateFields(typename Traits::EvalData workset)
   const double val = (*(this->pFunc))(workset);
   Kokkos::parallel_for("Neumann_Residual", workset.num_cells, KOKKOS_LAMBDA (const std::size_t cell) {
     for (std::size_t basis = 0; basis < residual_v.extent(1); ++basis) {
+	  residual_v(cell,basis) = 0.0;
       for (std::size_t qp = 0; qp < this->num_qp; ++qp) {
-	//	  std::cout << basis <<", " << qp << "," << weighted_basis_scalar(cell,basis,qp) << "," << normal_lengths(cell,qp) << std::endl;
         residual_v(cell,basis) += val*weighted_basis_scalar(cell,basis,qp);
       }
     }
