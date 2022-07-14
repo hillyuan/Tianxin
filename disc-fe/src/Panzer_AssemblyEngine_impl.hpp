@@ -101,6 +101,7 @@ evaluate(const panzer::AssemblyEngineInArgs& in, const EvaluationFlags flags)
     {
       PANZER_FUNC_TIME_MONITOR_DIFF("panzer::AssemblyEngine::evaluate_neumannbcs("+PHX::print<EvalT>()+")",eval_neumannbcs);
       this->evaluateNeumannBCs(in);
+	  this->evaluateNeumannCondition(in);
     }
 
     {
@@ -347,34 +348,32 @@ evaluateNeumannCondition(const panzer::AssemblyEngineInArgs& in)
   const std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > >
 	nfm = m_field_manager_builder->getNeumannFieldManager();
   const std::vector<WorksetDescriptor> & wkstDesc = m_field_manager_builder->getNeumannWorksetDescriptors();
-  /*if( pfm ) {
-  	pfm->template preEvaluate<EvalT>(ped);
-  	pfm->template evaluateFields<EvalT>(workset);
-  	pfm->template postEvaluate<EvalT>(NULL);
-  } */
-  // Loop over volume field managers
+
+  // Loop over Neumann field managers
   for (std::size_t block = 0; block < nfm.size(); ++block) {
     const WorksetDescriptor & wd = wkstDesc[block];
     std::shared_ptr< PHX::FieldManager<panzer::Traits> > fm = nfm[block];
-    std::vector<panzer::Workset>& w = *wkstContainer->getWorksets(wd);
+    const Teuchos::RCP<panzer::Workset> workset = wkstContainer->getSideWorkset(wd);
+    TEUCHOS_TEST_FOR_EXCEPTION(workset == Teuchos::null, std::logic_error,
+                         "Failed to find corresponding bc workset!");
 
     fm->template preEvaluate<EvalT>(ped);
 
     // Loop over worksets in this element block
-    for (std::size_t i = 0; i < w.size(); ++i) {
-      panzer::Workset& workset = w[i];
+   // for (std::size_t i = 0; i < w.size(); ++i) {
+    //  panzer::Workset& workset = w[i];
 
-      workset.alpha = in.alpha;
-      workset.beta = in.beta;
-      workset.time = in.time;
-      workset.step_size = in.step_size;
-      workset.stage_number = in.stage_number;
-      workset.gather_seeds = in.gather_seeds;
-      workset.evaluate_transient_terms = in.evaluate_transient_terms;
+      workset->alpha = in.alpha;
+      workset->beta = in.beta;
+      workset->time = in.time;
+      workset->step_size = in.step_size;
+      workset->stage_number = in.stage_number;
+      workset->gather_seeds = in.gather_seeds;
+      workset->evaluate_transient_terms = in.evaluate_transient_terms;
 
 
-      fm->template evaluateFields<EvalT>(workset);
-    }
+      fm->template evaluateFields<EvalT>(*workset);
+   // }
 
     fm->template postEvaluate<EvalT>(NULL);
   }
