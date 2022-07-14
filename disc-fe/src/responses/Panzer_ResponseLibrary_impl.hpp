@@ -255,6 +255,7 @@ addResponse(const std::string & responseName,
      std::string blockId = sideset_blocks[i].second;
 
      BC bc(nextBC_id,BCT_Neumann,sideset,blockId,"Whatever",responseName+"_BCStrategy");
+	 TianXin::NeumannSidesetDescriptor nsd(blockId,sideset,responseName+"_BCStrategy");
 
      // allocate the vector for "bc", if it hasn't yet been allocated
      RCP<std::vector<std::pair<std::string,RCP<ResponseEvaluatorFactory_TemplateManager<TraitsT> > > > > block_tm
@@ -495,7 +496,7 @@ buildResponseEvaluators(
      fmb2_->setupBCFieldManagers(bcs,physicsBlocks,cm_factory,bc_factory,closure_models,*linObjFactory_,user_data);
    else
      fmb2_->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory_,user_data);
-
+//setupNeumannFieldManagers
    if(write_graphviz_file) {
      fmb2_->writeVolumeGraphvizDependencyFiles("Response_Volume_"+graphviz_file_prefix,requiredVolPhysicsBlocks);
      fmb2_->writeBCGraphvizDependencyFiles("Response_Surface_"+graphviz_file_prefix);

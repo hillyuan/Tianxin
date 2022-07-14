@@ -485,7 +485,7 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 		const std::string Identifier= sublist.get<std::string>("Type");
 		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
 			TianXin::NeumannResidualFactory::Instance().Create(Identifier, plist);
-		auto sr = evalr->buildScatter(plist,lo_factory);
+		auto sr = evalr->buildScatterEvaluator(plist,lo_factory);
 		const std::string& scatterNamer = evalr->getScatterFieldName();
 		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());
 		fm->template registerEvaluator<panzer::Traits::Residual>(re);
@@ -500,7 +500,7 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 		// ====== Jacobian evaluator =======
 		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
 			TianXin::NeumannJacobianFactory::Instance().Create(Identifier, plist);
-		auto sj = evalj->buildScatter(plist,lo_factory);
+		auto sj = evalj->buildScatterEvaluator(plist,lo_factory);
 		const std::string& scatterNamej = evalj->getScatterFieldName();
 		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > rj = Teuchos::rcp(evalj.release());
 		fm->template registerEvaluator<panzer::Traits::Jacobian>(rj);

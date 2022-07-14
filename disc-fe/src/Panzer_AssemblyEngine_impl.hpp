@@ -242,7 +242,7 @@ evaluateBCs(const panzer::BCType bc_type,
     // loop over bcs
     for (bcfm_it_type bcfm_it = bc_field_managers.begin(); 
          bcfm_it != bc_field_managers.end(); ++bcfm_it) {
-      
+    
       const panzer::BC& bc = bcfm_it->first;
       const std::map<unsigned,PHX::FieldManager<panzer::Traits> > bc_fm = 
         bcfm_it->second;
@@ -261,7 +261,6 @@ evaluateBCs(const panzer::BCType bc_type,
         auto timer1 = Teuchos::TimeMonitor::getNewTimer(timerName.str());
         Teuchos::TimeMonitor tm1(*timer1);
 #endif
-
         // Loop over local faces
         for (std::map<unsigned,PHX::FieldManager<panzer::Traits> >::const_iterator side = bc_fm.begin(); side != bc_fm.end(); ++side) {
           std::ostringstream timerSideName;

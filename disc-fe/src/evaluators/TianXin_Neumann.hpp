@@ -69,7 +69,7 @@ public:
     void postRegistrationSetup(typename Traits::SetupData d,PHX::FieldManager<Traits>& fm);
     virtual void evaluateFields(typename Traits::EvalData d) = 0;
 	
-	Teuchos::RCP< PHX::Evaluator<Traits> > buildScatter(const Teuchos::ParameterList& p,
+	Teuchos::RCP< PHX::Evaluator<Traits> > buildScatterEvaluator(const Teuchos::ParameterList& p,
 		const panzer::LinearObjFactory<Traits>& lof);
 		
 	std::string getScatterFieldName() const

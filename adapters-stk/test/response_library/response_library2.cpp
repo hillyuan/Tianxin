@@ -45,9 +45,6 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-using Teuchos::RCP;
-using Teuchos::rcp;
-
 #include "Teuchos_DefaultComm.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
 
@@ -65,7 +62,6 @@ using Teuchos::rcp;
 #include "Panzer_ResponseEvaluatorFactory_Functional.hpp"
 #include "user_app_EquationSetFactory.hpp"
 #include "user_app_STKClosureModel_Factory_TemplateBuilder.hpp"
-#include "user_app_BCStrategy_Factory.hpp"
 
 #include "Panzer_ResponseLibrary.hpp"
 #include "Panzer_WorksetContainer.hpp"
@@ -84,8 +80,7 @@ using Teuchos::RCP;
 
 namespace panzer {
 
-  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-			 std::vector<panzer::BC>& bcs);
+  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb);
 
   std::pair<RCP<ResponseLibrary<Traits> >,RCP<LinearObjFactory<panzer::Traits> > > buildResponseLibrary(
                                                            std::vector<Teuchos::RCP<panzer::PhysicsBlock> > & physics_blocks,
@@ -324,8 +319,7 @@ namespace panzer {
     TEST_FLOATING_EQUALITY((*eVec2)[0],2.0*iValue,1e-14);
   }
 
-  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb,
-			 std::vector<panzer::BC>& bcs)
+  void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb)
   {
     // Physics block
     Teuchos::ParameterList& physics_block = ipb->sublist("test physics");
@@ -347,49 +341,6 @@ namespace panzer {
       p.set("Basis Order",1);
       p.set("Integration Order",1);
     }
-
-    {
-      std::size_t bc_id = 0;
-      panzer::BCType neumann = BCT_Dirichlet;
-      std::string sideset_id = "left";
-      std::string element_block_id = "eblock-0_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 5.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name,
-		    strategy, p);
-      bcs.push_back(bc);
-    }
-    {
-      std::size_t bc_id = 1;
-      panzer::BCType neumann = BCT_Dirichlet;
-      std::string sideset_id = "right";
-      std::string element_block_id = "eblock-1_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 5.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name,
-		    strategy, p);
-      bcs.push_back(bc);
-    }
-    {
-      std::size_t bc_id = 2;
-      panzer::BCType neumann = BCT_Dirichlet;
-      std::string sideset_id = "top";
-      std::string element_block_id = "eblock-1_0";
-      std::string dof_name = "TEMPERATURE";
-      std::string strategy = "Constant";
-      double value = 5.0;
-      Teuchos::ParameterList p;
-      p.set("Value",value);
-      panzer::BC bc(bc_id, neumann, sideset_id, element_block_id, dof_name,
-		    strategy, p);
-      bcs.push_back(bc);
-    }
   }
 
   std::pair<RCP<ResponseLibrary<Traits> >,RCP<LinearObjFactory<panzer::Traits> > > buildResponseLibrary(
@@ -408,7 +359,6 @@ namespace panzer {
 
     panzer_stk::SquareQuadMeshFactory mesh_factory;
     Teuchos::RCP<user_app::MyFactory> eqset_factory = Teuchos::rcp(new user_app::MyFactory);
-    user_app::BCFactory bc_factory;
     const std::size_t workset_size = 20;
 
     panzer::FieldManagerBuilder fmb;
@@ -429,9 +379,8 @@ namespace panzer {
     // setup physic blocks
     /////////////////////////////////////////////
     Teuchos::RCP<Teuchos::ParameterList> ipb = Teuchos::parameterList("Physics Blocks");
-    std::vector<panzer::BC> bcs;
     {
-       testInitialzation(ipb, bcs);
+       testInitialzation(ipb);
 
        std::map<std::string,std::string> block_ids_to_physics_ids;
        block_ids_to_physics_ids["eblock-0_0"] = "test physics";
@@ -456,13 +405,7 @@ namespace panzer {
                                   physics_blocks);
     }
 
-    // setup worksets
-    /////////////////////////////////////////////
-
-     std::vector<std::string> validEBlocks;
-     mesh->getElementBlockNames(validEBlocks);
-
-    // build WorksetContainer
+    // build WorksetContainer & setup worksets
     Teuchos::RCP<panzer_stk::WorksetFactory> wkstFactory
        = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh)); // build STK workset factory
     Teuchos::RCP<panzer::WorksetContainer> wkstContainer     // attach it to a workset container (uses lazy evaluation)

@@ -67,6 +67,7 @@
 #include "Panzer_GlobalIndexer.hpp"
 #include "Panzer_LinearObjFactory.hpp"
 #include "Panzer_TypeAssocMap.hpp"
+#include "TianXin_NeumannDescriptor.hpp"
 
 #include "Panzer_ResponseEvaluatorFactory_TemplateManager.hpp"
 
@@ -340,6 +341,9 @@ private:
                         std::vector<std::pair<std::string,Teuchos::RCP<ResponseEvaluatorFactory_TemplateManager<TraitsT> > > > > respFactories_;
    BCHashMap respBCFactories_;
    std::size_t nextBC_id;
+   
+   //std::unordered_map<TianXin::NeumannSidesetDescriptor,
+   //   std::vector<std::pair<std::string,Teuchos::RCP<ResponseEvaluatorFactory_TemplateManager<TraitsT> > > > > sidesetRespFactoties_;
 
    //! Store all the response objects 
    std::unordered_map<std::string, Response_TemplateManager> responseObjects_;

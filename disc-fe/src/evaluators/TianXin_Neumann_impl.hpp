@@ -79,7 +79,7 @@ NeumannBase( const Teuchos::ParameterList& plist)
 template<typename EvalT, typename Traits>
 Teuchos::RCP< PHX::Evaluator<Traits> >
 NeumannBase<EvalT, Traits>::
-buildScatter( const Teuchos::ParameterList& p, const panzer::LinearObjFactory<Traits>& lof)
+buildScatterEvaluator( const Teuchos::ParameterList& p, const panzer::LinearObjFactory<Traits>& lof)
 {
 	Teuchos::ParameterList plist(p);
 	scatter_field_name = "Scatter_"+residual_name;
