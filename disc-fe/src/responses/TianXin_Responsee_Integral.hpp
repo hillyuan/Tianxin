@@ -54,7 +54,7 @@ class Response_Integral<panzer::Traits::Residual,Traits> : public ResponseBase<p
 public:
 	typedef typename EvalT::ScalarT ScalarT;
 	
-    Response_Integral(const std::string & responseName);
+    Response_Integral(const Teuchos::ParameterList& plist);
 	 
 	void evaluateFields(typename Traits::EvalData d) final;
 	
@@ -64,6 +64,19 @@ public:
 private:
 	Teuchos::RCP<PHX::FieldTag> scatterHolder_; // dummy target
     PHX::MDField<const ScalarT,panzer::Cell> cellIntegral_; // holds cell integrals
+	
+	PHX::MDField<ScalarT> residual;
+
+    // common data used by neumann calculation
+	std::string residual_name;
+	std::string dof_name;
+    std::string basis_name;
+	std::string scatter_field_name;
+    std::size_t basis_index, ir_index;
+	
+	std::unique_ptr<TianXin::WorksetFunctor> pFunc;
+	int quad_order, quad_index;
+	std::size_t num_cell, num_qp, num_dim;
 
 };
 

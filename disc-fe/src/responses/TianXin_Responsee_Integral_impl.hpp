@@ -51,8 +51,17 @@ namespace TianXin {
 // **************************************************************
 template<typename Traits>
 Response_Integral<panzer::Traits::Residual,Traits> ::
-Response_Integral<panzer::Traits::Residual,Traits>(const std::string & responseName)
+Response_Integral<panzer::Traits::Residual,Traits>(const Teuchos::ParameterList& plist)
 {
+	Teuchos::ParameterList p(plist);
+    dof_name = p.get<std::string>("DOF Name");
+    std::string resName("RESIDUAL_" + dof_name);
+    residual_name = p.get<std::string>("Residual Name",resName);
+    const Teuchos::RCP<const panzer::PureBasis> basis =
+      p.get< Teuchos::RCP<const panzer::PureBasis> >("Basis");
+    const Teuchos::RCP<const panzer::IntegrationRule> ir = 
+      p.get< Teuchos::RCP<const panzer::IntegrationRule> >("IR");
+	
 	std::string dummyName = ResponseBase::buildLookupName(responseName) + " dummy target";
 
 	// build dummy target tag
