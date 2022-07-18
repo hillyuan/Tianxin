@@ -40,7 +40,6 @@
 
 #include "Phalanx_config.hpp"
 #include "Phalanx_Evaluator_WithBaseImpl.hpp"
-#include "Phalanx_Evaluator_Derived.hpp"
 #include "Phalanx_MDField.hpp"
 #include "Phalanx_DataLayout_MDALayout.hpp"
 

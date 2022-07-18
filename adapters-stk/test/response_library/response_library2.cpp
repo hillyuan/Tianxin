@@ -95,7 +95,7 @@ namespace panzer {
   template < > std::string Builder::build<int>() const { return "Sint"; }
   template < > std::string Builder::build<short>() const { return "Sshort"; }
   template < > std::string Builder::build<char>() const { return "Schar"; }
-
+/*
   TEUCHOS_UNIT_TEST(type_assoc_map, test)
   {
     typedef Sacado::mpl::vector<char,short> VecType;
@@ -112,7 +112,7 @@ namespace panzer {
     tMap.set<short>("not char");
     TEST_EQUALITY(tMap.get<short>(),"not char");
   }
-
+*/
   struct RespFactoryFunc_Builder {
     MPI_Comm comm;
     Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > linearObjFactory;
@@ -122,7 +122,7 @@ namespace panzer {
     Teuchos::RCP<ResponseEvaluatorFactoryBase> build() const
     { return Teuchos::rcp(new ResponseEvaluatorFactory_Functional<T,int,int>(comm,1,true,"",linearObjFactory)); }
   };
-
+/*
   TEUCHOS_UNIT_TEST(response_library2, test)
   {
 
@@ -226,7 +226,7 @@ namespace panzer {
     TEST_FLOATING_EQUALITY((*eVec)[0],0.5*iValue,1e-14);
     TEST_FLOATING_EQUALITY(tData[0],0.5*tValue,1e-14);
   }
-
+*/
   TEUCHOS_UNIT_TEST(response_library2, test_surface)
   {
 
@@ -360,8 +360,6 @@ namespace panzer {
     panzer_stk::SquareQuadMeshFactory mesh_factory;
     Teuchos::RCP<user_app::MyFactory> eqset_factory = Teuchos::rcp(new user_app::MyFactory);
     const std::size_t workset_size = 20;
-
-    panzer::FieldManagerBuilder fmb;
 
     // setup mesh
     /////////////////////////////////////////////
