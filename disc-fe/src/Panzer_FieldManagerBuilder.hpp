@@ -251,7 +251,7 @@ namespace panzer {
 	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_sourceterm_field_manager_;
 
     Teuchos::RCP<WorksetContainer> worksetContainer_;
-	//std::unordered_map<std::string, std::shared_ptr<TianXin::ParameterLibrary<double>> > materials_;
+	
 
     /** Set to false by default, enables/disables physics block scattering in
       * newly created field managers.
