@@ -66,8 +66,7 @@ namespace TianXin {
 template<typename EvalT, typename Traits>
 class ResponseBase : public PHX::EvaluatorWithBaseImpl<Traits> {
 public:
-   ResponseBase(const Teuchos::ParameterList& p)
-   {response_name= p.get< std::string >("DOF Names");}
+   ResponseBase(const Teuchos::ParameterList& p) {}
 	 
    virtual void evaluateFields(typename Traits::EvalData d)=0;
 	 

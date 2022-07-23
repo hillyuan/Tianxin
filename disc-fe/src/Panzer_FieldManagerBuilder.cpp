@@ -67,6 +67,7 @@
 
 #include "TianXin_Neumann.hpp"
 #include "TianXin_ResponseBase.hpp"
+#include "TianXin_Response_Integral.hpp"
 
 //=======================================================================
 //=======================================================================

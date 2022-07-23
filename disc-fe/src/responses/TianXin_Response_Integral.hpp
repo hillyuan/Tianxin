@@ -35,64 +35,57 @@
 // ***********************************************************************
 // @HEADER
 
-#ifndef __TianXin_Response_Integral_Impl_hpp__
-#define __TianXin_Response_Integral_Impl_hpp__
+#ifndef __TianXin_Response_Integral_hpp__
+#define __TianXin_Response_Integral_hpp__
 
 #include <string>
 
-#include "TianXin_Response_Intergral.hpp"
+#include "TianXin_ResponseBase.hpp"
 
 namespace TianXin {
 	
 // This elass evaluate integral alone elements or sides, e.g., heat flux along a boundary
+//template<typename EvalT, typename Traits> class Response_Integral;
 	
 // **************************************************************
 // Residual
 // **************************************************************
-template<typename Traits>
-Response_Integral<panzer::Traits::Residual,Traits> ::
-Response_Integral<panzer::Traits::Residual,Traits>(const Teuchos::ParameterList& plist)
-{
-	Teuchos::ParameterList p(plist);
-    dof_name = p.get<std::string>("DOF Name");
-    std::string resName("RESIDUAL_" + dof_name);
-    residual_name = p.get<std::string>("Residual Name",resName);
-    const Teuchos::RCP<const panzer::PureBasis> basis =
-      p.get< Teuchos::RCP<const panzer::PureBasis> >("Basis");
-    const Teuchos::RCP<const panzer::IntegrationRule> ir = 
-      p.get< Teuchos::RCP<const panzer::IntegrationRule> >("IR");
-	
-	std::string dummyName = ResponseBase::buildLookupName(responseName) + " dummy target";
-
-	// build dummy target tag
-	RCP<PHX::DataLayout> dl_dummy = rcp(new PHX::MDALayout<panzer::Dummy>(0));
-	scatterHolder_ = rcp(new PHX::Tag<ScalarT>(dummyName,dl_dummy));
-	this->addEvaluatedField(*scatterHolder_);
-
-	// build dendent field
-	RCP<PHX::DataLayout> dl_cell = rcp(new PHX::MDALayout<panzer::Cell>(cd.numCells()));
-	cellIntegral_ = PHX::MDField<const ScalarT,panzer::Cell>(integrandName,dl_cell);
-	this->addDependentField(cellIntegral_);
-
-	std::string n = "Functional Response Scatter: " + responseName;
-	this->setName(n);
-
-}
-
 template<typename EvalT, typename Traits>
-void Response_Integral<EvalT,Traits>::
-evaluateFields(typename Traits::EvalData d)
-{
-	value = 0.0;
-	for(index_t i=0;i<d.num_cells;i++) {
-		value += cellIntegral_(i);
-	}
+class Response_Integral : public ResponseBase<EvalT,Traits> {
+public:
+	typedef typename EvalT::ScalarT ScalarT;
+	
+    Response_Integral(const Teuchos::ParameterList& plist);
+	 
+	void evaluateFields(typename Traits::EvalData d) final;
+	
+	//! provide direct access of result integral
+   ScalarT value;
 
-	ScalarT glbValue = 0.0;
-    Teuchos::reduceAll(*this->getComm(), Teuchos::REDUCE_SUM, static_cast<Thyra::Ordinal>(1), &value,&glbValue);
-	this->getThyraVector()[0] = glbValue;
+private:
+	Teuchos::RCP<PHX::FieldTag> scatterHolder_; // dummy target
+    PHX::MDField<const ScalarT,panzer::Cell> cellIntegral_; // holds cell integrals
+	
+	PHX::MDField<ScalarT> residual;
+
+    // common data used by neumann calculation
+    std::string basis_name;
+	std::string scatter_field_name;
+    std::size_t basis_index, ir_index;
+	
+	std::unique_ptr<TianXin::WorksetFunctor> pFunc;
+	int quad_order, quad_index;
+	std::size_t num_cell, num_qp, num_dim;
+
+};
+
+namespace ResponseRegister {
+	//static bool const INTEGRAL_ROK = ResponseResidualFactory::Instance().template Register< Response_Integral<panzer::Traits::Residual,panzer::Traits> >( "Integral");
+	//static bool const FLUX_JOK = ResponseTangentFactory::Instance().template Register< Response_Integral<panzer::Traits::Jacobian,panzer::Traits> >( "Integral");
 }
 
 }
+
+#include "TianXin_Response_Integral_impl.hpp"
 
 #endif
