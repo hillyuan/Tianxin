@@ -52,27 +52,33 @@
 #include "Thyra_MultiVectorBase.hpp"
 #include "Thyra_LinearOpBase.hpp"
 
+#include "TianXin_WorksetFunctor.hpp"
+#include "TianXin_Factory.hpp"
+
 namespace TianXin {
 	
 /* This class define Dirichlet boundary conditions */
-template<typename EvalT, typename Traits> class ResponseBase;
+//template<typename EvalT, typename Traits> class ResponseBase;
 
 // **************************************************************
 // Residual
 // **************************************************************
-template<typename Traits>
-class ResponseBase<panzer::Traits::Residual,Traits> : public PHX::EvaluatorWithBaseImpl<Traits> {
+template<typename EvalT, typename Traits>
+class ResponseBase : public PHX::EvaluatorWithBaseImpl<Traits> {
 public:
    ResponseBase(const Teuchos::ParameterList& p)
-     : responseName_(p.get< std::string >("DOF Names")) {}
+   {response_name= p.get< std::string >("DOF Names");}
 	 
    virtual void evaluateFields(typename Traits::EvalData d)=0;
 	 
 	 
    /** Get the unmodified name for this response.
      */
-   std::string getName() const { return responseName_; }
-
+   std::string getResponseName() const
+	{
+		return response_name;
+	}
+	
    // This is the Thyra view of the world
    ///////////////////////////////////////////////////////////
    
@@ -95,13 +101,14 @@ public:
    { tVector_ = destVec; }
 
 protected:
-   std::string responseName_; 
+   std::string response_name;
    mutable Teuchos::RCP<const Thyra::VectorSpaceBase<double> > vSpace_;
    Teuchos::RCP<Thyra::VectorBase<double> > tVector_;
 };
 
-}
+typedef Factory<ResponseBase<panzer::Traits::Residual,panzer::Traits>,std::string,Teuchos::ParameterList> ResponseResidualFactory;
+typedef Factory<ResponseBase<panzer::Traits::Tangent,panzer::Traits>,std::string,Teuchos::ParameterList> ResponseTangentFactory;
 
-#include "TianXin_ResponseBase_impl.hpp"
+}
 
 #endif

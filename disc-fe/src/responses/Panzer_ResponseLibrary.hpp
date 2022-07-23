@@ -67,7 +67,6 @@
 #include "Panzer_GlobalIndexer.hpp"
 #include "Panzer_LinearObjFactory.hpp"
 #include "Panzer_TypeAssocMap.hpp"
-#include "TianXin_NeumannDescriptor.hpp"
 
 #include "Panzer_ResponseEvaluatorFactory_TemplateManager.hpp"
 
@@ -271,6 +270,12 @@ public:
 
    bool isResidualType() const 
    { return residualType_; }
+   
+   void setupNeumannFieldManagers(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+	  const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
+      const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
+      const Teuchos::ParameterList& user_data )
+   { fmb2_->setupNeumannFieldManagers( p, mesh, physicsBlocks, lo_factory, user_data);}
 
 protected:
 
@@ -341,9 +346,6 @@ private:
                         std::vector<std::pair<std::string,Teuchos::RCP<ResponseEvaluatorFactory_TemplateManager<TraitsT> > > > > respFactories_;
    BCHashMap respBCFactories_;
    std::size_t nextBC_id;
-   
-   //std::unordered_map<TianXin::NeumannSidesetDescriptor,
-   //   std::vector<std::pair<std::string,Teuchos::RCP<ResponseEvaluatorFactory_TemplateManager<TraitsT> > > > > sidesetRespFactoties_;
 
    //! Store all the response objects 
    std::unordered_map<std::string, Response_TemplateManager> responseObjects_;

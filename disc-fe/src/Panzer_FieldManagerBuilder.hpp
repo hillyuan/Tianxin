@@ -84,8 +84,6 @@ namespace panzer {
 
   public:
 
-    typedef std::map<unsigned,panzer::Workset> BCFaceWorksetMap;
-
     FieldManagerBuilder(bool disablePhysicsBlockScatter=false,bool disablePhysicsBlockGather=false);
 
     void print(std::ostream& os) const;
@@ -101,6 +99,9 @@ namespace panzer {
 
     Teuchos::RCP<WorksetContainer> getWorksetContainer() const
     { return worksetContainer_; }
+	
+	Teuchos::RCP<WorksetContainer> getWorksetContainer2() const
+    { return worksetContainer2_; }
 
     const std::vector< Teuchos::RCP< PHX::FieldManager<panzer::Traits> > >&
     getVolumeFieldManagers() const {return phx_volume_field_managers_;}
@@ -190,6 +191,12 @@ namespace panzer {
 	  const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
       const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
       const Teuchos::ParameterList& user_data );
+	  
+	void setupSidesetResponseFieldManagers(const Teuchos::ParameterList& p, 
+      const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
+	  const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
+      const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
+      const Teuchos::ParameterList& user_data );
 
     void writeVolumeGraphvizDependencyFiles(std::string filename_prefix,
 					    const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks) const;
@@ -252,6 +259,9 @@ namespace panzer {
 
     Teuchos::RCP<WorksetContainer> worksetContainer_;
 	
+	/** For response calculation */
+	Teuchos::RCP<WorksetContainer> worksetContainer2_;
+	std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > > sideset_response_field_manager_;
 
     /** Set to false by default, enables/disables physics block scattering in
       * newly created field managers.

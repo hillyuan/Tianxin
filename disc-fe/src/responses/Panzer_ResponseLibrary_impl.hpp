@@ -255,7 +255,6 @@ addResponse(const std::string & responseName,
      std::string blockId = sideset_blocks[i].second;
 
      BC bc(nextBC_id,BCT_Neumann,sideset,blockId,"Whatever",responseName+"_BCStrategy");
-	 TianXin::NeumannSidesetDescriptor nsd(blockId,sideset,responseName+"_BCStrategy");
 
      // allocate the vector for "bc", if it hasn't yet been allocated
      RCP<std::vector<std::pair<std::string,RCP<ResponseEvaluatorFactory_TemplateManager<TraitsT> > > > > block_tm

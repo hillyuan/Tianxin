@@ -346,6 +346,32 @@ public:
     outArgs.setSupports(MEB::OUT_ARG_f);
     outArgs.setSupports(MEB::OUT_ARG_W_op);
     prototypeOutArgs_ = outArgs; }
+	
+  /** Build all the responses set on the model evaluator.  Once this method is called
+    * no other responses can be added. An exception is thrown if they are.
+    */
+  void buildResponses(
+       const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
+       const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& cm_factory,
+	   Teuchos::RCP<TianXin::AbstractDiscretation> mesh,
+	   const Teuchos::ParameterList& neumann_params,
+       const Teuchos::ParameterList& closure_models,
+       const Teuchos::ParameterList& user_data,
+       const bool write_graphviz_file=false,
+       const std::string& graphviz_file_prefix="")
+  { responseLibrary_->buildResponseEvaluators(physicsBlocks,cm_factory,closure_models,user_data,write_graphviz_file,graphviz_file_prefix);
+    responseLibrary_->setupNeumannFieldManagers(neumann_params,mesh,physicsBlocks,*lof_,user_data);
+    require_in_args_refresh_ = true;
+    require_out_args_refresh_ = true;
+    this->resetDefaultBase();
+
+    typedef Thyra::ModelEvaluatorBase MEB;
+    MEB::OutArgsSetup<Scalar> outArgs;
+    outArgs.setModelEvalDescription(this->description());
+    outArgs.set_Np_Ng(num_me_parameters_, responses_.size());
+    outArgs.setSupports(MEB::OUT_ARG_f);
+    outArgs.setSupports(MEB::OUT_ARG_W_op);
+    prototypeOutArgs_ = outArgs; }
 
   /** This method builds the response libraries that build the
     * dfdp sensitivities for the distributed parameters if requested.
