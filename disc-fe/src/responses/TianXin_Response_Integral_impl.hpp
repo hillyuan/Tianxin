@@ -60,34 +60,52 @@ Response_Integral(const Teuchos::ParameterList& plist)
       p.get< Teuchos::RCP<const panzer::PureBasis> >("Basis");
     const Teuchos::RCP<const panzer::IntegrationRule> ir = 
       p.get< Teuchos::RCP<const panzer::IntegrationRule> >("IR");
+	quad_order = ir->cubature_degree;
+
+	PHX::Layout dl_scalar("dl1",1);
+	value_ = PHX::MDField<const ScalarT,panzer::Dim>(integral_name,dl_scalar);
+	this->addEvaluatedField(value_);
 	
-	std::string dummyName = this->response_name + " dummy target";
-
-	// build dummy target tag
-	Teuchos::RCP<PHX::DataLayout> dl_dummy = Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0));
-	scatterHolder_ = Teuchos::rcp(new PHX::Tag<ScalarT>(dummyName,dl_dummy));
-	this->addEvaluatedField(*scatterHolder_);
-
-	// build dendent field
-	Teuchos::RCP<PHX::DataLayout> dl_cell = Teuchos::rcp(new PHX::MDALayout<panzer::Cell>(ir->dl_scalar->extent(0)));
-	cellIntegral_ = PHX::MDField<const ScalarT,panzer::Cell>(integrand_name,dl_cell);
-	this->addDependentField(cellIntegral_);
+	// Input : values upon cell IPs
+	cellvalue_ = PHX::MDField<const ScalarT,panzer::Cell,panzer::IP>( integrand_name, ir->dl_scalar);
+	this->addDependentField(cellvalue_);
 
 	std::string n = "Integral Response " + this->response_name;
 	this->setName(n);
 
 }
 
+//**********************************************************************
+template<typename EvalT, typename Traits>
+void Response_Integral<EvalT, Traits>::
+postRegistrationSetup( typename Traits::SetupData sd,
+  PHX::FieldManager<Traits>& /* fm */)
+{
+  //basis_index = panzer::getBasisIndex(basis_name, (*sd.worksets_)[0]);
+  //ir_index = panzer::getIntegrationRuleIndex(quad_order,(*sd.worksets_)[0]);
+  num_cell  = cellvalue_.extent(0);
+  num_qp  = cellvalue_.extent(1);
+  quad_index =  panzer::getIntegrationRuleIndex(quad_order,(*sd.worksets_)[0]);
+}
+
 template<typename EvalT, typename Traits>
 void Response_Integral<EvalT,Traits>::
-evaluateFields(typename Traits::EvalData d)
+evaluateFields(typename Traits::EvalData workset)
 {
-	value = 0.0;
-	for(std::size_t i=0;i<d.num_cells;i++) {
-		value += cellIntegral_(i);
-	}
+	const auto wm = this->wda(workset).int_rules[quad_index]->weighted_measure;
+
+	value_(0) = 0.0;
+	Kokkos::parallel_for("IntegratorScalar", workset.num_cells, KOKKOS_LAMBDA (int cell) {
+		ScalarT cell_integral = 0.0;
+		for (std::size_t qp = 0; qp < num_qp; ++qp) {
+			cell_integral += cellvalue_(cell, qp)*wm(cell, qp);
+		}
+		value_(0) += cell_integral;
+	} );
+	Kokkos::fence();
 
 	ScalarT glbValue = 0.0;
+	ScalarT value = value_(0);
     Teuchos::reduceAll(*this->getComm(), Teuchos::REDUCE_SUM, static_cast<Thyra::Ordinal>(1), &value,&glbValue);
 	this->getThyraVector()[0] = glbValue;
 }

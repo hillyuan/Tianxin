@@ -104,7 +104,7 @@ postRegistrationSetup( typename Traits::SetupData sd,
 {
   basis_index = panzer::getBasisIndex(basis_name, (*sd.worksets_)[0]);
   ir_index = panzer::getIntegrationRuleIndex(quad_order,(*sd.worksets_)[0]);
-  num_cell  = normals.extent(1);
+  num_cell  = normals.extent(0);
   num_qp  = normals.extent(1);
   num_dim = normals.extent(2);
   quad_index =  panzer::getIntegrationRuleIndex(quad_order,(*sd.worksets_)[0]);

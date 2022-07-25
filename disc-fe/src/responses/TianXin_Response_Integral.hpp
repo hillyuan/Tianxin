@@ -57,25 +57,23 @@ public:
 	
     Response_Integral(const Teuchos::ParameterList& plist);
 	 
+	void postRegistrationSetup(typename Traits::SetupData d,PHX::FieldManager<Traits>& fm);
 	void evaluateFields(typename Traits::EvalData d) final;
 	
 	//! provide direct access of result integral
-   ScalarT value;
+    PHX::MDField<const ScalarT,panzer::Dim> value_;
 
 private:
-	Teuchos::RCP<PHX::FieldTag> scatterHolder_; // dummy target
-    PHX::MDField<const ScalarT,panzer::Cell> cellIntegral_; // holds cell integrals
+	PHX::MDField<const ScalarT,panzer::Cell,panzer::IP> cellvalue_;
 	
-	PHX::MDField<ScalarT> residual;
-
     // common data used by neumann calculation
     std::string basis_name;
-	std::string scatter_field_name;
-    std::size_t basis_index, ir_index;
-	
-	std::unique_ptr<TianXin::WorksetFunctor> pFunc;
+	std::size_t num_cell, num_qp;
 	int quad_order, quad_index;
-	std::size_t num_cell, num_qp, num_dim;
+	
+public:
+  const PHX::FieldTag & getFieldTag() const 
+  { return value_.fieldTag(); }
 
 };
 
