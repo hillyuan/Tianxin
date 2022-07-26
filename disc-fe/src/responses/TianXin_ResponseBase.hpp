@@ -52,6 +52,8 @@
 #include "Thyra_MultiVectorBase.hpp"
 #include "Thyra_LinearOpBase.hpp"
 
+#include "Panzer_Traits.hpp"
+
 #include "TianXin_WorksetFunctor.hpp"
 #include "TianXin_Factory.hpp"
 

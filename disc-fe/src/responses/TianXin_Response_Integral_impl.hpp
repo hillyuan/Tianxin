@@ -38,6 +38,11 @@
 #ifndef __TianXin_Response_Integral_Impl_hpp__
 #define __TianXin_Response_Integral_Impl_hpp__
 
+#include "Teuchos_DefaultComm.hpp"
+#include "Teuchos_Comm.hpp"
+#include "Thyra_VectorStdOps.hpp"
+#include "Panzer_Workset_Utilities.hpp"
+
 #include <string>
 
 namespace TianXin {
@@ -63,7 +68,7 @@ Response_Integral(const Teuchos::ParameterList& plist)
 	quad_order = ir->cubature_degree;
 
 	PHX::Layout dl_scalar("dl1",1);
-	value_ = PHX::MDField<const ScalarT,panzer::Dim>(integral_name,dl_scalar);
+	value_ = PHX::MDField<const ScalarT,panzer::Dim>(integral_name,Teuchos::rcpFromRef(dl_scalar) );
 	this->addEvaluatedField(value_);
 	
 	// Input : values upon cell IPs
@@ -92,22 +97,22 @@ template<typename EvalT, typename Traits>
 void Response_Integral<EvalT,Traits>::
 evaluateFields(typename Traits::EvalData workset)
 {
-	const auto wm = this->wda(workset).int_rules[quad_index]->weighted_measure;
+	const auto wm = workset.int_rules[quad_index]->weighted_measure;
 
-	value_(0) = 0.0;
-	Kokkos::parallel_for("IntegratorScalar", workset.num_cells, KOKKOS_LAMBDA (int cell) {
-		ScalarT cell_integral = 0.0;
+	double result = 0.0;
+	Kokkos::parallel_reduce("IntegratorScalar", workset.num_cells, KOKKOS_LAMBDA (int cell, double& v) {
+		double cell_integral = 0.0;
 		for (std::size_t qp = 0; qp < num_qp; ++qp) {
 			cell_integral += cellvalue_(cell, qp)*wm(cell, qp);
 		}
-		value_(0) += cell_integral;
-	} );
+		v += cell_integral;
+	}, result );
 	Kokkos::fence();
 
-	ScalarT glbValue = 0.0;
-	ScalarT value = value_(0);
-    Teuchos::reduceAll(*this->getComm(), Teuchos::REDUCE_SUM, static_cast<Thyra::Ordinal>(1), &value,&glbValue);
-	this->getThyraVector()[0] = glbValue;
+	double glbValue = 0.0;
+    Teuchos::reduceAll<int,double>(*(Teuchos::DefaultComm<int>::getComm()), Teuchos::REDUCE_SUM, static_cast<Thyra::Ordinal>(1), &result,&glbValue);
+	//this->getVector()[0] = glbValue;
+	Thyra::set_ele(0, glbValue, (this->getVector()).ptr() );
 }
 
 }
