@@ -360,7 +360,6 @@ public:
        const bool write_graphviz_file=false,
        const std::string& graphviz_file_prefix="")
   { responseLibrary_->buildResponseEvaluators(physicsBlocks,cm_factory,closure_models,user_data,write_graphviz_file,graphviz_file_prefix);
-    responseLibrary_->setupNeumannFieldManagers(neumann_params,mesh,physicsBlocks,*lof_,user_data);
     require_in_args_refresh_ = true;
     require_out_args_refresh_ = true;
     this->resetDefaultBase();

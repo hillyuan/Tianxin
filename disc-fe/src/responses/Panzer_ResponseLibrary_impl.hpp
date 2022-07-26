@@ -495,7 +495,7 @@ buildResponseEvaluators(
      fmb2_->setupBCFieldManagers(bcs,physicsBlocks,cm_factory,bc_factory,closure_models,*linObjFactory_,user_data);
    else
      fmb2_->setupBCFieldManagers(bcs,physicsBlocks,*eqset_factory,cm_factory,bc_factory,closure_models,*linObjFactory_,user_data);
-//setupNeumannFieldManagers
+
    if(write_graphviz_file) {
      fmb2_->writeVolumeGraphvizDependencyFiles("Response_Volume_"+graphviz_file_prefix,requiredVolPhysicsBlocks);
      fmb2_->writeBCGraphvizDependencyFiles("Response_Surface_"+graphviz_file_prefix);

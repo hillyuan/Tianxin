@@ -372,4 +372,47 @@ evaluateNeumannCondition(const panzer::AssemblyEngineInArgs& in)
   }
 }
 
+//===========================================================================
+template <typename EvalT>
+void panzer::AssemblyEngine<EvalT>::
+evaluateResponse(const panzer::AssemblyEngineInArgs& in)
+{
+  Teuchos::RCP<panzer::WorksetContainer> wkstContainer = m_field_manager_builder->getWorksetContainer2();
+
+  panzer::Traits::PED ped;
+  ped.gedc->addDataObject("Solution Gather Container",in.ghostedContainer_);
+  ped.gedc->addDataObject("Residual Scatter Container",in.ghostedContainer_);
+  ped.first_sensitivities_name  = in.first_sensitivities_name;
+  ped.second_sensitivities_name = in.second_sensitivities_name;
+  in.fillGlobalEvaluationDataContainer(*(ped.gedc));
+	
+  const std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > >
+	rfm = m_field_manager_builder->getResponseFieldManager();
+  const std::vector<WorksetDescriptor> & wkstDesc = m_field_manager_builder->getNeumannWorksetDescriptors();
+
+  // Loop over Neumann field managers
+  for (std::size_t block = 0; block < rfm.size(); ++block) {
+    const WorksetDescriptor & wd = wkstDesc[block];
+    std::shared_ptr< PHX::FieldManager<panzer::Traits> > fm = rfm[block];
+    const Teuchos::RCP<panzer::Workset> workset = wkstContainer->getSideWorkset(wd);
+    TEUCHOS_TEST_FOR_EXCEPTION(workset == Teuchos::null, std::logic_error,
+                         "Failed to find corresponding bc workset!");
+
+    fm->template preEvaluate<EvalT>(ped);
+
+    {
+      workset->alpha = in.alpha;
+      workset->beta = in.beta;
+      workset->time = in.time;
+      workset->step_size = in.step_size;
+      workset->stage_number = in.stage_number;
+      workset->gather_seeds = in.gather_seeds;
+      workset->evaluate_transient_terms = in.evaluate_transient_terms;
+	}
+
+    fm->template evaluateFields<EvalT>(*workset);
+    fm->template postEvaluate<EvalT>(NULL);
+  }
+}
+
 #endif

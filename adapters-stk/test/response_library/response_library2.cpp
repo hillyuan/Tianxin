@@ -233,6 +233,7 @@ namespace panzer {
     std::vector<Teuchos::RCP<panzer::PhysicsBlock> > physics_blocks;
     panzer::ClosureModelFactory_TemplateManager<panzer::Traits> cm_factory;
     Teuchos::ParameterList closure_models("Closure Models");
+	Teuchos::ParameterList response_models("Closure Models");
     Teuchos::ParameterList user_data("User Data");
 
     // setup and evaluate ResponseLibrary
@@ -317,6 +318,9 @@ namespace panzer {
 
     TEST_FLOATING_EQUALITY((*eVec)[0],0.5*tValue,1e-14);
     TEST_FLOATING_EQUALITY((*eVec2)[0],2.0*iValue,1e-14);
+	
+	Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
+	//fmb->setupSidesetResponseFieldManagers(response_models,mesh,physics_blocks,lof,user_data);
   }
 
   void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb)

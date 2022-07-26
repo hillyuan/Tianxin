@@ -97,6 +97,7 @@ namespace panzer {
 	
 	void evaluateDirichletCondition(const panzer::AssemblyEngineInArgs& input_arguments);
 	void evaluateNeumannCondition(const panzer::AssemblyEngineInArgs& input_arguments);
+	void evaluateResponse(const panzer::AssemblyEngineInArgs& input_arguments);
 
     Teuchos::RCP<panzer::FieldManagerBuilder> getManagerBuilder()
     { return m_field_manager_builder; }

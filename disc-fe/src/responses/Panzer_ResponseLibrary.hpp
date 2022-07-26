@@ -270,12 +270,6 @@ public:
 
    bool isResidualType() const 
    { return residualType_; }
-   
-   void setupNeumannFieldManagers(const Teuchos::ParameterList& p, const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
-	  const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
-      const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
-      const Teuchos::ParameterList& user_data )
-   { fmb2_->setupNeumannFieldManagers( p, mesh, physicsBlocks, lo_factory, user_data);}
 
 protected:
 
