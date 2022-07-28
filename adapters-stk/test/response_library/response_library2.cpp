@@ -65,6 +65,7 @@
 
 #include "Panzer_ResponseLibrary.hpp"
 #include "Panzer_WorksetContainer.hpp"
+#include "TianXin_Response_Integral.hpp"
 
 #include "TestEvaluators.hpp"
 
@@ -86,7 +87,9 @@ namespace panzer {
                                                            std::vector<Teuchos::RCP<panzer::PhysicsBlock> > & physics_blocks,
                                                            panzer::ClosureModelFactory_TemplateManager<panzer::Traits> & cm_factory,
                                                            Teuchos::ParameterList & closure_models,
-                                                           Teuchos::ParameterList & user_data);
+                                                           Teuchos::ParameterList & user_data,
+														   RCP<panzer_stk::STK_Interface> mesh,
+														   RCP<panzer::WorksetContainer> wkstContainer2);
 
   struct Builder {
     template <typename T>
@@ -233,7 +236,7 @@ namespace panzer {
     std::vector<Teuchos::RCP<panzer::PhysicsBlock> > physics_blocks;
     panzer::ClosureModelFactory_TemplateManager<panzer::Traits> cm_factory;
     Teuchos::ParameterList closure_models("Closure Models");
-	Teuchos::ParameterList response_models("Closure Models");
+	Teuchos::ParameterList response_pl("Response");
     Teuchos::ParameterList user_data("User Data");
 
     // setup and evaluate ResponseLibrary
@@ -241,8 +244,10 @@ namespace panzer {
 
     out << "Adding responses" << std::endl;
 
+    RCP<panzer_stk::STK_Interface> mesh;
+	Teuchos::RCP<panzer::WorksetContainer> wkstContainer2 = Teuchos::rcp(new panzer::WorksetContainer);
     std::pair< RCP<ResponseLibrary<Traits> >, RCP<panzer::LinearObjFactory<panzer::Traits> > > data
-          = buildResponseLibrary(physics_blocks,cm_factory,closure_models,user_data);
+          = buildResponseLibrary(physics_blocks,cm_factory,closure_models,user_data,mesh,wkstContainer2);
     RCP<ResponseLibrary<Traits> > rLibrary = data.first;
     RCP<panzer::LinearObjFactory<panzer::Traits> > lof = data.second;
     RCP<const panzer::GlobalIndexer> globalIndexer
@@ -319,8 +324,60 @@ namespace panzer {
     TEST_FLOATING_EQUALITY((*eVec)[0],0.5*tValue,1e-14);
     TEST_FLOATING_EQUALITY((*eVec2)[0],2.0*iValue,1e-14);
 	
-	Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
-	//fmb->setupSidesetResponseFieldManagers(response_models,mesh,physics_blocks,lof,user_data);
+    // Following new response	
+	//Teuchos::ParameterList& response1 = response_pl.sublist("response1");
+	{
+	  response_pl.set("Type","Integral");
+      response_pl.set("Element Block Name","eblock-0_0");
+      response_pl.set("SideSet Name","bottom");
+      response_pl.set("Integrand Name","FIELD_B");
+	  response_pl.set("DOF Name","FIELD_B");
+	}
+	
+	std::shared_ptr<PHX::FieldManager<panzer::Traits> > nfm
+          = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
+	WorksetDescriptor wd(response_pl);
+	const Teuchos::RCP<panzer::Workset> wkst = wkstContainer2->getSideWorkset(wd);
+	//fmb->setupSidesetResponseFieldManagers(response_pl,mesh,physics_blocks,*lof,user_data);
+	Teuchos::RCP<const shards::CellTopology> volume_cell_topology = physics_blocks[0]->cellData().getCellTopology();
+	const panzer::CellData side_cell_data(wkst->num_cells,1,volume_cell_topology);
+	Teuchos::RCP<panzer::PhysicsBlock> side_pb = physics_blocks[0]->copyWithCellData(side_cell_data);
+
+	const std::string dof_name= response_pl.get<std::string>("DOF Name");
+    Teuchos::RCP<const panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);
+	std::cout << basis->cardinality()<< ", " << basis->numCells()<< ", " << basis->dimension() << ", " << basis->type() << std::endl;
+    const int integration_order = side_pb->getIntegrationOrder();
+	Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
+	ir->print(std::cout);std::cout << std::endl;
+	response_pl.set<Teuchos::RCP<const panzer::PureBasis>>("Basis", basis);
+	response_pl.set<Teuchos::RCP<const panzer::IntegrationRule>>("IR", ir.getConst());
+	
+	TianXin::Response_Integral<panzer::Traits::Residual, panzer::Traits> resp(response_pl);
+	std::cout << resp.getFieldTag() << std::endl;
+	nfm->template registerEvaluator<panzer::Traits::Residual>(Teuchos::rcpFromRef(resp));
+	nfm->requireField<panzer::Traits::Residual>(*resp.evaluatedFields()[0]);
+	
+	Traits::SD setupData;
+	{
+		Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
+		worksets->push_back(*wkst);
+		setupData.worksets_ = worksets;
+		//std::vector<PHX::index_size_type> derivative_dimensions;
+		//derivative_dimensions.push_back(basis->cardinality());   
+		//nfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
+	}
+	
+	nfm->postRegistrationSetup(setupData);
+	
+	/*const std::string Identifier= response_pl.get<std::string>("Type");
+	std::unique_ptr<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
+			TianXin::ResponseResidualFactory::Instance().Create(Identifier, response_pl);
+	std::string rname = evalr->getResponseName(); std::cout << rname << std::endl;
+	evalr->printFieldValues(std::cout);
+	const PHX::FieldTag & ftr = evalr->getFieldTag();std::cout << ftr << std::endl;
+	Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());std::cout << re->getName() << std::endl;
+	nfm->template registerEvaluator<panzer::Traits::Residual>(re);std::cout << Identifier << "aaabaaa" << std::endl;
+	nfm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);*/
   }
 
   void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb)
@@ -351,7 +408,9 @@ namespace panzer {
                                                            std::vector<Teuchos::RCP<panzer::PhysicsBlock> > & physics_blocks,
                                                            panzer::ClosureModelFactory_TemplateManager<panzer::Traits> & cm_factory,
                                                            Teuchos::ParameterList & closure_models,
-                                                           Teuchos::ParameterList & user_data)
+                                                           Teuchos::ParameterList & user_data, 
+														   RCP<panzer_stk::STK_Interface> mesh,
+														   RCP<panzer::WorksetContainer> wkstContainer2 )
   {
     using Teuchos::RCP;
 
@@ -367,7 +426,7 @@ namespace panzer {
 
     // setup mesh
     /////////////////////////////////////////////
-    RCP<panzer_stk::STK_Interface> mesh;
+   // RCP<panzer_stk::STK_Interface> mesh;
     {
        RCP<Teuchos::ParameterList> pl = rcp(new Teuchos::ParameterList);
        pl->set("X Blocks",2);
@@ -416,6 +475,11 @@ namespace panzer {
     for(size_t i=0;i<physics_blocks.size();i++)
       wkstContainer->setNeeds(physics_blocks[i]->elementBlockID(),physics_blocks[i]->getWorksetNeeds());
     wkstContainer->setWorksetSize(workset_size);
+
+	wkstContainer2->setFactory(wkstFactory);
+    for(size_t i=0;i<physics_blocks.size();i++)
+      wkstContainer2->setNeeds(physics_blocks[i]->elementBlockID(),physics_blocks[i]->getWorksetNeeds());
+    wkstContainer2->setWorksetSize(workset_size);
 
     // setup DOF manager
     /////////////////////////////////////////////

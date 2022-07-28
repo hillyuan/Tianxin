@@ -117,8 +117,7 @@ void FieldLayoutLibrary::basisPairs(std::vector<std::pair<std::string,Teuchos::R
 
 Teuchos::RCP<const panzer::PureBasis> FieldLibrary::lookupBasis(const std::string & fieldName) const
 {
-   typedef std::map<std::string,Teuchos::RCP<panzer::PureBasis> > Map;
-   Map::const_iterator itr = fieldToBasis_.find(fieldName);
+   const auto itr = fieldToBasis_.find(fieldName);
    if(itr!=fieldToBasis_.end())
       return itr->second;
  

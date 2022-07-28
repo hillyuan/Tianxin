@@ -444,7 +444,7 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
     // ***************************
 	for (Teuchos::ParameterList::ConstIterator bc_pl=pl.begin(); bc_pl != pl.end(); ++bc_pl) {
 		TEUCHOS_TEST_FOR_EXCEPTION( !(bc_pl->second.isList()), std::logic_error,
-				"Error - All objects in the Dirichlet Conditions sublist must be sublists!" );
+				"Error - All objects in the Neumann Conditions sublist must be sublists!" );
 		Teuchos::ParameterList& sublist = Teuchos::getValue<Teuchos::ParameterList>(bc_pl->second);
 		
 		std::shared_ptr<PHX::FieldManager<panzer::Traits> > fm
@@ -543,8 +543,8 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
       const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
       const Teuchos::ParameterList& user_data)
 {
-	TEUCHOS_TEST_FOR_EXCEPTION(getWorksetContainer()==Teuchos::null,std::logic_error,
-                            "panzer::FMB::setupBCFieldManagers: method function getWorksetContainer() returns null. "
+	TEUCHOS_TEST_FOR_EXCEPTION(getWorksetContainer2()==Teuchos::null,std::logic_error,
+                            "panzer::FMB::setupSidesetResponseFieldManagers: method function getWorksetContainer2() returns null. "
                             "Plase call setWorksetContainer() before calling this method");
 
     Teuchos::RCP<const panzer::GlobalIndexer> globalIndexer = lo_factory.getRangeGlobalIndexer();
@@ -567,7 +567,7 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
     // ***************************
 	for (Teuchos::ParameterList::ConstIterator bc_pl=pl.begin(); bc_pl != pl.end(); ++bc_pl) {
 		TEUCHOS_TEST_FOR_EXCEPTION( !(bc_pl->second.isList()), std::logic_error,
-				"Error - All objects in the Dirichlet Conditions sublist must be sublists!" );
+				"Error - All objects in the Sideset Response Conditions sublist must be sublists!" );
 		Teuchos::ParameterList& sublist = Teuchos::getValue<Teuchos::ParameterList>(bc_pl->second);
 		
 		std::shared_ptr<PHX::FieldManager<panzer::Traits> > fm
@@ -609,8 +609,8 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		const std::string Identifier= sublist.get<std::string>("Type");
 		std::unique_ptr<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
 			TianXin::ResponseResidualFactory::Instance().Create(Identifier, plist);
-		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());
-		fm->template registerEvaluator<panzer::Traits::Residual>(re);
+		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());std::cout << Identifier << "aaaaaa" << std::endl;
+		fm->template registerEvaluator<panzer::Traits::Residual>(re);std::cout << Identifier << "aaabaaa" << std::endl;
 		fm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
 
 		// ====== Tangent evaluator =======

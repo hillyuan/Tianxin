@@ -823,12 +823,11 @@ panzer::PhysicsBlock::getBases() const
 Teuchos::RCP<const panzer::PureBasis> 
 panzer::PhysicsBlock::getBasisForDOF(const std::string& dof_name) const
 {
-//	for (const auto &item : m_bases) {
-//        std::cout << "[" << item.first << "," << item.second << "]\n";
-//    }
-//  auto it = m_bases.find(dof_name);
-//  TEUCHOS_ASSERT(it != m_bases.end());
-  return m_field_lib->lookupBasis( dof_name );
+	const auto basis = m_field_lib->lookupBasis( dof_name );
+	if( basis==Teuchos::null ) {   // not in DOFs defined. Use an arbitary one
+       return m_field_lib->lookupBasis( m_dof_names[0] );
+	}
+    return basis;
 }
 
 // *******************************************************************

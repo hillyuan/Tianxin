@@ -43,6 +43,7 @@
 #include "Phalanx_config.hpp"
 #include "Phalanx_Evaluator_WithBaseImpl.hpp"
 #include "Phalanx_MDField.hpp"
+#include "Phalanx_Field.hpp"
 #include "Phalanx_DataLayout_MDALayout.hpp"
 
 #include "Teuchos_RCP.hpp"
@@ -105,6 +106,9 @@ protected:
    std::string response_name;
    mutable Teuchos::RCP<const Thyra::VectorSpaceBase<double> > vSpace_;
    Teuchos::RCP<Thyra::VectorBase<double> > tVector_;
+   
+public:
+   virtual const PHX::FieldTag & getFieldTag() const = 0;
 };
 
 typedef Factory<ResponseBase<panzer::Traits::Residual,panzer::Traits>,std::string,Teuchos::ParameterList> ResponseResidualFactory;

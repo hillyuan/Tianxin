@@ -55,11 +55,10 @@ namespace TianXin {
 template<typename EvalT, typename Traits>
 Response_Integral<EvalT,Traits>::
 Response_Integral(const Teuchos::ParameterList& plist)
-: ResponseBase<EvalT,Traits>(plist)
-{
+{ 
 	Teuchos::ParameterList p(plist);
-    std::string integral_name = p.get<std::string>("Integral Name");
 	std::string integrand_name= p.get< std::string >("Integrand Name");
+	std::string integral_name = p.get<std::string>("Integral Name","Integral_" +integrand_name);
     this->response_name = "RESPONSE_" + integrand_name;
     const Teuchos::RCP<const panzer::PureBasis> basis =
       p.get< Teuchos::RCP<const panzer::PureBasis> >("Basis");
@@ -67,14 +66,15 @@ Response_Integral(const Teuchos::ParameterList& plist)
       p.get< Teuchos::RCP<const panzer::IntegrationRule> >("IR");
 	quad_order = ir->cubature_degree;
 
-	PHX::Layout dl_scalar("dl1",1);
-	value_ = PHX::MDField<const ScalarT,panzer::Dim>(integral_name,Teuchos::rcpFromRef(dl_scalar) );
-	this->addEvaluatedField(value_);
-	
+	Teuchos::RCP<PHX::DataLayout> dl_dummy = Teuchos::rcp(new PHX::MDALayout<panzer::Dim>(1));
+	//Teuchos::RCP<PHX::DataLayout> dl_scalar = Teuchos::rcp(new PHX::DataLayout("dl1",1));
+	this->value_ = PHX::MDField<ScalarT>(response_name, dl_dummy);
+	this->addEvaluatedField(this->value_);
+//value_.print(std::cout);
 	// Input : values upon cell IPs
 	cellvalue_ = PHX::MDField<const ScalarT,panzer::Cell,panzer::IP>( integrand_name, ir->dl_scalar);
 	this->addDependentField(cellvalue_);
-
+//cellvalue_.print(std::cout);
 	std::string n = "Integral Response " + this->response_name;
 	this->setName(n);
 
@@ -112,7 +112,8 @@ evaluateFields(typename Traits::EvalData workset)
 	double glbValue = 0.0;
     Teuchos::reduceAll<int,double>(*(Teuchos::DefaultComm<int>::getComm()), Teuchos::REDUCE_SUM, static_cast<Thyra::Ordinal>(1), &result,&glbValue);
 	//this->getVector()[0] = glbValue;
-	Thyra::set_ele(0, glbValue, (this->getVector()).ptr() );
+	//Thyra::set_ele(0, glbValue, (this->getVector()).ptr() );
+	this->value_ .deep_copy(glbValue);
 }
 
 }

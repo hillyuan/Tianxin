@@ -96,6 +96,9 @@ namespace panzer {
 
     void setWorksetContainer(const Teuchos::RCP<WorksetContainer> & wc)
     { worksetContainer_ = wc; }
+	
+	void setWorksetContainer2(const Teuchos::RCP<WorksetContainer> & wc)
+    { worksetContainer2_ = wc; }
 
     Teuchos::RCP<WorksetContainer> getWorksetContainer() const
     { return worksetContainer_; }
