@@ -655,7 +655,7 @@ void panzer::FieldManagerBuilder::
 writeVolumeGraphvizDependencyFiles(std::string filename_prefix,
 				   const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks) const
 {
-  if(phx_volume_field_managers_.size()<1)
+  if(phx_volume_field_managers_.empty())
     return; // nothing to see here folks
 
   TEUCHOS_ASSERT(phx_volume_field_managers_.size()==physicsBlocks.size());
@@ -764,6 +764,23 @@ writeBCTextDependencyFiles(std::string filename_prefix) const
     ofs.close();
   }
 
+}
+
+//=======================================================================
+//=======================================================================
+void panzer::FieldManagerBuilder::
+writeNeumannTextDependencyFiles(std::string filename_prefix) const
+{
+  if(phx_neumann_field_manager_.empty()) return;
+
+  int bc_index = 0;
+  for( const auto& fm : phx_neumann_field_manager_ ) {
+    std::string filename = filename_prefix+"_Neumann_"+std::to_string(++bc_index)+".txt";
+    std::ofstream ofs;
+    ofs.open(filename.c_str());
+    ofs << *fm << std::endl;
+    ofs.close();
+  }
 }
 
 //=======================================================================

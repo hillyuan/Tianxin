@@ -55,6 +55,7 @@ namespace TianXin {
 template<typename EvalT, typename Traits>
 Response_Integral<EvalT,Traits>::
 Response_Integral(const Teuchos::ParameterList& plist)
+: ResponseBase<EvalT,Traits>(plist)
 { 
 	Teuchos::ParameterList p(plist);
 	std::string integrand_name= p.get< std::string >("Integrand Name");
@@ -68,7 +69,7 @@ Response_Integral(const Teuchos::ParameterList& plist)
 
 	Teuchos::RCP<PHX::DataLayout> dl_dummy = Teuchos::rcp(new PHX::MDALayout<panzer::Dim>(1));
 	//Teuchos::RCP<PHX::DataLayout> dl_scalar = Teuchos::rcp(new PHX::DataLayout("dl1",1));
-	this->value_ = PHX::MDField<ScalarT>(response_name, dl_dummy);
+	this->value_ = PHX::MDField<ScalarT>(this->response_name, dl_dummy);
 	this->addEvaluatedField(this->value_);
 //value_.print(std::cout);
 	// Input : values upon cell IPs

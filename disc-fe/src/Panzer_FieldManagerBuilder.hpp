@@ -213,6 +213,7 @@ namespace panzer {
 					const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks) const;
 
     void writeBCTextDependencyFiles(std::string filename_prefix) const;
+	void writeNeumannTextDependencyFiles(std::string filename_prefix) const;
 
     /// Delete all volume field managers, retaining the BC ones.
     void clearVolumeFieldManagers(bool clearVolumeWorksets = true);
@@ -258,7 +259,7 @@ namespace panzer {
     std::map<panzer::BC,
       std::map<unsigned,PHX::FieldManager<panzer::Traits> >,
       panzer::LessBC> bc_field_managers_;
-	  
+
 	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_dirichlet_field_manager_;
 	std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > > phx_neumann_field_manager_;
 	std::shared_ptr< PHX::FieldManager<panzer::Traits> > phx_sourceterm_field_manager_;
