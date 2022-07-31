@@ -388,7 +388,7 @@ evaluateResponse(const panzer::AssemblyEngineInArgs& in)
 	
   const std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > >
 	rfm = m_field_manager_builder->getResponseFieldManager();
-  const std::vector<WorksetDescriptor> & wkstDesc = m_field_manager_builder->getNeumannWorksetDescriptors();
+  const std::vector<WorksetDescriptor> & wkstDesc = m_field_manager_builder->getResponseWorksetDescriptors();
 
   // Loop over Neumann field managers
   for (std::size_t block = 0; block < rfm.size(); ++block) {

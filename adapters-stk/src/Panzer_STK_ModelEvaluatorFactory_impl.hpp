@@ -283,6 +283,8 @@ namespace panzer_stk {
     Teuchos::ParameterList & solncntl_params = p.sublist("Solution Control");
 	Teuchos::ParameterList & dirichlet_params = p.sublist("Dirichlet Conditions");
 	Teuchos::ParameterList & neumann_params = p.sublist("Neumann Conditions");
+	Teuchos::ParameterList & response_params = p.sublist("Response");
+	Teuchos::ParameterList & closure_params = p.sublist("Closure Models");
     Teuchos::ParameterList & output_list = p.sublist("Output");
 
     Teuchos::ParameterList & user_data_params = p.sublist("User Data");
@@ -687,12 +689,14 @@ namespace panzer_stk {
       }
 
       fmb = buildFieldManagerBuilder(wkstContainer,physicsBlocks,bcs,*eqset_factory,bc_factory,cm_factory,
-                                     user_cm_factory,p.sublist("Closure Models"),*linObjFactory,user_data_params,
+                                     user_cm_factory,closure_params,*linObjFactory,user_data_params,
                                      write_dot_files,dot_file_prefix,
 				     write_fm_files,fm_file_prefix);
 	  if( dirichlet_params.numParams()>0 ) fmb->setupDiricheltFieldManagers(dirichlet_params,m_mesh,m_global_indexer);
 	  if( neumann_params.numParams()>0 ) fmb->setupNeumannFieldManagers(neumann_params,m_mesh,physicsBlocks,
 					*linObjFactory,user_data_params);
+	  if( response_params.numParams()>0 ) fmb->setupSidesetResponseFieldManagers(response_params,m_mesh,physicsBlocks,
+					*linObjFactory,cm_factory,closure_params,user_data_params);
     }
 
     // build response library

@@ -139,6 +139,9 @@ namespace panzer {
 	
 	const std::vector<WorksetDescriptor> &
     getNeumannWorksetDescriptors() const { return neumann_workset_desc_; }
+	
+	const std::vector<WorksetDescriptor> &
+    getResponseWorksetDescriptors() const { return response_workset_desc_; }
 
     const std::map<panzer::BC,
 		   std::map<unsigned,PHX::FieldManager<panzer::Traits> >,
@@ -251,6 +254,7 @@ namespace panzer {
       */
     std::vector<WorksetDescriptor> volume_workset_desc_;
 	std::vector<WorksetDescriptor> neumann_workset_desc_;
+	std::vector<WorksetDescriptor> response_workset_desc_;
 
     /*! \brief Field managers for the boundary conditions
 

@@ -593,7 +593,7 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		side_pb->buildAndRegisterEquationSetEvaluators(*fm, user_data);
 		side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Residual>(*fm,cm_factory,closure_models,user_data);
 		//side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Tangent>(*fm,cm_factory,closure_models,user_data);
-		
+
 		// ---- Define bais and ir -------
 		Teuchos::ParameterList plist(sublist);
 		const std::string dof_name= sublist.get<std::string>("DOF Name");
@@ -613,8 +613,8 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		const std::string Identifier= sublist.get<std::string>("Type");
 		std::unique_ptr<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
 			TianXin::ResponseResidualFactory::Instance().Create(Identifier, plist);
-		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());std::cout << Identifier << "aaaaaa" << std::endl;
-		fm->template registerEvaluator<panzer::Traits::Residual>(re);std::cout << Identifier << "aaabaaa" << std::endl;
+		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());
+		fm->template registerEvaluator<panzer::Traits::Residual>(re);
 		fm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
 
 		// ====== Tangent evaluator =======
@@ -634,12 +634,12 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 	
 		// gather
 		side_pb->buildAndRegisterGatherAndOrientationEvaluators(*fm,lo_factory,user_data);
-		
+	
 		Traits::SD setupData;
 	    Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
 	    worksets->push_back(*currentWkst);
 	    setupData.worksets_ = worksets;
-        setupData.orientations_ = getWorksetContainer()->getOrientations();
+        setupData.orientations_ = getWorksetContainer2()->getOrientations();
 
 	   // For Kokkos extended types (Sacado FAD) set derivtive array size
 	    //std::vector<PHX::index_size_type> derivative_dimensions;
@@ -648,7 +648,7 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		setKokkosExtendedDataTypeDimensions(element_block_id,*globalIndexer,user_data,*fm);
 		fm->postRegistrationSetup(setupData);
 		
-		//neumann_workset_desc_.push_back(wd);
+		response_workset_desc_.push_back(wd);
 		sideset_response_field_manager_.push_back(fm);
 	}
 }

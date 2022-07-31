@@ -352,18 +352,11 @@ namespace panzer {
 	  response3.set("DOF Name","FIELD_B");
 	}
 	
-	/*Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
-	fmb->setWorksetContainer(wkstContainer);
+	Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
 	fmb->setWorksetContainer2(wkstContainer);
-	//for( pb: physics_blocks ) {
-	//	side_pb.buildAndRegisterEquationSetEvaluators(fm, user_data);
-	//	side_pb.buildAndRegisterClosureModelEvaluatorsForType<EvalT>(fm,factory,models,user_data);
-	//}
-	fmb->setupVolumeFieldManagers(physics_blocks,cm_factory,closure_models,*lof,user_data);
-	fmb->writeVolumeGraphvizDependencyFiles("ResidualResponse_Volume_10",physics_blocks);
-	fmb->setupSidesetResponseFieldManagers(response_pl,mesh,physics_blocks,*lof,user_data);*/
+	fmb->setupSidesetResponseFieldManagers(res_pl,mesh,physics_blocks,*lof,cm_factory,closure_models,user_data);
 
-	for (Teuchos::ParameterList::ConstIterator pl=res_pl.begin(); pl != res_pl.end(); ++pl) {
+	/*for (Teuchos::ParameterList::ConstIterator pl=res_pl.begin(); pl != res_pl.end(); ++pl) {
 		Teuchos::ParameterList& response_pl = Teuchos::getValue<Teuchos::ParameterList>(pl->second);
 		WorksetDescriptor wd(response_pl);
 		const Teuchos::RCP<panzer::Workset> wkst = wkstContainer2->getSideWorkset(wd);
@@ -416,7 +409,7 @@ namespace panzer {
 		auto res_h = Kokkos::create_mirror_view ( res_v);
 		Kokkos::deep_copy(res_h, res_v);
 		std::cout << res_h(0) << std::endl;
-	}
+	}*/
 	//TEST_FLOATING_EQUALITY(res_h(0),0.5*tValue,1e-14);
 	
 	/*const std::string Identifier= response_pl.get<std::string>("Type");
