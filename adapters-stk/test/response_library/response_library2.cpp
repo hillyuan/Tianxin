@@ -237,7 +237,7 @@ namespace panzer {
     std::vector<Teuchos::RCP<panzer::PhysicsBlock> > physics_blocks;
     panzer::ClosureModelFactory_TemplateManager<panzer::Traits> cm_factory;
     Teuchos::ParameterList closure_models("Closure Models");
-	Teuchos::ParameterList response_pl("Response");
+	Teuchos::ParameterList res_pl("Response");
     Teuchos::ParameterList user_data("User Data");
 
     // setup and evaluate ResponseLibrary
@@ -322,21 +322,37 @@ namespace panzer {
 
     double iValue = -2.3;
     double tValue = 82.9;
-
+    //std::cout << (*eVec2)[0] << std::endl;
     TEST_FLOATING_EQUALITY((*eVec)[0],0.5*tValue,1e-14);
     TEST_FLOATING_EQUALITY((*eVec2)[0],2.0*iValue,1e-14);
 	
     // Following new response	
-	/*Teuchos::ParameterList& response1 = response_pl.sublist("response1");
+	Teuchos::ParameterList& response1 = res_pl.sublist("response1");
 	{
 	  response1.set("Type","Integral");
       response1.set("Element Block Name","eblock-0_0");
       response1.set("SideSet Name","bottom");
-      response1.set("Integrand Name","FIELD_A");
+      response1.set("Integrand Name","FIELD_B");
 	  response1.set("DOF Name","FIELD_B");
 	}
+	Teuchos::ParameterList& response2 = res_pl.sublist("response2");
+	{
+	  response2.set("Type","Integral");
+      response2.set("Element Block Name","eblock-0_0");
+      response2.set("SideSet Name","top");
+      response2.set("Integrand Name","FIELD_B");
+	  response2.set("DOF Name","FIELD_B");
+	}
+	Teuchos::ParameterList& response3 = res_pl.sublist("response3");
+	{
+	  response3.set("Type","Integral");
+      response3.set("Element Block Name","eblock-1_0");
+      response3.set("SideSet Name","right");
+      response3.set("Integrand Name","FIELD_B");
+	  response3.set("DOF Name","FIELD_B");
+	}
 	
-	Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
+	/*Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
 	fmb->setWorksetContainer(wkstContainer);
 	fmb->setWorksetContainer2(wkstContainer);
 	//for( pb: physics_blocks ) {
@@ -346,51 +362,62 @@ namespace panzer {
 	fmb->setupVolumeFieldManagers(physics_blocks,cm_factory,closure_models,*lof,user_data);
 	fmb->writeVolumeGraphvizDependencyFiles("ResidualResponse_Volume_10",physics_blocks);
 	fmb->setupSidesetResponseFieldManagers(response_pl,mesh,physics_blocks,*lof,user_data);*/
-	
-	{
-	  response_pl.set("Type","Integral");
-      response_pl.set("Element Block Name","eblock-0_0");
-      response_pl.set("SideSet Name","bottom");
-      response_pl.set("Integrand Name","FIELD_A");
-	  response_pl.set("DOF Name","FIELD_B");
-	}
 
-	std::shared_ptr<PHX::FieldManager<panzer::Traits> > nfm
+	for (Teuchos::ParameterList::ConstIterator pl=res_pl.begin(); pl != res_pl.end(); ++pl) {
+		Teuchos::ParameterList& response_pl = Teuchos::getValue<Teuchos::ParameterList>(pl->second);
+		WorksetDescriptor wd(response_pl);
+		const Teuchos::RCP<panzer::Workset> wkst = wkstContainer2->getSideWorkset(wd);
+		
+		std::shared_ptr<PHX::FieldManager<panzer::Traits> > nfm
           = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
-	WorksetDescriptor wd(response_pl);
-	const Teuchos::RCP<panzer::Workset> wkst = wkstContainer2->getSideWorkset(wd);
-	//fmb->setupSidesetResponseFieldManagers(response_pl,mesh,physics_blocks,*lof,user_data);
-	Teuchos::RCP<const shards::CellTopology> volume_cell_topology = physics_blocks[0]->cellData().getCellTopology();
-	const panzer::CellData side_cell_data(wkst->num_cells,1,volume_cell_topology);
-	Teuchos::RCP<panzer::PhysicsBlock> side_pb = physics_blocks[0]->copyWithCellData(side_cell_data);
-	side_pb->buildAndRegisterEquationSetEvaluators(*nfm, user_data);
-	side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Residual>(*nfm,cm_factory,closure_models,user_data);
 
-	const std::string dof_name= response_pl.get<std::string>("DOF Name");
-    Teuchos::RCP<const panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);
-	std::cout << basis->cardinality()<< ", " << basis->numCells()<< ", " << basis->dimension() << ", " << basis->type() << std::endl;
-    const int integration_order = side_pb->getIntegrationOrder();
-	Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
-	ir->print(std::cout);std::cout << std::endl;
-	response_pl.set<Teuchos::RCP<const panzer::PureBasis>>("Basis", basis);
-	response_pl.set<Teuchos::RCP<const panzer::IntegrationRule>>("IR", ir.getConst());
+		Teuchos::RCP<const shards::CellTopology> volume_cell_topology = physics_blocks[0]->cellData().getCellTopology();
+		const panzer::CellData side_cell_data(wkst->num_cells,1,volume_cell_topology);
+		Teuchos::RCP<panzer::PhysicsBlock> side_pb = physics_blocks[0]->copyWithCellData(side_cell_data);
+		//side_pb->buildAndRegisterEquationSetEvaluators(*nfm, user_data);
+		side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Residual>(*nfm,cm_factory,closure_models,user_data);
+
+		const std::string dof_name= response_pl.get<std::string>("DOF Name");
+		Teuchos::RCP<const panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);
+		std::cout << basis->cardinality()<< ", " << basis->numCells()<< ", " << basis->dimension() << ", " << basis->type() << std::endl;
+		const int integration_order = side_pb->getIntegrationOrder();
+		Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
+		ir->print(std::cout);std::cout << std::endl;
+		response_pl.set<Teuchos::RCP<const panzer::PureBasis>>("Basis", basis);
+		response_pl.set<Teuchos::RCP<const panzer::IntegrationRule>>("IR", ir.getConst());
 	
-	TianXin::Response_Integral<panzer::Traits::Residual, panzer::Traits> resp(response_pl);
-	std::cout << resp.getFieldTag() << std::endl;
-	nfm->template registerEvaluator<panzer::Traits::Residual>(Teuchos::rcpFromRef(resp));
-	nfm->requireField<panzer::Traits::Residual>(*resp.evaluatedFields()[0]);
+		TianXin::Response_Integral<panzer::Traits::Residual, panzer::Traits> resp(response_pl);
+		const PHX::FieldTag & ftr = resp.getFieldTag();std::cout << ftr << std::endl;
+		nfm->template registerEvaluator<panzer::Traits::Residual>(Teuchos::rcpFromRef(resp));
+		nfm->requireField<panzer::Traits::Residual>(*resp.evaluatedFields()[0]);
 	
-	Traits::SD setupData;
-	{
-		Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
-		worksets->push_back(*wkst);
-		setupData.worksets_ = worksets;
-		//std::vector<PHX::index_size_type> derivative_dimensions;
-		//derivative_dimensions.push_back(basis->cardinality());   
-		//nfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
+		Traits::SD setupData;
+		{
+			Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
+			worksets->push_back(*wkst);
+			setupData.worksets_ = worksets;
+			//std::vector<PHX::index_size_type> derivative_dimensions;
+			//derivative_dimensions.push_back(basis->cardinality());   
+			//nfm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
+		}
+	
+		nfm->postRegistrationSetup(setupData);
+	
+		panzer::Traits::PED preEvalData;
+		nfm->preEvaluate<panzer::Traits::Residual>(preEvalData);
+		nfm->evaluateFields<panzer::Traits::Residual>(*wkst);
+		nfm->postEvaluate<panzer::Traits::Residual>(0);
+	
+		Teuchos::RCP<PHX::DataLayout> dl_dummy = Teuchos::rcp(new PHX::MDALayout<panzer::Dim>(1));
+		PHX::MDField<typename panzer::Traits::Residual::ScalarT> resp_r(ftr.name(),dl_dummy);
+		nfm->getFieldData<panzer::Traits::Residual>(resp_r);
+		resp_r.print(std::cout,false);std::cout << std::endl;
+		auto res_v = resp_r.get_static_view();
+		auto res_h = Kokkos::create_mirror_view ( res_v);
+		Kokkos::deep_copy(res_h, res_v);
+		std::cout << res_h(0) << std::endl;
 	}
-	
-	nfm->postRegistrationSetup(setupData);
+	//TEST_FLOATING_EQUALITY(res_h(0),0.5*tValue,1e-14);
 	
 	/*const std::string Identifier= response_pl.get<std::string>("Type");
 	std::unique_ptr<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits>> evalr = 

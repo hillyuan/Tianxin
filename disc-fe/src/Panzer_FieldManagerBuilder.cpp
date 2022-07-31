@@ -541,6 +541,8 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
       const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
       const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
+	  const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& cm_factory,
+      const Teuchos::ParameterList& closure_models,
       const Teuchos::ParameterList& user_data)
 {
 	TEUCHOS_TEST_FOR_EXCEPTION(getWorksetContainer2()==Teuchos::null,std::logic_error,
@@ -585,14 +587,16 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(element_block_id)->second;
         Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
 		const panzer::CellData side_cell_data(currentWkst->num_cells,currentWkst->subcell_index,volume_cell_topology);
-		//auto nd = side_cell_data.getCellTopology()->getNodeCount();
 
 	    // Copy the physics block for side integrations
 	    Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
-		Teuchos::ParameterList plist(sublist);
-		const std::string dof_name= sublist.get<std::string>("DOF Name");
+		side_pb->buildAndRegisterEquationSetEvaluators(*fm, user_data);
+		side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Residual>(*fm,cm_factory,closure_models,user_data);
+		//side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Tangent>(*fm,cm_factory,closure_models,user_data);
 		
 		// ---- Define bais and ir -------
+		Teuchos::ParameterList plist(sublist);
+		const std::string dof_name= sublist.get<std::string>("DOF Name");
 		//RCP<const panzer::FieldLibrary> fieldLib = physicsBlock.getFieldLibrary();
   //RCP<const panzer::PureBasis> basis = fieldLib->lookupBasis("TEMPERATURE");
 		Teuchos::RCP<const panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);

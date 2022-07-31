@@ -202,6 +202,8 @@ namespace panzer {
       const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
 	  const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
       const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
+	  const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& cm_factory,
+      const Teuchos::ParameterList& closure_models,
       const Teuchos::ParameterList& user_data );
 
     void writeVolumeGraphvizDependencyFiles(std::string filename_prefix,
