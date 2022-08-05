@@ -54,6 +54,7 @@ template<typename EvalT, typename Traits>
 class Response_Integral : public ResponseBase<EvalT,Traits> {
 public:
 	typedef typename EvalT::ScalarT ScalarT;
+	using map_type = Tpetra::Map<int, panzer::GlobalOrdinal>;
 	
     Response_Integral(const Teuchos::ParameterList& plist);
 	 
@@ -63,10 +64,8 @@ public:
 	//! provide direct access of result integral
     PHX::MDField<ScalarT> value_;
 	
-	//std::string getResponseName() const
-	//{
-	//	return response_name;
-	//}
+	virtual std::size_t localSizeRequired() const final { return 1; }
+	virtual bool isDistributed() const final {return false;}
 
 private:
 	//std::string response_name;

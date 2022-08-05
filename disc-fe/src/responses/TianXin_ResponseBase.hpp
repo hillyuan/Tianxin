@@ -47,11 +47,10 @@
 #include "Phalanx_DataLayout_MDALayout.hpp"
 
 #include "Teuchos_RCP.hpp"
+#include "Teuchos_DefaultComm.hpp"
 
-#include "Thyra_VectorSpaceBase.hpp"
-#include "Thyra_VectorBase.hpp"
-#include "Thyra_MultiVectorBase.hpp"
-#include "Thyra_LinearOpBase.hpp"
+#include "Tpetra_Map.hpp"
+#include "Tpetra_Vector.hpp"
 
 #include "Panzer_Traits.hpp"
 
@@ -68,8 +67,13 @@ namespace TianXin {
 // **************************************************************
 template<typename EvalT, typename Traits>
 class ResponseBase : public PHX::EvaluatorWithBaseImpl<Traits> {
+	
+	using map_type = Tpetra::Map<int, panzer::GlobalOrdinal>;
+	using vector_type = Tpetra::Vector<double, int, panzer::GlobalOrdinal>;
 public:
-   ResponseBase(const Teuchos::ParameterList& p) {}
+   ResponseBase(const Teuchos::ParameterList& p)
+   : tComm_(Teuchos::DefaultComm<int>::getComm())
+   {}
 	 
    virtual void evaluateFields(typename Traits::EvalData d)=0;
 	 
@@ -81,31 +85,25 @@ public:
 		return response_name;
 	}
 	
-   // This is the Thyra view of the world
-   ///////////////////////////////////////////////////////////
-   
+	/* number of response items*/
+	virtual std::size_t localSizeRequired() const =0;
+	
+	virtual bool isDistributed() const =0;
+	
    //! Get the vector space for this response, vector space is constructed lazily.
-   Teuchos::RCP<const Thyra::VectorSpaceBase<double> > getVectorSpace() const
-   { return vSpace_; }
-
-   //! set the vector space for this response
-   void setVectorSpace(Teuchos::RCP<const Thyra::VectorSpaceBase<double> > vs)
-   { vSpace_ = vs; }
-
-   //! Access the response vector
-   Teuchos::RCP<Thyra::VectorBase<double> > getVector() const
-   { return tVector_; }
-
-   /** Set the vector (to be filled) for this response. This must be
-     * constructed from the vector space returned by <code>getVectorSpace</code>.
-     */
-   void setVector(const Teuchos::RCP<Thyra::VectorBase<double> > & destVec)
-   { tVector_ = destVec; }
+   Teuchos::RCP< Tpetra::Map<int> > getMap() const {
+     return tVector_->getMap();
+   }
+   
+   //! Access the thyra MultiVector
+    Teuchos::RCP<Tpetra::Vector<double> > getVector() const
+    { return tVector_; }
 
 protected:
    std::string response_name;
-   mutable Teuchos::RCP<const Thyra::VectorSpaceBase<double> > vSpace_;
-   Teuchos::RCP<Thyra::VectorBase<double> > tVector_;
+   Teuchos::RCP<const Teuchos::Comm<int> > tComm_;
+   Teuchos::RCP<const map_type >  tMap_;
+   Teuchos::RCP<vector_type > tVector_;
    
 public:
    virtual const PHX::FieldTag & getFieldTag() const = 0;

@@ -99,7 +99,7 @@ namespace panzer {
   template < > std::string Builder::build<int>() const { return "Sint"; }
   template < > std::string Builder::build<short>() const { return "Sshort"; }
   template < > std::string Builder::build<char>() const { return "Schar"; }
-/*
+
   TEUCHOS_UNIT_TEST(type_assoc_map, test)
   {
     typedef Sacado::mpl::vector<char,short> VecType;
@@ -116,7 +116,7 @@ namespace panzer {
     tMap.set<short>("not char");
     TEST_EQUALITY(tMap.get<short>(),"not char");
   }
-*/
+
   struct RespFactoryFunc_Builder {
     MPI_Comm comm;
     Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > linearObjFactory;
@@ -355,6 +355,36 @@ namespace panzer {
 	Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
 	fmb->setWorksetContainer2(wkstContainer);
 	fmb->setupSidesetResponseFieldManagers(res_pl,mesh,physics_blocks,*lof,cm_factory,closure_models,user_data);
+	
+	const std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > >
+		rfm = fmb->getResponseFieldManager();
+	const std::vector<WorksetDescriptor> & wkstDesc = fmb->getResponseWorksetDescriptors();
+	// Loop over response field managers
+	for (std::size_t block = 0; block < rfm.size(); ++block) {
+		const WorksetDescriptor & wd = wkstDesc[block];
+		std::shared_ptr< PHX::FieldManager<panzer::Traits> > fm = rfm[block];
+		const Teuchos::RCP<panzer::Workset> workset = wkstContainer->getSideWorkset(wd);
+		TEUCHOS_TEST_FOR_EXCEPTION(workset == Teuchos::null, std::logic_error,
+                         "Failed to find corresponding bc workset!");
+
+		panzer::Traits::PED ped;
+		fm->template preEvaluate<panzer::Traits::Residual>(ped);
+		fm->evaluateFields<panzer::Traits::Residual>(*workset);
+		fm->postEvaluate<panzer::Traits::Residual>(0);
+		
+		for(PHX::FieldManager<panzer::Traits>::iterator fd=fm->begin(); fd!=fm->end(); ++fd) {
+			fd->print(std::cout);
+		}
+	
+		/*Teuchos::RCP<PHX::DataLayout> dl_dummy = Teuchos::rcp(new PHX::MDALayout<panzer::Dim>(1));
+		PHX::MDField<typename panzer::Traits::Residual::ScalarT> resp_r(ftr.name(),dl_dummy);
+		fm->getFieldData<panzer::Traits::Residual>(resp_r);
+		resp_r.print(std::cout,false);std::cout << std::endl;
+		auto res_v = resp_r.get_static_view();
+		auto res_h = Kokkos::create_mirror_view ( res_v);
+		Kokkos::deep_copy(res_h, res_v);
+		std::cout << res_h(0) << std::endl;*/
+	}
 
 	/*for (Teuchos::ParameterList::ConstIterator pl=res_pl.begin(); pl != res_pl.end(); ++pl) {
 		Teuchos::ParameterList& response_pl = Teuchos::getValue<Teuchos::ParameterList>(pl->second);

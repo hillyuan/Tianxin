@@ -196,6 +196,7 @@ public:
 				  Teuchos::RCP<TianXin::AbstractDiscretation> mesh,
 				  Teuchos::RCP<panzer::GlobalIndexer> dofManager,
 				  const Teuchos::ParameterList& pl_dirichlet,
+				  const Teuchos::ParameterList& pl_neumann,
                   const Teuchos::ParameterList& closure_models,
                   const Teuchos::ParameterList& user_data,
                   bool writeGraph=false,const std::string & graphPrefix="",
@@ -354,7 +355,7 @@ public:
        const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
        const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& cm_factory,
 	   Teuchos::RCP<TianXin::AbstractDiscretation> mesh,
-	   const Teuchos::ParameterList& neumann_params,
+	   const Teuchos::ParameterList& response_params,
        const Teuchos::ParameterList& closure_models,
        const Teuchos::ParameterList& user_data,
        const bool write_graphviz_file=false,
@@ -692,15 +693,20 @@ private: // data members
 
     // for distributed parameter sensitivities
     Teuchos::RCP<ResponseMESupportBuilderBase> builder;
-        // used for delayed construction of dgdp (distributed parameter) responses
+    // used for delayed construction of dgdp (distributed parameter) responses
     std::vector<WorksetDescriptor> wkst_desc;
-        // used for delayed construction of dgdp (distributed parameter) responses
 
     struct SearchName {
       std::string name;
       SearchName(const std::string & n) : name(n) {}
       bool operator()(const Teuchos::RCP<ResponseObject> & ro) { return name==ro->name; }
     };
+  };
+  
+  struct ResponseList {
+    std::string name;
+    Teuchos::RCP<const Thyra::VectorSpaceBase<Scalar> > space;  /* we need this to build OutArgs g vector */
+    Teuchos::ParameterList response_model;
   };
 
   Teuchos::RCP<ParameterObject> createScalarParameter(const Teuchos::Array<std::string> & names,
@@ -734,6 +740,7 @@ private: // data members
   // responses
   mutable Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > responseLibrary_;
   std::vector<Teuchos::RCP<ResponseObject> > responses_;
+  std::vector<Teuchos::RCP<ResponseList> > responses0_;
 
   Teuchos::RCP<panzer::GlobalData> global_data_;
   bool build_transient_support_;

@@ -39,7 +39,6 @@
 #define __TianXin_Response_Integral_Impl_hpp__
 
 #include "Teuchos_DefaultComm.hpp"
-#include "Teuchos_Comm.hpp"
 #include "Thyra_VectorStdOps.hpp"
 #include "Panzer_Workset_Utilities.hpp"
 
@@ -56,7 +55,7 @@ template<typename EvalT, typename Traits>
 Response_Integral<EvalT,Traits>::
 Response_Integral(const Teuchos::ParameterList& plist)
 : ResponseBase<EvalT,Traits>(plist)
-{ 
+{
 	Teuchos::ParameterList p(plist);
 	std::string integrand_name= p.get< std::string >("Integrand Name");
 	std::string integral_name = p.get<std::string>("Integral Name","Integral_" +integrand_name);
@@ -78,7 +77,12 @@ Response_Integral(const Teuchos::ParameterList& plist)
 //cellvalue_.print(std::cout);
 	std::string n = "Integral Response " + this->response_name;
 	this->setName(n);
-
+	
+	// ResponseBase related
+	Teuchos::RCP<const map_type> map2;
+	const std::size_t num_non_zero = 5;
+	map2 = Tpetra::createLocalMap<int, panzer::GlobalOrdinal>(num_non_zero, this->tComm_);
+    this->tVector_ = Tpetra::createVector<double, int, panzer::GlobalOrdinal>(map2);
 }
 
 //**********************************************************************

@@ -631,6 +631,7 @@ setupModel(const Teuchos::RCP<panzer::WorksetContainer> & wc,
            Teuchos::RCP<TianXin::AbstractDiscretation> mesh,
 		   Teuchos::RCP<panzer::GlobalIndexer> dofManager,
 		   const Teuchos::ParameterList& pl_dirichlet,
+		   const Teuchos::ParameterList& pl_neumann,
            const Teuchos::ParameterList& closure_models,
            const Teuchos::ParameterList& user_data,
            bool writeGraph,const std::string & graphPrefix,
@@ -661,6 +662,7 @@ setupModel(const Teuchos::RCP<panzer::WorksetContainer> & wc,
     if (build_bc_field_managers_) {
       PANZER_FUNC_TIME_MONITOR_DIFF("fmb->setupBCFieldManagers()",setupBCFieldManagers);
       fmb->setupDiricheltFieldManagers(pl_dirichlet,mesh,dofManager);
+	  fmb->setupNeumannFieldManagers(pl_neumann,mesh,physicsBlocks,*lof_,user_data);
     }
 
     // Print Phalanx DAGs
