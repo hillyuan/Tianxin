@@ -79,10 +79,9 @@ Response_Integral(const Teuchos::ParameterList& plist)
 	this->setName(n);
 	
 	// ResponseBase related
-	Teuchos::RCP<const map_type> map2;
-	const std::size_t num_non_zero = 5;
-	map2 = Tpetra::createLocalMap<int, panzer::GlobalOrdinal>(num_non_zero, this->tComm_);
-    this->tVector_ = Tpetra::createVector<double, int, panzer::GlobalOrdinal>(map2);
+	const std::size_t num_non_zero = 1;
+	this->tMap_ = Tpetra::createLocalMap<int, panzer::GlobalOrdinal>(num_non_zero, this->tComm_);
+    //this->tVector_ = Tpetra::createVector<double, int, panzer::GlobalOrdinal>(this->tMap_);
 }
 
 //**********************************************************************
@@ -119,6 +118,7 @@ evaluateFields(typename Traits::EvalData workset)
 	//this->getVector()[0] = glbValue;
 	//Thyra::set_ele(0, glbValue, (this->getVector()).ptr() );
 	this->value_ .deep_copy(glbValue);
+	this->tVector_->replaceLocalValue(0, glbValue);
 }
 
 }

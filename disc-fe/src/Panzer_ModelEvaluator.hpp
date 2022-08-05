@@ -51,6 +51,8 @@
 #include "Panzer_ResponseLibrary.hpp"
 #include "Panzer_ResponseMESupportBase.hpp"
 #include "Panzer_ResponseMESupportBuilderBase.hpp"
+#include "TianXin_TemplateTypeContainer.hpp"
+#include "TianXin_ResponseBase.hpp"
 
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_AbstractFactory.hpp"
@@ -73,6 +75,7 @@ class ModelEvaluator
   : public Thyra::StateFuncModelEvaluatorBase<Scalar>
 {
 public:
+  typedef TianXin::TemplateTypeContainer<panzer::Traits::EvalTypes,Teuchos::RCP<TianXin::Response> > TemplatedResponse;
 
 public:
 
@@ -348,31 +351,6 @@ public:
     outArgs.setSupports(MEB::OUT_ARG_W_op);
     prototypeOutArgs_ = outArgs; }
 	
-  /** Build all the responses set on the model evaluator.  Once this method is called
-    * no other responses can be added. An exception is thrown if they are.
-    */
-  void buildResponses(
-       const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
-       const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& cm_factory,
-	   Teuchos::RCP<TianXin::AbstractDiscretation> mesh,
-	   const Teuchos::ParameterList& response_params,
-       const Teuchos::ParameterList& closure_models,
-       const Teuchos::ParameterList& user_data,
-       const bool write_graphviz_file=false,
-       const std::string& graphviz_file_prefix="")
-  { responseLibrary_->buildResponseEvaluators(physicsBlocks,cm_factory,closure_models,user_data,write_graphviz_file,graphviz_file_prefix);
-    require_in_args_refresh_ = true;
-    require_out_args_refresh_ = true;
-    this->resetDefaultBase();
-
-    typedef Thyra::ModelEvaluatorBase MEB;
-    MEB::OutArgsSetup<Scalar> outArgs;
-    outArgs.setModelEvalDescription(this->description());
-    outArgs.set_Np_Ng(num_me_parameters_, responses_.size());
-    outArgs.setSupports(MEB::OUT_ARG_f);
-    outArgs.setSupports(MEB::OUT_ARG_W_op);
-    prototypeOutArgs_ = outArgs; }
-
   /** This method builds the response libraries that build the
     * dfdp sensitivities for the distributed parameters if requested.
     * Note that in general the user is expected to call this through
@@ -702,12 +680,6 @@ private: // data members
       bool operator()(const Teuchos::RCP<ResponseObject> & ro) { return name==ro->name; }
     };
   };
-  
-  struct ResponseList {
-    std::string name;
-    Teuchos::RCP<const Thyra::VectorSpaceBase<Scalar> > space;  /* we need this to build OutArgs g vector */
-    Teuchos::ParameterList response_model;
-  };
 
   Teuchos::RCP<ParameterObject> createScalarParameter(const Teuchos::Array<std::string> & names,
                                                       const Teuchos::Array<Scalar> & in_values) const;
@@ -740,7 +712,7 @@ private: // data members
   // responses
   mutable Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > responseLibrary_;
   std::vector<Teuchos::RCP<ResponseObject> > responses_;
-  std::vector<Teuchos::RCP<ResponseList> > responses0_;
+  std::unordered_map<std::string, TemplatedResponse> responseContainer_;
 
   Teuchos::RCP<panzer::GlobalData> global_data_;
   bool build_transient_support_;

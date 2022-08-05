@@ -51,6 +51,7 @@
 
 #include "Tpetra_Map.hpp"
 #include "Tpetra_Vector.hpp"
+#include "Thyra_TpetraThyraWrappers.hpp"
 
 #include "Panzer_Traits.hpp"
 
@@ -59,14 +60,23 @@
 
 namespace TianXin {
 	
-/* This class define Dirichlet boundary conditions */
-//template<typename EvalT, typename Traits> class ResponseBase;
+/* Non-templated Response class 
+   Usge: 0. Prepare: set tMap_ in this class constructor
+         1. when setting OutArgs: construct vector from map given by getMap()
+         2. set above vector to current class by setVector
+*/
+struct Response {
+	std::string response_name;
+	virtual Teuchos::RCP<const Thyra::VectorSpaceBase<double> > getVectorSpace() const = 0;
+	virtual Teuchos::RCP< const Tpetra::Map<int> > getMap() const =0;
+	virtual void setVector(const Teuchos::RCP<Tpetra::Vector<double> > & destVec) = 0;
+};
 
 // **************************************************************
 // Residual
 // **************************************************************
 template<typename EvalT, typename Traits>
-class ResponseBase : public PHX::EvaluatorWithBaseImpl<Traits> {
+class ResponseBase : public Response, public PHX::EvaluatorWithBaseImpl<Traits> {
 	
 	using map_type = Tpetra::Map<int, panzer::GlobalOrdinal>;
 	using vector_type = Tpetra::Vector<double, int, panzer::GlobalOrdinal>;
@@ -91,13 +101,25 @@ public:
 	virtual bool isDistributed() const =0;
 	
    //! Get the vector space for this response, vector space is constructed lazily.
-   Teuchos::RCP< Tpetra::Map<int> > getMap() const {
-     return tVector_->getMap();
+   Teuchos::RCP< const Tpetra::Map<int> > getMap() const final {
+     return tMap_;
+   }
+   
+   Teuchos::RCP<const Thyra::VectorSpaceBase<double> > getVectorSpace() const final {
+	   return Thyra::createVectorSpace<double, int, panzer::GlobalOrdinal>( tMap_ );
    }
    
    //! Access the thyra MultiVector
     Teuchos::RCP<Tpetra::Vector<double> > getVector() const
     { return tVector_; }
+	
+/*	void setVector(const Teuchos::RCP<Thyra::VectorBase<double> > destVec) final {
+		tVector_ = Thyra::createVector();
+	}*/
+	
+	void setVector(const Teuchos::RCP<Tpetra::Vector<double> > & destVec) final {
+		tVector_ = destVec;
+	}
 
 protected:
    std::string response_name;

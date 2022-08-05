@@ -543,7 +543,8 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
       const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
 	  const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& cm_factory,
       const Teuchos::ParameterList& closure_models,
-      const Teuchos::ParameterList& user_data)
+      const Teuchos::ParameterList& user_data )
+	 // ,std::unordered_map<std::string, TemplatedResponse> respContainer)
 {
 	TEUCHOS_TEST_FOR_EXCEPTION(getWorksetContainer2()==Teuchos::null,std::logic_error,
                             "panzer::FMB::setupSidesetResponseFieldManagers: method function getWorksetContainer2() returns null. "
@@ -631,6 +632,9 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 					      Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0)));
 			fm->template requireField<panzer::Traits::Tangent>(tagj);
 		}*/
+		
+		// ==== Save in container =====
+		//respContainer[ evalr->getResponseName() ] = 
 	
 		// gather
 		side_pb->buildAndRegisterGatherAndOrientationEvaluators(*fm,lo_factory,user_data);
