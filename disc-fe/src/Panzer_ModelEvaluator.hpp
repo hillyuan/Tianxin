@@ -51,7 +51,6 @@
 #include "Panzer_ResponseLibrary.hpp"
 #include "Panzer_ResponseMESupportBase.hpp"
 #include "Panzer_ResponseMESupportBuilderBase.hpp"
-#include "TianXin_TemplateTypeContainer.hpp"
 #include "TianXin_ResponseBase.hpp"
 
 #include "Teuchos_RCP.hpp"
@@ -75,7 +74,6 @@ class ModelEvaluator
   : public Thyra::StateFuncModelEvaluatorBase<Scalar>
 {
 public:
-  typedef TianXin::TemplateTypeContainer<panzer::Traits::EvalTypes,Teuchos::RCP<TianXin::Response> > TemplatedResponse;
 
 public:
 
@@ -712,7 +710,7 @@ private: // data members
   // responses
   mutable Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > responseLibrary_;
   std::vector<Teuchos::RCP<ResponseObject> > responses_;
-  std::unordered_map<std::string, TemplatedResponse> responseContainer_;
+  std::unordered_map<std::string, TianXin::TemplatedResponse> responseContainer_;
 
   Teuchos::RCP<panzer::GlobalData> global_data_;
   bool build_transient_support_;

@@ -695,8 +695,9 @@ namespace panzer_stk {
 	  if( dirichlet_params.numParams()>0 ) fmb->setupDiricheltFieldManagers(dirichlet_params,m_mesh,m_global_indexer);
 	  if( neumann_params.numParams()>0 ) fmb->setupNeumannFieldManagers(neumann_params,m_mesh,physicsBlocks,
 					*linObjFactory,user_data_params);
+	  std::unordered_map<std::string, TianXin::TemplatedResponse> respContainer;
 	  if( response_params.numParams()>0 ) fmb->setupSidesetResponseFieldManagers(response_params,m_mesh,physicsBlocks,
-					*linObjFactory,cm_factory,closure_params,user_data_params);
+					*linObjFactory,cm_factory,closure_params,user_data_params,respContainer);
     }
 
     // build response library

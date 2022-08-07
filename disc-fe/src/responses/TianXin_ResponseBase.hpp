@@ -57,6 +57,7 @@
 
 #include "TianXin_WorksetFunctor.hpp"
 #include "TianXin_Factory.hpp"
+#include "TianXin_TemplateTypeContainer.hpp"
 
 namespace TianXin {
 	
@@ -66,11 +67,15 @@ namespace TianXin {
          2. set above vector to current class by setVector
 */
 struct Response {
-	std::string response_name;
+	using vector_type = Tpetra::Vector<double, int, panzer::GlobalOrdinal>;
 	virtual Teuchos::RCP<const Thyra::VectorSpaceBase<double> > getVectorSpace() const = 0;
 	virtual Teuchos::RCP< const Tpetra::Map<int> > getMap() const =0;
-	virtual void setVector(const Teuchos::RCP<Tpetra::Vector<double> > & destVec) = 0;
+	virtual void setVector(const Teuchos::RCP<vector_type > & destVec) = 0;
+	virtual Teuchos::RCP<vector_type> getVector() const=0;
 };
+
+
+typedef TemplateTypeContainer<panzer::Traits::EvalTypes,Teuchos::RCP<Response> > TemplatedResponse;
 
 // **************************************************************
 // Residual
@@ -110,15 +115,18 @@ public:
    }
    
    //! Access the thyra MultiVector
-    Teuchos::RCP<Tpetra::Vector<double> > getVector() const
+    Teuchos::RCP<vector_type> getVector() const final
     { return tVector_; }
 	
 /*	void setVector(const Teuchos::RCP<Thyra::VectorBase<double> > destVec) final {
 		tVector_ = Thyra::createVector();
 	}*/
 	
-	void setVector(const Teuchos::RCP<Tpetra::Vector<double> > & destVec) final {
+	void setVector(const Teuchos::RCP<vector_type> & destVec) final {
 		tVector_ = destVec;
+		TEUCHOS_TEST_FOR_EXCEPTION(this->tVector_==Teuchos::null,std::logic_error,
+                            "TianXin::setVector: reponse vector not defined. "
+                            "Please call setVector() before calling this method");
 	}
 
 protected:

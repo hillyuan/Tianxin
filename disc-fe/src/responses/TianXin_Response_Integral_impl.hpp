@@ -118,6 +118,10 @@ evaluateFields(typename Traits::EvalData workset)
 	//this->getVector()[0] = glbValue;
 	//Thyra::set_ele(0, glbValue, (this->getVector()).ptr() );
 	this->value_ .deep_copy(glbValue);
+	if( this->tVector_==Teuchos::null ) 
+		TEUCHOS_TEST_FOR_EXCEPTION(this->tVector_==Teuchos::null,std::logic_error,
+                            "TianXin::Response_Integral: reponse vector not defined. "
+                            "Please call setVector() before calling this method");
 	this->tVector_->replaceLocalValue(0, glbValue);
 }
 

@@ -335,7 +335,7 @@ namespace panzer {
       response1.set("Integrand Name","FIELD_B");
 	  response1.set("DOF Name","FIELD_B");
 	}
-	Teuchos::ParameterList& response2 = res_pl.sublist("response2");
+	/*Teuchos::ParameterList& response2 = res_pl.sublist("response2");
 	{
 	  response2.set("Type","Integral");
       response2.set("Element Block Name","eblock-0_0");
@@ -350,11 +350,22 @@ namespace panzer {
       response3.set("SideSet Name","right");
       response3.set("Integrand Name","FIELD_B");
 	  response3.set("DOF Name","FIELD_B");
-	}
-	
+	}*/
+
 	Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
+	std::unordered_map<std::string, TianXin::TemplatedResponse> respContainer;
 	fmb->setWorksetContainer2(wkstContainer);
-	fmb->setupSidesetResponseFieldManagers(res_pl,mesh,physics_blocks,*lof,cm_factory,closure_models,user_data);
+	fmb->setupSidesetResponseFieldManagers(res_pl,mesh,physics_blocks,*lof,cm_factory,closure_models,user_data,respContainer);
+
+	for( const auto& aresp : respContainer )
+	{
+		const auto& ev = aresp.second.get<panzer::Traits::Residual>();
+		//const auto eev = Teuchos::rcp_dynamic_cast<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits>>(ev);
+		//std::cout << eev->getResponseName() << "  aaaaaaaaaaaaaaaaaaaaaaa\n";
+		const auto& map= ev->getMap();
+		Teuchos::RCP<Tpetra::Vector<double, int, panzer::GlobalOrdinal>> rvec = Teuchos::rcp(new Tpetra::Vector<double, int, panzer::GlobalOrdinal>(map));
+		ev->setVector(rvec);
+	}
 	
 	const std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > >
 		rfm = fmb->getResponseFieldManager();
@@ -372,18 +383,17 @@ namespace panzer {
 		fm->evaluateFields<panzer::Traits::Residual>(*workset);
 		fm->postEvaluate<panzer::Traits::Residual>(0);
 		
-		for(PHX::FieldManager<panzer::Traits>::iterator fd=fm->begin(); fd!=fm->end(); ++fd) {
-			fd->print(std::cout);
-		}
+		//for(PHX::FieldManager<panzer::Traits>::iterator fd=fm->begin(); fd!=fm->end(); ++fd) {
+		//	fd->print(std::cout);
+		//}
+	}
 	
-		/*Teuchos::RCP<PHX::DataLayout> dl_dummy = Teuchos::rcp(new PHX::MDALayout<panzer::Dim>(1));
-		PHX::MDField<typename panzer::Traits::Residual::ScalarT> resp_r(ftr.name(),dl_dummy);
-		fm->getFieldData<panzer::Traits::Residual>(resp_r);
-		resp_r.print(std::cout,false);std::cout << std::endl;
-		auto res_v = resp_r.get_static_view();
-		auto res_h = Kokkos::create_mirror_view ( res_v);
-		Kokkos::deep_copy(res_h, res_v);
-		std::cout << res_h(0) << std::endl;*/
+	for( const auto& aresp : respContainer )
+	{
+		const auto& ev = aresp.second.get<panzer::Traits::Residual>();
+		const auto& vec= ev->getVector();
+		const auto& array = vec->getData();
+		std::cout << std::endl << aresp.first << " = " << array[0] << std::endl;
 	}
 
 	/*for (Teuchos::ParameterList::ConstIterator pl=res_pl.begin(); pl != res_pl.end(); ++pl) {

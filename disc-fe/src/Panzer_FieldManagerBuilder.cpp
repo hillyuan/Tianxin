@@ -119,7 +119,7 @@ void panzer::FieldManagerBuilder::setupVolumeFieldManagers(
 {
   TEUCHOS_TEST_FOR_EXCEPTION(getWorksetContainer()==Teuchos::null,std::logic_error,
                             "panzer::FMB::setupVolumeFieldManagers: method function getWorksetContainer() returns null. "
-                            "Plase call setWorksetContainer() before calling this method");
+                            "Please call setWorksetContainer() before calling this method");
   TEUCHOS_TEST_FOR_EXCEPTION(physicsBlocks.size()!=wkstDesc.size(),std::runtime_error,
                             "panzer::FMB::setupVolumeFieldManagers: physics block count must match workset descriptor count.");
 
@@ -543,8 +543,8 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
       const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
 	  const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& cm_factory,
       const Teuchos::ParameterList& closure_models,
-      const Teuchos::ParameterList& user_data )
-	 // ,std::unordered_map<std::string, TemplatedResponse> respContainer)
+      const Teuchos::ParameterList& user_data,
+	  std::unordered_map<std::string, TianXin::TemplatedResponse>& respContainer)
 {
 	TEUCHOS_TEST_FOR_EXCEPTION(getWorksetContainer2()==Teuchos::null,std::logic_error,
                             "panzer::FMB::setupSidesetResponseFieldManagers: method function getWorksetContainer2() returns null. "
@@ -614,7 +614,8 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		const std::string Identifier= sublist.get<std::string>("Type");
 		std::unique_ptr<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
 			TianXin::ResponseResidualFactory::Instance().Create(Identifier, plist);
-		Teuchos::RCP<PHX::Evaluator<panzer::Traits> > re = Teuchos::rcp(evalr.release());
+        std::string name = evalr->getResponseName();
+		Teuchos::RCP<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits> > re = Teuchos::rcp(evalr.release());
 		fm->template registerEvaluator<panzer::Traits::Residual>(re);
 		fm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
 
@@ -634,7 +635,9 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		}*/
 		
 		// ==== Save in container =====
-		//respContainer[ evalr->getResponseName() ] = 
+		TianXin::TemplatedResponse aresps;
+		aresps.set<panzer::Traits::Residual>( re );
+		respContainer.emplace( name, aresps );
 	
 		// gather
 		side_pb->buildAndRegisterGatherAndOrientationEvaluators(*fm,lo_factory,user_data);

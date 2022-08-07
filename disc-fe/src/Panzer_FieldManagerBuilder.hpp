@@ -53,6 +53,7 @@
 #include "Panzer_WorksetContainer.hpp"
 #include "TianXin_AbstractDiscretation.hpp"
 #include "TianXin_Dirichlet.hpp"
+#include "TianXin_ResponseBase.hpp"
 
 // Forward Declarations
 namespace panzer {
@@ -207,7 +208,8 @@ namespace panzer {
       const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
 	  const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& cm_factory,
       const Teuchos::ParameterList& closure_models,
-      const Teuchos::ParameterList& user_data );
+      const Teuchos::ParameterList& user_data,
+      std::unordered_map<std::string, TianXin::TemplatedResponse>& respContainer );
 
     void writeVolumeGraphvizDependencyFiles(std::string filename_prefix,
 					    const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks) const;
