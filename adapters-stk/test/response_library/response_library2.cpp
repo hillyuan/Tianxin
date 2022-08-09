@@ -353,18 +353,17 @@ namespace panzer {
 	}*/
 
 	Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
-	std::unordered_map<std::string, TianXin::TemplatedResponse> respContainer;
+	std::unordered_map<std::string, std::vector<TianXin::TemplatedResponse>> respContainer;
 	fmb->setWorksetContainer2(wkstContainer);
 	fmb->setupSidesetResponseFieldManagers(res_pl,mesh,physics_blocks,*lof,cm_factory,closure_models,user_data,respContainer);
 
-	for( const auto& aresp : respContainer )
+	for( const auto& resps : respContainer )
 	{
-		const auto& ev = aresp.second.get<panzer::Traits::Residual>();
-		//const auto eev = Teuchos::rcp_dynamic_cast<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits>>(ev);
-		//std::cout << eev->getResponseName() << "  aaaaaaaaaaaaaaaaaaaaaaa\n";
-		const auto& map= ev->getMap();
+		const auto& ev0 = resps.second[0].get<panzer::Traits::Residual>();
+		const auto& map= ev0->getMap();
 		Teuchos::RCP<Tpetra::Vector<double, int, panzer::GlobalOrdinal>> rvec = Teuchos::rcp(new Tpetra::Vector<double, int, panzer::GlobalOrdinal>(map));
-		ev->setVector(rvec);
+		for( auto& ev : resps.second )
+			ev.get<panzer::Traits::Residual>()->setVector(rvec);
 	}
 	
 	const std::vector< std::shared_ptr< PHX::FieldManager<panzer::Traits> > >
@@ -390,7 +389,7 @@ namespace panzer {
 	
 	for( const auto& aresp : respContainer )
 	{
-		const auto& ev = aresp.second.get<panzer::Traits::Residual>();
+		const auto& ev = aresp.second[0].get<panzer::Traits::Residual>();
 		const auto& vec= ev->getVector();
 		const auto& array = vec->getData();
 		std::cout << std::endl << aresp.first << " = " << array[0] << std::endl;

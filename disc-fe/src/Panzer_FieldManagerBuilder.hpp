@@ -209,7 +209,7 @@ namespace panzer {
 	  const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& cm_factory,
       const Teuchos::ParameterList& closure_models,
       const Teuchos::ParameterList& user_data,
-      std::unordered_map<std::string, TianXin::TemplatedResponse>& respContainer );
+      std::unordered_map<std::string, std::vector<TianXin::TemplatedResponse>>& respContainer );
 
     void writeVolumeGraphvizDependencyFiles(std::string filename_prefix,
 					    const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks) const;
