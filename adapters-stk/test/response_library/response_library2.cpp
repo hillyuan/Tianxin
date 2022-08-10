@@ -375,7 +375,7 @@ namespace panzer {
 	{
 		const auto& ev = aresp.second[0].get<panzer::Traits::Residual>();
 		const auto& vec= ev->getVector();
-		const auto& array = vec->getData();
+		const auto& array = vec->getData(0);
 		TEST_FLOATING_EQUALITY(array[0],2.0*iValue,1e-14);
 	}
 

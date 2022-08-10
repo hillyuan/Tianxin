@@ -67,7 +67,7 @@ namespace TianXin {
          2. set above vector to current class by setVector
 */
 struct Response {
-	using vector_type = Tpetra::Vector<double, int, panzer::GlobalOrdinal>;
+	using vector_type = Tpetra::MultiVector<double, int, panzer::GlobalOrdinal>;
 	virtual Teuchos::RCP<const Thyra::VectorSpaceBase<double> > getVectorSpace() const = 0;
 	virtual Teuchos::RCP< const Tpetra::Map<int> > getMap() const =0;
 	virtual void setVector(const Teuchos::RCP<vector_type > & destVec) = 0;
@@ -84,7 +84,7 @@ template<typename EvalT, typename Traits>
 class ResponseBase : public Response, public PHX::EvaluatorWithBaseImpl<Traits> {
 	
 	using map_type = Tpetra::Map<int, panzer::GlobalOrdinal>;
-	using vector_type = Tpetra::Vector<double, int, panzer::GlobalOrdinal>;
+	using vector_type = Tpetra::MultiVector<double, int, panzer::GlobalOrdinal>;
 public:
    ResponseBase(const Teuchos::ParameterList& p)
    : tComm_(Teuchos::DefaultComm<int>::getComm())
@@ -140,6 +140,7 @@ public:
 };
 
 typedef Factory<ResponseBase<panzer::Traits::Residual,panzer::Traits>,std::string,Teuchos::ParameterList> ResponseResidualFactory;
+typedef Factory<ResponseBase<panzer::Traits::Jacobian,panzer::Traits>,std::string,Teuchos::ParameterList> ResponseJacobianFactory;
 typedef Factory<ResponseBase<panzer::Traits::Tangent,panzer::Traits>,std::string,Teuchos::ParameterList> ResponseTangentFactory;
 
 }

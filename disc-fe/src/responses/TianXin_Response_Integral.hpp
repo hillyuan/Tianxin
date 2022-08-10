@@ -40,6 +40,7 @@
 
 #include <string>
 
+#include "Panzer_GlobalIndexer.hpp"
 #include "TianXin_ResponseBase.hpp"
 
 namespace TianXin {
@@ -82,9 +83,47 @@ public:
 
 };
 
+// **************************************************************
+// Specialize: Jacobian
+// **************************************************************
+template<typename Traits>
+class Response_Integral<panzer::Traits::Jacobian,Traits> : public ResponseBase<panzer::Traits::Jacobian,Traits> {
+public:
+	typedef typename panzer::Traits::Jacobian::ScalarT ScalarT;
+	using map_type = Tpetra::Map<int, panzer::GlobalOrdinal>;
+	
+    Response_Integral(const Teuchos::ParameterList& plist);
+	 
+	void postRegistrationSetup(typename Traits::SetupData d,PHX::FieldManager<Traits>& fm);
+	void evaluateFields(typename Traits::EvalData d);
+	
+	//! provide direct access of result integral
+    PHX::MDField<double> value_;
+	
+	virtual std::size_t localSizeRequired() const final { return 1; }
+	virtual bool isDistributed() const final {return false;}
+
+private:
+	//std::string response_name;
+	PHX::MDField<const ScalarT,panzer::Cell,panzer::IP> cellvalue_;
+	
+    // common data used by neumann calculation
+    std::string basis_name;
+	std::size_t num_cell, num_qp;
+	int quad_order, quad_index;
+	
+	std::vector<Teuchos::RCP<const panzer::GlobalIndexer> > ugis_;
+	
+public:
+  const PHX::FieldTag & getFieldTag() const
+  { return value_.fieldTag(); }
+
+};
+
 namespace ResponseRegister {
   static bool const INTEGRAL_ROK = ResponseResidualFactory::Instance().template Register< Response_Integral<panzer::Traits::Residual,panzer::Traits> >("Integral");
-  //static bool const FLUX_JOK = ResponseTangentFactory::Instance().template Register< Response_Integral<panzer::Traits::Jacobian,panzer::Traits> >( "Integral");
+  static bool const INTEGRAL_JOK = ResponseJacobianFactory::Instance().template Register< Response_Integral<panzer::Traits::Jacobian,panzer::Traits> >( "Integral");
+  //static bool const INTEGRAL_TOK = ResponseTangentFactory::Instance().template Register< Response_Integral<panzer::Traits::Tangent,panzer::Traits> >( "Integral");
 }
 
 }
