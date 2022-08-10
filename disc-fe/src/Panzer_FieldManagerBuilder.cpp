@@ -576,48 +576,59 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		std::shared_ptr<PHX::FieldManager<panzer::Traits> > fm
           = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
 		
-		WorksetDescriptor wd(sublist);
-		const Teuchos::RCP<panzer::Workset> currentWkst = getWorksetContainer2()->getSideWorkset(wd);
-		if (currentWkst.is_null()) continue;
+		Teuchos::Array<std::string> eblocks = sublist.get<Teuchos::Array<std::string>>("Element Block Name");
+		Teuchos::Array<std::string> esides = sublist.get<Teuchos::Array<std::string>>("SideSet Name");
+		if( !esides.empty() ) {
+			if( eblocks.size() != esides.size() ) 
+				TEUCHOS_TEST_FOR_EXCEPTION( (eblocks.size() != esides.size()), std::logic_error,
+				"Error - Cannot define eblock-side pair!" );
+		}
 		
-		const std::string element_block_id = wd.getElementBlock();
-		const auto& volume_pb_itr = physicsBlocks_map.find(element_block_id);
-        TEUCHOS_TEST_FOR_EXCEPTION(volume_pb_itr==physicsBlocks_map.end(),std::logic_error,
+		std::vector<TianXin::TemplatedResponse> resps;
+		std::string respname;
+		for( unsigned int i=0; i<eblocks.size(); ++i ) {
+			WorksetDescriptor wd(eblocks[i],esides[i]);
+			const Teuchos::RCP<panzer::Workset> currentWkst = getWorksetContainer2()->getSideWorkset(wd);
+			if (currentWkst.is_null()) continue;
+		
+			const std::string element_block_id = wd.getElementBlock();
+			const auto& volume_pb_itr = physicsBlocks_map.find(element_block_id);
+			TEUCHOS_TEST_FOR_EXCEPTION(volume_pb_itr==physicsBlocks_map.end(),std::logic_error,
 				 "panzer::FMB::setupBCFieldManagers: Cannot find physics block corresponding to element block \"" << element_block_id << "\"");
 		
-		Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(element_block_id)->second;
-        Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
-		const panzer::CellData side_cell_data(currentWkst->num_cells,currentWkst->subcell_index,volume_cell_topology);
+			Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(element_block_id)->second;
+			Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
+			const panzer::CellData side_cell_data(currentWkst->num_cells,currentWkst->subcell_index,volume_cell_topology);
 
-	    // Copy the physics block for side integrations
-	    Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
-		side_pb->buildAndRegisterEquationSetEvaluators(*fm, user_data);
-		side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Residual>(*fm,cm_factory,closure_models,user_data);
-		//side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Tangent>(*fm,cm_factory,closure_models,user_data);
+			// Copy the physics block for side integrations
+			Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
+			side_pb->buildAndRegisterEquationSetEvaluators(*fm, user_data);
+			side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Residual>(*fm,cm_factory,closure_models,user_data);
+			//side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Tangent>(*fm,cm_factory,closure_models,user_data);
 
-		// ---- Define bais and ir -------
-		Teuchos::ParameterList plist(sublist);
-		const std::string dof_name= sublist.get<std::string>("DOF Name");
+			// ---- Define bais and ir -------
+			Teuchos::ParameterList plist(sublist);
+			const std::string dof_name= sublist.get<std::string>("DOF Name");
 		//RCP<const panzer::FieldLibrary> fieldLib = physicsBlock.getFieldLibrary();
   //RCP<const panzer::PureBasis> basis = fieldLib->lookupBasis("TEMPERATURE");
-		Teuchos::RCP<const panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);
-		plist.set<Teuchos::RCP<const panzer::PureBasis>>("Basis", basis);
-		const std::map<int,Teuchos::RCP< panzer::IntegrationRule > >& map_ir = side_pb->getIntegrationRules();
-        TEUCHOS_ASSERT(map_ir.size() == 1); 
-		Teuchos::RCP<panzer::IntegrationRule> ir = map_ir.begin()->second;
-		plist.set<Teuchos::RCP<const panzer::IntegrationRule>>("IR", ir.getConst());
+			Teuchos::RCP<const panzer::PureBasis> basis = side_pb->getBasisForDOF(dof_name);
+			plist.set<Teuchos::RCP<const panzer::PureBasis>>("Basis", basis);
+			const std::map<int,Teuchos::RCP< panzer::IntegrationRule > >& map_ir = side_pb->getIntegrationRules();
+			TEUCHOS_ASSERT(map_ir.size() == 1); 
+			Teuchos::RCP<panzer::IntegrationRule> ir = map_ir.begin()->second;
+			plist.set<Teuchos::RCP<const panzer::IntegrationRule>>("IR", ir.getConst());
         //const int integration_order = ir.begin()->second->order();
 		//const int integration_order = side_pb->getIntegrationOrder();
 		//Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
 		
-		// ====== Residual evaluator ========
-		const std::string Identifier= sublist.get<std::string>("Type");
-		std::unique_ptr<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
-			TianXin::ResponseResidualFactory::Instance().Create(Identifier, plist);
-        std::string name = evalr->getResponseName();
-		Teuchos::RCP<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits> > re = Teuchos::rcp(evalr.release());
-		fm->template registerEvaluator<panzer::Traits::Residual>(re);
-		fm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
+			// ====== Residual evaluator ========
+			const std::string Identifier= sublist.get<std::string>("Type");
+			std::unique_ptr<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
+				TianXin::ResponseResidualFactory::Instance().Create(Identifier, plist);
+			respname = evalr->getResponseName();
+			Teuchos::RCP<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits> > re = Teuchos::rcp(evalr.release());
+			fm->template registerEvaluator<panzer::Traits::Residual>(re);
+			fm->requireField<panzer::Traits::Residual>(*re->evaluatedFields()[0]);
 
 		// ====== Tangent evaluator =======
 		/*std::unique_ptr<TianXin::ResponseBase<panzer::Traits::Tangent, panzer::Traits>> evalj = 
@@ -634,31 +645,31 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 			fm->template requireField<panzer::Traits::Tangent>(tagj);
 		}*/
 		
-		// ==== Save in container =====
-		std::vector<TianXin::TemplatedResponse> resps;
-		TianXin::TemplatedResponse aresp;
-		aresp.set<panzer::Traits::Residual>( re );
-		resps.emplace_back(aresp);
-		respContainer.emplace( name, resps );
+			// ==== Save in container =====
+			TianXin::TemplatedResponse aresp;
+			aresp.set<panzer::Traits::Residual>( re );
+			resps.emplace_back(aresp);
 	
-		// gather
-		side_pb->buildAndRegisterGatherAndOrientationEvaluators(*fm,lo_factory,user_data);
+			// gather
+			side_pb->buildAndRegisterGatherAndOrientationEvaluators(*fm,lo_factory,user_data);
 	
-		Traits::SD setupData;
-	    Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
-	    worksets->push_back(*currentWkst);
-	    setupData.worksets_ = worksets;
-        setupData.orientations_ = getWorksetContainer2()->getOrientations();
+			Traits::SD setupData;
+			Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
+			worksets->push_back(*currentWkst);
+			setupData.worksets_ = worksets;
+			setupData.orientations_ = getWorksetContainer2()->getOrientations();
 
 	   // For Kokkos extended types (Sacado FAD) set derivtive array size
 	    //std::vector<PHX::index_size_type> derivative_dimensions;
         //derivative_dimensions.push_back(basis->cardinality());   
 	    //fm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
-		setKokkosExtendedDataTypeDimensions(element_block_id,*globalIndexer,user_data,*fm);
-		fm->postRegistrationSetup(setupData);
+			setKokkosExtendedDataTypeDimensions(element_block_id,*globalIndexer,user_data,*fm);
+			fm->postRegistrationSetup(setupData);
 		
-		response_workset_desc_.push_back(wd);
-		sideset_response_field_manager_.push_back(fm);
+			response_workset_desc_.push_back(wd);
+			sideset_response_field_manager_.push_back(fm);
+		}
+		respContainer.emplace( respname, resps );
 	}
 }
 

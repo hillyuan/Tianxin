@@ -49,47 +49,6 @@
 
 namespace panzer {
 
-// Implementation for intrepid container factory
-template <typename Scalar,typename T0>
-Kokkos::DynRankView<Scalar,PHX::Device> Intrepid2FieldContainerFactory::
-buildArray(const std::string & str,int d0) const
-{
-  static_assert(std::is_same<Scalar,double>::value,"ERROR: CommonArryFactory for DynRankView only supports double scalar type!");
-  return Kokkos::DynRankView<Scalar,PHX::Device>(str,d0);
-}
-
-template <typename Scalar,typename T0,typename T1>
-Kokkos::DynRankView<Scalar,PHX::Device> Intrepid2FieldContainerFactory::
-buildArray(const std::string & str,int d0,int d1) const
-{ 
-  static_assert(std::is_same<Scalar,double>::value,"ERROR: CommonArryFactory for DynRankView only supports double scalar type!");
-  return Kokkos::DynRankView<Scalar,PHX::Device>(str,d0,d1);
-}
-
-template <typename Scalar,typename T0,typename T1,typename T2>
-Kokkos::DynRankView<Scalar,PHX::Device> Intrepid2FieldContainerFactory::
-buildArray(const std::string & str,int d0,int d1,int d2) const
-{
-  static_assert(std::is_same<Scalar,double>::value,"ERROR: CommonArryFactory for DynRankView only supports double scalar type!");
-  return Kokkos::DynRankView<Scalar,PHX::Device>(str,d0,d1,d2);
-}
-
-template <typename Scalar,typename T0,typename T1,typename T2,typename T3>
-Kokkos::DynRankView<Scalar,PHX::Device> Intrepid2FieldContainerFactory::
-buildArray(const std::string & str,int d0,int d1,int d2,int d3) const
-{
-  static_assert(std::is_same<Scalar,double>::value,"ERROR: CommonArryFactory for DynRankView only supports double scalar type!");
-  return Kokkos::DynRankView<Scalar,PHX::Device>(str,d0,d1,d2,d3);
-}
-
-template <typename Scalar,typename T0,typename T1,typename T2,typename T3,typename T4>
-Kokkos::DynRankView<Scalar,PHX::Device> Intrepid2FieldContainerFactory::
-buildArray(const std::string & str,int d0,int d1,int d2,int d3,int d4) const
-{
-  static_assert(std::is_same<Scalar,double>::value,"ERROR: CommonArryFactory for DynRankView only supports double scalar type!");
-  return Kokkos::DynRankView<Scalar,PHX::Device>(str,d0,d1,d2,d3,d4);
-}
-
 // Implementation for MDField array factory
 template <typename Scalar,typename T0>
 PHX::MDField<Scalar> MDFieldArrayFactory::

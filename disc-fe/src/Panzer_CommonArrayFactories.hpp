@@ -59,25 +59,6 @@
 //
 
 namespace panzer {
-  
-  /** Implementation for intrepid field container factory. This
-    * is intended to be used only with the BasisValues and
-    * IntegrationValues objects. Notice in this case the string
-    * argument is not used.
-    */
-  class Intrepid2FieldContainerFactory {
-  public:
-     template <typename Scalar,typename T0>
-     Kokkos::DynRankView<Scalar,PHX::Device> buildArray(const std::string & str,int d0) const;
-     template <typename Scalar,typename T0,typename T1>
-     Kokkos::DynRankView<Scalar,PHX::Device> buildArray(const std::string & str,int d0,int d1) const;
-     template <typename Scalar,typename T0,typename T1,typename T2>
-     Kokkos::DynRankView<Scalar,PHX::Device> buildArray(const std::string & str,int d0,int d1,int d2) const;
-     template <typename Scalar,typename T0,typename T1,typename T2,typename T3>
-     Kokkos::DynRankView<Scalar,PHX::Device> buildArray(const std::string & str,int d0,int d1,int d2,int d3) const;
-     template <typename Scalar,typename T0,typename T1,typename T2,typename T3,typename T4>
-     Kokkos::DynRankView<Scalar,PHX::Device> buildArray(const std::string & str,int d0,int d1,int d2,int d3,int d4) const;
-  };
 
   /** Implementation for MDField array factory. This
     * is intended to be used only with the BasisValues and

@@ -330,27 +330,11 @@ namespace panzer {
 	Teuchos::ParameterList& response1 = res_pl.sublist("response1");
 	{
 	  response1.set("Type","Integral");
-      response1.set("Element Block Name","eblock-0_0");
-      response1.set("SideSet Name","bottom");
+      response1.set<Teuchos::Array<std::string> >("Element Block Name",Teuchos::tuple<std::string>("eblock-0_0","eblock-0_0","eblock-1_0") );
+      response1.set<Teuchos::Array<std::string> >("SideSet Name",Teuchos::tuple<std::string>("bottom","top","right"));
       response1.set("Integrand Name","FIELD_B");
 	  response1.set("DOF Name","FIELD_B");
 	}
-	/*Teuchos::ParameterList& response2 = res_pl.sublist("response2");
-	{
-	  response2.set("Type","Integral");
-      response2.set("Element Block Name","eblock-0_0");
-      response2.set("SideSet Name","top");
-      response2.set("Integrand Name","FIELD_B");
-	  response2.set("DOF Name","FIELD_B");
-	}
-	Teuchos::ParameterList& response3 = res_pl.sublist("response3");
-	{
-	  response3.set("Type","Integral");
-      response3.set("Element Block Name","eblock-1_0");
-      response3.set("SideSet Name","right");
-      response3.set("Integrand Name","FIELD_B");
-	  response3.set("DOF Name","FIELD_B");
-	}*/
 
 	Teuchos::RCP<panzer::FieldManagerBuilder> fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
 	std::unordered_map<std::string, std::vector<TianXin::TemplatedResponse>> respContainer;
@@ -392,7 +376,7 @@ namespace panzer {
 		const auto& ev = aresp.second[0].get<panzer::Traits::Residual>();
 		const auto& vec= ev->getVector();
 		const auto& array = vec->getData();
-		std::cout << std::endl << aresp.first << " = " << array[0] << std::endl;
+		TEST_FLOATING_EQUALITY(array[0],2.0*iValue,1e-14);
 	}
 
 	/*for (Teuchos::ParameterList::ConstIterator pl=res_pl.begin(); pl != res_pl.end(); ++pl) {
