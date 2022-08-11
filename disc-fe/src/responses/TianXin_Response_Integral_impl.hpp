@@ -193,11 +193,13 @@ evaluateFields(typename Traits::EvalData workset)
 	const std::vector<std::size_t> & localCellIds = workset.cell_local_ids;
 	std::size_t worksetCellIndex=-1;
 	for( const std::size_t cellLocalId : localCellIds ) {
+		++worksetCellIndex;
 		for(std::size_t b=0;b<ugis_.size();b++) {
 			int start = blockOffsets[b];
 			LIDs = ugis_[b]->getElementLIDs(cellLocalId); 
 			// loop over basis functions
 			for(std::size_t i=0;i<LIDs.size();i++) {
+				this->tVector_->sumIntoLocalValue(LIDs[i], 0, 100.0);
 			//	this->tVector_->sumIntoGlobalValue(0,LIDs[i],cellvalue_(++worksetCellIndex).dx(start+i));
 			//	dgdx_b[LIDs[i]] += cellIntegral(worksetCellIndex).dx(start+i); // its possible functional is independent of solution value!
 			}

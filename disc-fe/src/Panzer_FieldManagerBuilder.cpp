@@ -578,7 +578,8 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		
 		Teuchos::Array<std::string> eblocks = sublist.get<Teuchos::Array<std::string>>("Element Block Name");
 		Teuchos::Array<std::string> esides = sublist.get<Teuchos::Array<std::string>>("SideSet Name");
-		if( !esides.empty() ) {
+		bool notSideset = esides.empty();
+		if( !notSideset ) {
 			if( eblocks.size() != esides.size() ) 
 				TEUCHOS_TEST_FOR_EXCEPTION( (eblocks.size() != esides.size()), std::logic_error,
 				"Error - Cannot define eblock-side pair!" );
@@ -587,16 +588,16 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		std::vector<TianXin::TemplatedResponse> resps;
 		std::string respname;
 		for( unsigned int i=0; i<eblocks.size(); ++i ) {
+			const auto& volume_pb_itr = physicsBlocks_map.find(eblocks[i]);
+			TEUCHOS_TEST_FOR_EXCEPTION(volume_pb_itr==physicsBlocks_map.end(),std::logic_error,
+				 "panzer::FMB::setupBCFieldManagers: Cannot find physics block corresponding to element block \"" << eblocks[i] << "\"");
+			Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(eblocks[i])->second;
+
 			WorksetDescriptor wd(eblocks[i],esides[i]);
 			const Teuchos::RCP<panzer::Workset> currentWkst = getWorksetContainer2()->getSideWorkset(wd);
 			if (currentWkst.is_null()) continue;
-		
-			const std::string element_block_id = wd.getElementBlock();
-			const auto& volume_pb_itr = physicsBlocks_map.find(element_block_id);
-			TEUCHOS_TEST_FOR_EXCEPTION(volume_pb_itr==physicsBlocks_map.end(),std::logic_error,
-				 "panzer::FMB::setupBCFieldManagers: Cannot find physics block corresponding to element block \"" << element_block_id << "\"");
-		
-			Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(element_block_id)->second;
+			response_workset_desc_.push_back(wd);
+
 			Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
 			const panzer::CellData side_cell_data(currentWkst->num_cells,currentWkst->subcell_index,volume_cell_topology);
 
@@ -663,10 +664,9 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 	    //std::vector<PHX::index_size_type> derivative_dimensions;
         //derivative_dimensions.push_back(basis->cardinality());   
 	    //fm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
-			setKokkosExtendedDataTypeDimensions(element_block_id,*globalIndexer,user_data,*fm);
+			setKokkosExtendedDataTypeDimensions(eblocks[i],*globalIndexer,user_data,*fm);
 			fm->postRegistrationSetup(setupData);
 		
-			response_workset_desc_.push_back(wd);
 			sideset_response_field_manager_.push_back(fm);
 		}
 		respContainer.emplace( respname, resps );
