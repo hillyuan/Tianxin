@@ -104,9 +104,9 @@ evaluateFields(typename Traits::EvalData workset)
 {
 	const auto wm = workset.int_rules[quad_index]->weighted_measure;
 
-	ScalarT result = 0.0;
+	double result = 0.0;
 	Kokkos::parallel_reduce("IntegratorScalar", workset.num_cells, KOKKOS_LAMBDA (int cell, double& v) {
-		ScalarT cell_integral = 0.0;
+		double cell_integral = 0.0;
 		for (std::size_t qp = 0; qp < num_qp; ++qp) {
 			cell_integral += cellvalue_(cell, qp)*wm(cell, qp);
 		}
@@ -115,7 +115,7 @@ evaluateFields(typename Traits::EvalData workset)
 	Kokkos::fence();
 
 	double glbValue = 0.0;
-    Teuchos::reduceAll<int,double>(*(Teuchos::DefaultComm<int>::getComm()), Teuchos::REDUCE_SUM, static_cast<Thyra::Ordinal>(1), &result,&glbValue);
+    Teuchos::reduceAll(*(this->tComm_), Teuchos::REDUCE_SUM, 1, &result, &glbValue);
 	this->value_ .deep_copy(glbValue);
 	if( this->tVector_==Teuchos::null ) 
 		TEUCHOS_TEST_FOR_EXCEPTION(this->tVector_==Teuchos::null,std::logic_error,
@@ -217,7 +217,7 @@ evaluateFields(typename Traits::EvalData workset)
 	Kokkos::fence();
 
 	double glbValue = 0.0;
-    Teuchos::reduceAll<int,double>(*(Teuchos::DefaultComm<int>::getComm()), Teuchos::REDUCE_SUM, static_cast<Thyra::Ordinal>(1), &result,&glbValue);
+    Teuchos::reduceAll<int,double>(*(this->tComm_), Teuchos::REDUCE_SUM, static_cast<Thyra::Ordinal>(1), &result,&glbValue);
 	this->value_ .deep_copy(glbValue);
 	
 	//Teuchos::rcp_dynamic_cast<Tpetra::Vector<double, int, panzer::GlobalOrdinal>>(this->tVector_)->sumIntoLocalValue(0, glbValue);

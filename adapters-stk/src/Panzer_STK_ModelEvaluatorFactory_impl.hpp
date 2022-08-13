@@ -696,7 +696,7 @@ namespace panzer_stk {
 	  if( neumann_params.numParams()>0 ) fmb->setupNeumannFieldManagers(neumann_params,m_mesh,physicsBlocks,
 					*linObjFactory,user_data_params);
 	  std::unordered_map<std::string, std::vector<TianXin::TemplatedResponse> > respContainer;
-	  if( response_params.numParams()>0 ) fmb->setupSidesetResponseFieldManagers(response_params,m_mesh,physicsBlocks,
+	  if( response_params.numParams()>0 ) fmb->setupResponseFieldManagers(response_params,m_mesh,physicsBlocks,
 					*linObjFactory,cm_factory,closure_params,user_data_params,respContainer);
     }
 

@@ -537,7 +537,7 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 //=======================================================================
 //=======================================================================
 void panzer::FieldManagerBuilder::
-setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl, 
+setupResponseFieldManagers(const Teuchos::ParameterList& pl, 
       const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
       const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
       const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
@@ -547,7 +547,7 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 	  std::unordered_map<std::string, std::vector<TianXin::TemplatedResponse>>& respContainer)
 {
 	TEUCHOS_TEST_FOR_EXCEPTION(getWorksetContainer2()==Teuchos::null,std::logic_error,
-                            "panzer::FMB::setupSidesetResponseFieldManagers: method function getWorksetContainer2() returns null. "
+                            "panzer::FMB::setupResponseFieldManagers: method function getWorksetContainer2() returns null. "
                             "Plase call setWorksetContainer() before calling this method");
 
     Teuchos::RCP<const panzer::GlobalIndexer> globalIndexer = lo_factory.getRangeGlobalIndexer();
@@ -572,13 +572,13 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 		TEUCHOS_TEST_FOR_EXCEPTION( !(bc_pl->second.isList()), std::logic_error,
 				"Error - All objects in the Sideset Response Conditions sublist must be sublists!" );
 		Teuchos::ParameterList& sublist = Teuchos::getValue<Teuchos::ParameterList>(bc_pl->second);
-		
+	
 		std::shared_ptr<PHX::FieldManager<panzer::Traits> > fm
           = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
 		
 		Teuchos::Array<std::string> eblocks = sublist.get<Teuchos::Array<std::string>>("Element Block Name");
-		Teuchos::Array<std::string> esides = sublist.get<Teuchos::Array<std::string>>("SideSet Name");
-		bool notSideset = esides.empty();
+		Teuchos::Array<std::string> esides = sublist.get<Teuchos::Array<std::string>>("SideSet Name",Teuchos::tuple<std::string>(""));
+		bool notSideset = esides[0].empty();
 		if( !notSideset ) {
 			if( eblocks.size() != esides.size() ) 
 				TEUCHOS_TEST_FOR_EXCEPTION( (eblocks.size() != esides.size()), std::logic_error,
@@ -591,18 +591,29 @@ setupSidesetResponseFieldManagers(const Teuchos::ParameterList& pl,
 			const auto& volume_pb_itr = physicsBlocks_map.find(eblocks[i]);
 			TEUCHOS_TEST_FOR_EXCEPTION(volume_pb_itr==physicsBlocks_map.end(),std::logic_error,
 				 "panzer::FMB::setupBCFieldManagers: Cannot find physics block corresponding to element block \"" << eblocks[i] << "\"");
-			Teuchos::RCP<const panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(eblocks[i])->second;
+			Teuchos::RCP<panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(eblocks[i])->second;
 
-			WorksetDescriptor wd(eblocks[i],esides[i]);
-			const Teuchos::RCP<panzer::Workset> currentWkst = getWorksetContainer2()->getSideWorkset(wd);
-			if (currentWkst.is_null()) continue;
-			response_workset_desc_.push_back(wd);
+			Teuchos::RCP<panzer::Workset> currentWkst;
+			Teuchos::RCP<panzer::PhysicsBlock> side_pb;
+			if( notSideset ) {
+				WorksetDescriptor wd(eblocks[i],WorksetSizeType::ALL_ELEMENTS);
+				Teuchos::RCP<std::vector<Workset> > wksts = getWorksetContainer2()->getWorksets(wd);
+				if (wksts.is_null()) continue;
+				response_workset_desc_.push_back(wd);
+				currentWkst = Teuchos::rcpFromRef((*wksts)[0]);
+				side_pb = volume_pb;
+			} else {
+				WorksetDescriptor wd(eblocks[i],esides[i]);
+				currentWkst = getWorksetContainer2()->getSideWorkset(wd);
+				if (currentWkst.is_null()) continue;
+				response_workset_desc_.push_back(wd);
+				Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
+				const panzer::CellData side_cell_data(currentWkst->num_cells,currentWkst->subcell_index,volume_cell_topology);
+std::cout << i << ", " << eblocks[i] << ",  " << esides[i] << "," << currentWkst->num_cells << std::endl;
+				// Copy the physics block for side integrations
+				side_pb = volume_pb->copyWithCellData(side_cell_data);
+			}
 
-			Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
-			const panzer::CellData side_cell_data(currentWkst->num_cells,currentWkst->subcell_index,volume_cell_topology);
-
-			// Copy the physics block for side integrations
-			Teuchos::RCP<panzer::PhysicsBlock> side_pb = volume_pb->copyWithCellData(side_cell_data);
 			side_pb->buildAndRegisterEquationSetEvaluators(*fm, user_data);
 			side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Residual>(*fm,cm_factory,closure_models,user_data);
 			//side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Tangent>(*fm,cm_factory,closure_models,user_data);

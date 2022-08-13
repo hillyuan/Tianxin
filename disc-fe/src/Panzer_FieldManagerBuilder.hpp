@@ -202,7 +202,7 @@ namespace panzer {
       const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
       const Teuchos::ParameterList& user_data );
 	  
-	void setupSidesetResponseFieldManagers(const Teuchos::ParameterList& p, 
+	void setupResponseFieldManagers(const Teuchos::ParameterList& p, 
       const Teuchos::RCP<const TianXin::AbstractDiscretation>& mesh,
 	  const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
       const panzer::LinearObjFactory<panzer::Traits> & lo_factory,
