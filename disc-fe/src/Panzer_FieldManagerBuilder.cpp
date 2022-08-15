@@ -572,9 +572,6 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
 		TEUCHOS_TEST_FOR_EXCEPTION( !(bc_pl->second.isList()), std::logic_error,
 				"Error - All objects in the Sideset Response Conditions sublist must be sublists!" );
 		Teuchos::ParameterList& sublist = Teuchos::getValue<Teuchos::ParameterList>(bc_pl->second);
-	
-		std::shared_ptr<PHX::FieldManager<panzer::Traits> > fm
-          = std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
 		
 		Teuchos::Array<std::string> eblocks = sublist.get<Teuchos::Array<std::string>>("Element Block Name");
 		Teuchos::Array<std::string> esides = sublist.get<Teuchos::Array<std::string>>("SideSet Name",Teuchos::tuple<std::string>(""));
@@ -592,6 +589,9 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
 			TEUCHOS_TEST_FOR_EXCEPTION(volume_pb_itr==physicsBlocks_map.end(),std::logic_error,
 				 "panzer::FMB::setupBCFieldManagers: Cannot find physics block corresponding to element block \"" << eblocks[i] << "\"");
 			Teuchos::RCP<panzer::PhysicsBlock> volume_pb = physicsBlocks_map.find(eblocks[i])->second;
+			
+			std::shared_ptr<PHX::FieldManager<panzer::Traits> > fm
+				= std::shared_ptr<PHX::FieldManager<panzer::Traits>>( new PHX::FieldManager<panzer::Traits>());
 
 			Teuchos::RCP<panzer::Workset> currentWkst;
 			Teuchos::RCP<panzer::PhysicsBlock> side_pb;
@@ -609,7 +609,6 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
 				response_workset_desc_.push_back(wd);
 				Teuchos::RCP<const shards::CellTopology> volume_cell_topology = volume_pb->cellData().getCellTopology();
 				const panzer::CellData side_cell_data(currentWkst->num_cells,currentWkst->subcell_index,volume_cell_topology);
-std::cout << i << ", " << eblocks[i] << ",  " << esides[i] << "," << currentWkst->num_cells << std::endl;
 				// Copy the physics block for side integrations
 				side_pb = volume_pb->copyWithCellData(side_cell_data);
 			}
@@ -656,7 +655,7 @@ std::cout << i << ", " << eblocks[i] << ",  " << esides[i] << "," << currentWkst
 					      Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0)));
 			fm->template requireField<panzer::Traits::Tangent>(tagj);
 		}*/
-		
+
 			// ==== Save in container =====
 			TianXin::TemplatedResponse aresp;
 			aresp.set<panzer::Traits::Residual>( re );
@@ -664,18 +663,18 @@ std::cout << i << ", " << eblocks[i] << ",  " << esides[i] << "," << currentWkst
 	
 			// gather
 			side_pb->buildAndRegisterGatherAndOrientationEvaluators(*fm,lo_factory,user_data);
-	
+
 			Traits::SD setupData;
 			Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
 			worksets->push_back(*currentWkst);
 			setupData.worksets_ = worksets;
 			setupData.orientations_ = getWorksetContainer2()->getOrientations();
-
 	   // For Kokkos extended types (Sacado FAD) set derivtive array size
 	    //std::vector<PHX::index_size_type> derivative_dimensions;
         //derivative_dimensions.push_back(basis->cardinality());   
 	    //fm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
 			setKokkosExtendedDataTypeDimensions(eblocks[i],*globalIndexer,user_data,*fm);
+//std::cout << lo_factory.getComm().getRank() << ", " << eblocks[i] << ",  " << esides[i] << "," << currentWkst->num_cells << std::endl;
 			fm->postRegistrationSetup(setupData);
 		
 			sideset_response_field_manager_.push_back(fm);

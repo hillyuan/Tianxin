@@ -218,6 +218,8 @@ WorksetContainer::getSideWorkset(const WorksetDescriptor & desc)
 
     //  if(worksetPtr!=Teuchos::null)
     //    setIdentifiers(desc,*worksetMap);
+if( worksetPtr.is_null() )
+	worksetPtr = Teuchos::RCP<Workset>( new Workset );
 
       // store map for reuse in the future
       sidesetWorksets_[desc] = worksetPtr;

@@ -328,13 +328,13 @@ namespace panzer {
 	
 	
     // Following new response
-	/*Teuchos::ParameterList& response0 = res_pl.sublist("response0");
+	Teuchos::ParameterList& response0 = res_pl.sublist("response0");
 	{
 	  response0.set("Type","Integral");
       response0.set<Teuchos::Array<std::string> >("Element Block Name",Teuchos::tuple<std::string>("eblock-0_0") );
       response0.set("Integrand Name","FIELD_A");
 	  response0.set("DOF Name","FIELD_A");
-	}*/
+	}
 	
 	Teuchos::ParameterList& response1 = res_pl.sublist("response1");
 	{
@@ -386,7 +386,7 @@ namespace panzer {
 		//}
 	}
 
-	/*{ 
+	{ 
 		const auto& resp0 = respContainer["RESPONSE_FIELD_A"];
 		const auto& ev = resp0[0].get<panzer::Traits::Residual>();
 		const auto& vec= ev->getVector();
@@ -399,8 +399,7 @@ namespace panzer {
 		const auto& vec= ev->getVector();
 		const auto& array = vec->getData(0);
 		TEST_FLOATING_EQUALITY(array[0],2.0*iValue,1e-14);
-	}*/
-	std::cout << "   OK\n";
+	}
   }
 
   void testInitialzation(const Teuchos::RCP<Teuchos::ParameterList>& ipb)
