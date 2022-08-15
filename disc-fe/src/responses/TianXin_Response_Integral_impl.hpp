@@ -75,10 +75,10 @@ Response_Integral(const Teuchos::ParameterList& plist)
 	// Input : values upon cell IPs
 	num_cell = ir->dl_scalar->extent(0);
 	if( num_cell>0 ) {
-	cellvalue_ = PHX::MDField<const ScalarT,panzer::Cell,panzer::IP>( integrand_name, ir->dl_scalar);
-	this->addDependentField(cellvalue_);
+		cellvalue_ = PHX::MDField<const ScalarT,panzer::Cell,panzer::IP>( integrand_name, ir->dl_scalar);
+		this->addDependentField(cellvalue_);
 	}
-//cellvalue_.print(std::cout);
+
 	std::string n = "Integral Response " + this->response_name;
 	this->setName(n);
 	
@@ -109,15 +109,15 @@ evaluateFields(typename Traits::EvalData workset)
 {//std::cout << this->tComm_->getRank() << "," << workset.num_cells << "   enter\n";
 	double result = 0.0;
     if( num_cell>0 ) {
-	const auto wm = workset.int_rules[quad_index]->weighted_measure;
-	Kokkos::parallel_reduce("IntegratorScalar", workset.num_cells, KOKKOS_LAMBDA (int cell, double& v) {
-		double cell_integral = 0.0;
-		for (std::size_t qp = 0; qp < num_qp; ++qp) {
-			cell_integral += cellvalue_(cell, qp)*wm(cell, qp);
-		}
-		v += cell_integral;
-	}, result );
-	Kokkos::fence();
+		const auto wm = workset.int_rules[quad_index]->weighted_measure;
+		Kokkos::parallel_reduce("IntegratorScalar", workset.num_cells, KOKKOS_LAMBDA (int cell, double& v) {
+			double cell_integral = 0.0;
+			for (std::size_t qp = 0; qp < num_qp; ++qp) {
+				cell_integral += cellvalue_(cell, qp)*wm(cell, qp);
+			}
+			v += cell_integral;
+		}, result );
+		Kokkos::fence();
 	}
 
 	double glbValue = 0.0;
@@ -154,8 +154,11 @@ Response_Integral(const Teuchos::ParameterList& plist)
 	this->addEvaluatedField(this->value_);
 
 	// Input : values upon cell IPs
-	cellvalue_ = PHX::MDField<const ScalarT,panzer::Cell,panzer::IP>( integrand_name, ir->dl_scalar);
-	this->addDependentField(cellvalue_);
+	num_cell = ir->dl_scalar->extent(0);
+	if( num_cell>0 ) {
+		cellvalue_ = PHX::MDField<const ScalarT,panzer::Cell,panzer::IP>( integrand_name, ir->dl_scalar);
+		this->addDependentField(cellvalue_);
+	}
 
 	std::string n = "Integral Response " + this->response_name;
 	this->setName(n);
@@ -174,9 +177,10 @@ postRegistrationSetup( typename Traits::SetupData sd,
 {
   //basis_index = panzer::getBasisIndex(basis_name, (*sd.worksets_)[0]);
   //ir_index = panzer::getIntegrationRuleIndex(quad_order,(*sd.worksets_)[0]);
-  num_cell  = cellvalue_.extent(0);
-  num_qp  = cellvalue_.extent(1);
-  quad_index =  panzer::getIntegrationRuleIndex(quad_order,(*sd.worksets_)[0]);
+  if( num_cell>0 ) {
+	num_qp  = cellvalue_.extent(1);
+	quad_index =  panzer::getIntegrationRuleIndex(quad_order,(*sd.worksets_)[0]);
+  }
 }
 
 template<typename Traits>

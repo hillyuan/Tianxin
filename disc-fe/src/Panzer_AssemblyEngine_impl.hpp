@@ -100,7 +100,6 @@ evaluate(const panzer::AssemblyEngineInArgs& in, const EvaluationFlags flags)
   if ( flags.getValue() & EvaluationFlags::BoundaryFill) {
     {
       PANZER_FUNC_TIME_MONITOR_DIFF("panzer::AssemblyEngine::evaluate_neumannbcs("+PHX::print<EvalT>()+")",eval_neumannbcs);
-      this->evaluateNeumannBCs(in);
 	  this->evaluateNeumannCondition(in);
     }
 
@@ -182,14 +181,6 @@ evaluateVolume(const panzer::AssemblyEngineInArgs& in)
   }
 }
 
-//===========================================================================
-//===========================================================================
-template <typename EvalT>
-void panzer::AssemblyEngine<EvalT>::
-evaluateNeumannBCs(const panzer::AssemblyEngineInArgs& in)
-{
-  this->evaluateBCs(panzer::BCT_Neumann, in);
-}
 
 //===========================================================================
 //===========================================================================

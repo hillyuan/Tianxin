@@ -90,9 +90,6 @@ namespace panzer {
     void evaluate(const panzer::AssemblyEngineInArgs& input_arguments, const EvaluationFlags flags=EvaluationFlags(EvaluationFlags::All));
 
     void evaluateVolume(const panzer::AssemblyEngineInArgs& input_arguments);
-
-    void evaluateNeumannBCs(const panzer::AssemblyEngineInArgs& input_arguments);
-
     void evaluateInterfaceBCs(const panzer::AssemblyEngineInArgs& input_arguments);
 	
 	void evaluateDirichletCondition(const panzer::AssemblyEngineInArgs& input_arguments);
