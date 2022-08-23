@@ -58,6 +58,7 @@
 
 #include "PanzerAdaptersSTK_config.hpp"
 #include "Panzer_STK_ModelEvaluatorFactory.hpp"
+#include "Panzer_STK_WorksetFactory.hpp"
 #include "Panzer_ClosureModel_Factory_TemplateManager.hpp"
 #include "Panzer_PauseToAttach.hpp"
 #include "Panzer_String_Utilities.hpp"
@@ -176,6 +177,7 @@ int main(int argc, char *argv[])
     Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > rLibrary;
     std::vector<Teuchos::RCP<panzer::PhysicsBlock> > physicsBlocks;
     Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > linObjFactory;
+	Teuchos::RCP<panzer_stk::STK_Interface> mesh;
     std::map<int,std::string> responseIndexToName;
     {
       panzer_stk::ModelEvaluatorFactory<double> me_factory;
@@ -259,6 +261,7 @@ int main(int argc, char *argv[])
         solver = me_factory.buildResponseOnlyModelEvaluator(physics,global_data,Teuchos::null,nof.ptr(),rof.ptr());
 #endif
       } 
+	  mesh = me_factory.getMesh();
 
     }
     
@@ -270,14 +273,13 @@ int main(int argc, char *argv[])
     // 1. Register correct aggregator and reserve response - this was done in the appropriate observer object
 
     // 2. Build volume field managers
+	Teuchos::ParameterList user_data(input_params->sublist("User Data"));
+	Teuchos::ParameterList closure_data(input_params->sublist("Closure Models"));
     {
-      Teuchos::ParameterList user_data(input_params->sublist("User Data"));
       user_data.set<int>("Workset Size",input_params->sublist("Assembly").get<int>("Workset Size"));
     
       stkIOResponseLibrary->buildResponseEvaluators(physicsBlocks,
-                                        cm_factory,
-                                        input_params->sublist("Closure Models"),
-                                        user_data);
+                                        cm_factory,closure_data,user_data);
     }
 
     // setup outputs to mesh on the fluxResponseLibrary
@@ -286,7 +288,31 @@ int main(int argc, char *argv[])
     Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > fluxResponseLibrary 
         = Teuchos::rcp(new panzer::ResponseLibrary<panzer::Traits>);
 
+	Teuchos::RCP<panzer::FieldManagerBuilder> res_fmb = Teuchos::rcp(new panzer::FieldManagerBuilder);
+    std::unordered_map<std::string, std::vector<TianXin::TemplatedResponse>> respContainer;
     if(fluxCalculation) {
+		// build WorksetContainer
+        Teuchos::RCP<panzer_stk::WorksetFactory> wkstFactory = Teuchos::rcp(new panzer_stk::WorksetFactory(mesh));
+		Teuchos::RCP<panzer::WorksetContainer> wkstContainer             // attach it to a workset container (uses lazy evaluation)
+			= Teuchos::rcp(new panzer::WorksetContainer);
+		wkstContainer->setFactory(wkstFactory);
+		for(size_t i=0;i<physicsBlocks.size();i++)
+			wkstContainer->setNeeds(physicsBlocks[i]->elementBlockID(),physicsBlocks[i]->getWorksetNeeds());
+
+        Teuchos::ParameterList res_pl("Response");
+		Teuchos::ParameterList& response1 = res_pl.sublist("response1");
+		{
+			response1.set("Type","Integral");
+			response1.set<Teuchos::Array<std::string> >("Element Block Name",Teuchos::tuple<std::string>("eblock-0_0") );
+			response1.set<Teuchos::Array<std::string> >("SideSet Name",Teuchos::tuple<std::string>("left"));
+			response1.set("Integrand Name","RESIDUAL_TEMPERATURE");
+			response1.set("DOF Name","TEMPERATURE");
+		}
+
+		res_fmb->setWorksetContainer2(wkstContainer);
+		res_fmb->setupResponseFieldManagers(res_pl,mesh,physicsBlocks,*linObjFactory,cm_factory,closure_data,
+					user_data,respContainer);
+
       fluxResponseLibrary->initialize(*rLibrary);
   
       // build high-order flux response
@@ -388,6 +414,16 @@ int main(int argc, char *argv[])
         const Teuchos::RCP<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>> epGlobalContainer
            = Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(ae_inargs.container_,true);
         epGlobalContainer->set_x(Teuchos::rcp_dynamic_cast<Tpetra::Vector<double,int,panzer::GlobalOrdinal>>(gx));
+		
+		for( const auto& resps : respContainer )
+		{
+			const auto& ev0 = resps.second[0].get<panzer::Traits::Residual>();
+			const auto& map= ev0->getMap();
+			Teuchos::RCP<Tpetra::Vector<double, int, panzer::GlobalOrdinal>> rvec = Teuchos::rcp(new Tpetra::Vector<double, int, panzer::GlobalOrdinal>(map));
+			for( auto& ev : resps.second )
+				ev.get<panzer::Traits::Residual>()->setVector(rvec);
+		}
+	
 
         // evaluate current on contacts
         fluxResponseLibrary->addResponsesToInArgs<panzer::Traits::Residual>(ae_inargs);

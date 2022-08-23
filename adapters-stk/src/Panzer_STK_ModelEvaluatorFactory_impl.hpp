@@ -698,6 +698,17 @@ namespace panzer_stk {
 	  std::unordered_map<std::string, std::vector<TianXin::TemplatedResponse> > respContainer;
 	  if( response_params.numParams()>0 ) fmb->setupResponseFieldManagers(response_params,m_mesh,physicsBlocks,
 					*linObjFactory,cm_factory,closure_params,user_data_params,respContainer);
+	
+	  // Print Phalanx DAGs
+      if (write_dot_files){
+        fmb->writeVolumeGraphvizDependencyFiles(dot_file_prefix, physicsBlocks);
+        fmb->writeBCGraphvizDependencyFiles(dot_file_prefix);
+      }
+      if (write_fm_files){
+        fmb->writeVolumeTextDependencyFiles(fm_file_prefix, physicsBlocks);
+	    fmb->writeNeumannTextDependencyFiles(fm_file_prefix);
+        fmb->writeBCTextDependencyFiles(fm_file_prefix);
+      }
     }
 
     // build response library
@@ -1217,14 +1228,15 @@ namespace panzer_stk {
     fmb->setupBCFieldManagers(bcs,physicsBlocks,eqset_factory,bc_cm_factory,bc_factory,closure_models,lo_factory,user_data);
 
     // Print Phalanx DAGs
-    if (writeGraph){
-      fmb->writeVolumeGraphvizDependencyFiles(graphPrefix, physicsBlocks);
-      fmb->writeBCGraphvizDependencyFiles(graphPrefix);
-    }
-    if (write_field_managers){
-      fmb->writeVolumeTextDependencyFiles(graphPrefix, physicsBlocks);
-      fmb->writeBCTextDependencyFiles(field_manager_prefix);
-    }
+    //if (writeGraph){
+    //  fmb->writeVolumeGraphvizDependencyFiles(graphPrefix, physicsBlocks);
+    //  fmb->writeBCGraphvizDependencyFiles(graphPrefix);
+    //}
+    //if (write_field_managers){
+    //  fmb->writeVolumeTextDependencyFiles(graphPrefix, physicsBlocks);
+	//  fmb->writeNeumannTextDependencyFiles(field_manager_prefix);
+   //   fmb->writeBCTextDependencyFiles(field_manager_prefix);
+    //}
     
     return fmb;
   }

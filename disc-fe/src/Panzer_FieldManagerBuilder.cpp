@@ -66,7 +66,7 @@
 #include "Panzer_GlobalIndexer.hpp"
 
 #include "TianXin_Neumann.hpp"
-#include "TianXin_ResponseBase.hpp"
+#include "TianXin_Response_Integral.hpp"
 
 //=======================================================================
 //=======================================================================
@@ -497,7 +497,7 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 					      Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0)));
 			fm->template requireField<panzer::Traits::Residual>(tagr);
 		}
-		
+
 		// ====== Jacobian evaluator =======
 		std::unique_ptr<TianXin::NeumannBase<panzer::Traits::Jacobian, panzer::Traits>> evalj = 
 			TianXin::NeumannJacobianFactory::Instance().Create(Identifier, plist);
@@ -512,7 +512,7 @@ setupNeumannFieldManagers(const Teuchos::ParameterList& pl, const Teuchos::RCP<c
 					      Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0)));
 			fm->template requireField<panzer::Traits::Jacobian>(tagj);
 		}
-	
+
 		// gather
 		side_pb->buildAndRegisterGatherAndOrientationEvaluators(*fm,lo_factory,user_data);
 		
@@ -581,7 +581,7 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
 				TEUCHOS_TEST_FOR_EXCEPTION( (eblocks.size() != esides.size()), std::logic_error,
 				"Error - Cannot define eblock-side pair!" );
 		}
-		
+	
 		std::vector<TianXin::TemplatedResponse> resps;
 		std::string respname;
 		for( unsigned int i=0; i<eblocks.size(); ++i ) {
@@ -613,7 +613,7 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
 				side_pb = volume_pb->copyWithCellData(side_cell_data);
 			}
 
-			side_pb->buildAndRegisterEquationSetEvaluators(*fm, user_data);
+			//side_pb->buildAndRegisterEquationSetEvaluators(*fm, user_data);
 			side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Residual>(*fm,cm_factory,closure_models,user_data);
 			//side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Tangent>(*fm,cm_factory,closure_models,user_data);
 
@@ -631,11 +631,21 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
         //const int integration_order = ir.begin()->second->order();
 		//const int integration_order = side_pb->getIntegrationOrder();
 		//Teuchos::RCP<panzer::IntegrationRule> ir = Teuchos::rcp(new panzer::IntegrationRule(integration_order,side_cell_data));
-		
+	
 			// ====== Residual evaluator ========
 			const std::string Identifier= sublist.get<std::string>("Type");
 			std::unique_ptr<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits>> evalr = 
 				TianXin::ResponseResidualFactory::Instance().Create(Identifier, plist);
+			TEUCHOS_TEST_FOR_EXCEPTION(!evalr,std::logic_error,
+                            "panzer::FMB::setupResponseFieldManagers: Create ResponseBase returns null. ");
+            if( evalr->isResiudal() ) {
+				auto sr = evalr->buildScatterEvaluator(plist,lo_factory);
+				const std::string& scatterNamer = evalr->getScatterFieldName();
+				fm->template registerEvaluator<panzer::Traits::Residual>(sr);
+				PHX::Tag<typename panzer::Traits::Residual::ScalarT> tagr(scatterNamer,
+					      Teuchos::rcp(new PHX::MDALayout<panzer::Dummy>(0)));
+				fm->template requireField<panzer::Traits::Residual>(tagr);
+			}
 			respname = evalr->getResponseName();
 			Teuchos::RCP<TianXin::ResponseBase<panzer::Traits::Residual, panzer::Traits> > re = Teuchos::rcp(evalr.release());
 			fm->template registerEvaluator<panzer::Traits::Residual>(re);
@@ -660,7 +670,7 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
 			TianXin::TemplatedResponse aresp;
 			aresp.set<panzer::Traits::Residual>( re );
 			resps.emplace_back(aresp);
-	
+
 			// gather
 			side_pb->buildAndRegisterGatherAndOrientationEvaluators(*fm,lo_factory,user_data);
 
@@ -668,19 +678,19 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
 			Teuchos::RCP<std::vector<panzer::Workset> > worksets = Teuchos::rcp(new(std::vector<panzer::Workset>));
 			worksets->push_back(*currentWkst);
 			setupData.worksets_ = worksets;
-			setupData.orientations_ = getWorksetContainer2()->getOrientations();
+			//setupData.orientations_ = getWorksetContainer2()->getOrientations();
 	   // For Kokkos extended types (Sacado FAD) set derivtive array size
 	    //std::vector<PHX::index_size_type> derivative_dimensions;
         //derivative_dimensions.push_back(basis->cardinality());   
 	    //fm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
-			setKokkosExtendedDataTypeDimensions(eblocks[i],*globalIndexer,user_data,*fm);
-//std::cout << lo_factory.getComm().getRank() << ", " << eblocks[i] << ",  " << esides[i] << "," << currentWkst->num_cells << std::endl;
-			fm->postRegistrationSetup(setupData);
+			setKokkosExtendedDataTypeDimensions(eblocks[i],*globalIndexer,user_data,*fm);std::cout << "  OK10\n";
+std::cout << lo_factory.getComm().getRank() << ", " << eblocks[i] << ",  " << esides[i] << "," << currentWkst->num_cells << std::endl;
+			fm->postRegistrationSetup(setupData);std::cout << Identifier << "  OK1\n";
 		
 			sideset_response_field_manager_.push_back(fm);
 		}
 		respContainer.emplace( respname, resps );
-	}
+	};std::cout << "  OK\n";
 }
 
 //=======================================================================
@@ -809,6 +819,23 @@ writeNeumannTextDependencyFiles(std::string filename_prefix) const
 
   int bc_index = 0;
   for( const auto& fm : phx_neumann_field_manager_ ) {
+    std::string filename = filename_prefix+"_Neumann_"+std::to_string(++bc_index)+".txt";
+    std::ofstream ofs;
+    ofs.open(filename.c_str());
+    ofs << *fm << std::endl;
+    ofs.close();
+  }
+}
+
+//=======================================================================
+//=======================================================================
+void panzer::FieldManagerBuilder::
+writeResponseTextDependencyFiles(std::string filename_prefix) const
+{
+  if(sideset_response_field_manager_.empty()) return;
+
+  int bc_index = 0;
+  for( const auto& fm : sideset_response_field_manager_ ) {
     std::string filename = filename_prefix+"_Neumann_"+std::to_string(++bc_index)+".txt";
     std::ofstream ofs;
     ofs.open(filename.c_str());

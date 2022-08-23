@@ -54,6 +54,7 @@
 #include "Thyra_TpetraThyraWrappers.hpp"
 
 #include "Panzer_Traits.hpp"
+#include "Panzer_LinearObjFactory.hpp"
 
 #include "TianXin_WorksetFunctor.hpp"
 #include "TianXin_Factory.hpp"
@@ -100,6 +101,20 @@ public:
 		return response_name;
 	}
 	
+	std::string getScatterFieldName() const
+	{
+		return scatter_field_name;
+	}
+	
+	bool isResiudal() const
+	{
+		std::size_t found = response_name.find("RESIDUAL");
+		if (found!=std::string::npos)
+			return true;
+		else
+			return false;
+	}
+	
 	/* number of response items*/
 	virtual std::size_t localSizeRequired() const =0;
 	
@@ -131,12 +146,38 @@ public:
 
 protected:
    std::string response_name;
+   std::string integrand_name;
+   std::string scatter_field_name;
    Teuchos::RCP<const Teuchos::Comm<int> > tComm_;
    Teuchos::RCP<const map_type >  tMap_;
    Teuchos::RCP<vector_type > tVector_;
    
 public:
    virtual const PHX::FieldTag & getFieldTag() const = 0;
+   
+   //**********************************************************************
+	Teuchos::RCP< PHX::Evaluator<Traits> >
+	buildScatterEvaluator( const Teuchos::ParameterList& p, const panzer::LinearObjFactory<Traits>& lof)
+	{
+		const std::string find_word("RESIDUAL");
+		std::size_t pos = integrand_name.find(find_word);
+		if (pos==std::string::npos) return Teuchos::null;
+
+		std::string dof_name=integrand_name.substr(pos + find_word.length()+1);
+		std::string residual_name(integrand_name);
+		Teuchos::ParameterList plist(p);
+		this->scatter_field_name = "Scatter_"+residual_name;
+		plist.set("Scatter Name", this->scatter_field_name);
+		Teuchos::RCP<std::vector<std::string> > names = Teuchos::rcp(new std::vector<std::string>);
+		names->emplace_back(residual_name);
+		plist.set("Dependent Names",names);
+		Teuchos::RCP< std::map<std::string,std::string> > names_map = Teuchos::rcp(new std::map<std::string,std::string>);
+		names_map->insert(std::pair<std::string,std::string>(residual_name,dof_name));
+		plist.set("Dependent Map", names_map);
+		// modify plist here
+		Teuchos::RCP< PHX::Evaluator<Traits> > op = lof.template buildScatter<EvalT>(plist);
+		return op;
+	}
 };
 
 typedef Factory<ResponseBase<panzer::Traits::Residual,panzer::Traits>,std::string,Teuchos::ParameterList> ResponseResidualFactory;

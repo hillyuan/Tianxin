@@ -70,7 +70,7 @@ TRIBITS_ADD_ADVANCED_TEST(
   )
 
 TRIBITS_ADD_ADVANCED_TEST(
-  main_driver_energy-neumann
+  main_driver_energy-neumann --flux-calc
   TEST_0 EXEC main_driver 
     ARGS  --i=energy-neumann.xml
     PASS_REGULAR_EXPRESSION "panzer::MainDriver run completed."

@@ -221,6 +221,7 @@ namespace panzer {
 
     void writeBCTextDependencyFiles(std::string filename_prefix) const;
 	void writeNeumannTextDependencyFiles(std::string filename_prefix) const;
+	void writeResponseTextDependencyFiles(std::string filename_prefix) const;
 
     /// Delete all volume field managers, retaining the BC ones.
     void clearVolumeFieldManagers(bool clearVolumeWorksets = true);

@@ -58,9 +58,9 @@ Response_Integral(const Teuchos::ParameterList& plist)
 : ResponseBase<EvalT,Traits>(plist)
 {
 	Teuchos::ParameterList p(plist);
-	std::string integrand_name= p.get< std::string >("Integrand Name");
-	std::string integral_name = p.get<std::string>("Integral Name","Integral_" +integrand_name);
-    this->response_name = "RESPONSE_" + integrand_name;
+	this->integrand_name= p.get< std::string >("Integrand Name");
+	std::string integral_name = p.get<std::string>("Integral Name","Integral_" +this->integrand_name);
+    this->response_name = "RESPONSE_" + this->integrand_name;
     const Teuchos::RCP<const panzer::PureBasis> basis =
       p.get< Teuchos::RCP<const panzer::PureBasis> >("Basis");
     const Teuchos::RCP<const panzer::IntegrationRule> ir = 
@@ -75,7 +75,7 @@ Response_Integral(const Teuchos::ParameterList& plist)
 	// Input : values upon cell IPs
 	num_cell = ir->dl_scalar->extent(0);
 	if( num_cell>0 ) {
-		cellvalue_ = PHX::MDField<const ScalarT,panzer::Cell,panzer::IP>( integrand_name, ir->dl_scalar);
+		cellvalue_ = PHX::MDField<const ScalarT,panzer::Cell,panzer::BASIS>( this->integrand_name, basis->functional);
 		this->addDependentField(cellvalue_);
 	}
 
@@ -93,7 +93,7 @@ template<typename EvalT, typename Traits>
 void Response_Integral<EvalT, Traits>::
 postRegistrationSetup( typename Traits::SetupData sd,
   PHX::FieldManager<Traits>& /* fm */)
-{
+{std::cout << num_cell << "  OK0\n";
   //basis_index = panzer::getBasisIndex(basis_name, (*sd.worksets_)[0]);
   //ir_index = panzer::getIntegrationRuleIndex(quad_order,(*sd.worksets_)[0]);
   if( num_cell>0 ) {
