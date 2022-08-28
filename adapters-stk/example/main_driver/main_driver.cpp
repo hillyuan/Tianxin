@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 		for(size_t i=0;i<physicsBlocks.size();i++)
 			wkstContainer->setNeeds(physicsBlocks[i]->elementBlockID(),physicsBlocks[i]->getWorksetNeeds());
 
-        Teuchos::ParameterList res_pl("Response");
+     /*   Teuchos::ParameterList res_pl("Response");
 		Teuchos::ParameterList& response1 = res_pl.sublist("response1");
 		{
 			response1.set("Type","Integral");
@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
 
 		res_fmb->setWorksetContainer2(wkstContainer);
 		res_fmb->setupResponseFieldManagers(res_pl,mesh,physicsBlocks,*linObjFactory,cm_factory,closure_data,
-					user_data,respContainer);
+					user_data,respContainer);*/
 
       fluxResponseLibrary->initialize(*rLibrary);
   
@@ -415,14 +415,14 @@ int main(int argc, char *argv[])
            = Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(ae_inargs.container_,true);
         epGlobalContainer->set_x(Teuchos::rcp_dynamic_cast<Tpetra::Vector<double,int,panzer::GlobalOrdinal>>(gx));
 		
-		for( const auto& resps : respContainer )
+		/*for( const auto& resps : respContainer )
 		{
 			const auto& ev0 = resps.second[0].get<panzer::Traits::Residual>();
 			const auto& map= ev0->getMap();
 			Teuchos::RCP<Tpetra::Vector<double, int, panzer::GlobalOrdinal>> rvec = Teuchos::rcp(new Tpetra::Vector<double, int, panzer::GlobalOrdinal>(map));
 			for( auto& ev : resps.second )
 				ev.get<panzer::Traits::Residual>()->setVector(rvec);
-		}
+		}*/
 	
 
         // evaluate current on contacts

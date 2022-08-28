@@ -72,6 +72,9 @@
             <ParameterList name="Global Statistics">
                 <Parameter name="Value" type="string" value="TEMPERATURE"/>
             </ParameterList>
+			<ParameterList name="Thermal Conductivity">
+                <Parameter name="Value" type="double" value="1.0"/>
+            </ParameterList>
 
         </ParameterList>
 
