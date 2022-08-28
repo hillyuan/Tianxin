@@ -70,7 +70,7 @@ public:
 
 private:
 	//std::string response_name;
-	PHX::MDField<const ScalarT,panzer::Cell,panzer::BASIS> cellvalue_;
+	PHX::MDField<const ScalarT,panzer::Cell,panzer::IP> cellvalue_;
 	
     // common data used by neumann calculation
     std::string basis_name;

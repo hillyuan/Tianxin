@@ -613,7 +613,7 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
 				side_pb = volume_pb->copyWithCellData(side_cell_data);
 			}
 
-			//side_pb->buildAndRegisterEquationSetEvaluators(*fm, user_data);
+			side_pb->buildAndRegisterEquationSetEvaluators(*fm, user_data);
 			side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Residual>(*fm,cm_factory,closure_models,user_data);
 			//side_pb->buildAndRegisterClosureModelEvaluatorsForType<panzer::Traits::Tangent>(*fm,cm_factory,closure_models,user_data);
 
@@ -683,14 +683,14 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
 	    //std::vector<PHX::index_size_type> derivative_dimensions;
         //derivative_dimensions.push_back(basis->cardinality());   
 	    //fm->setKokkosExtendedDataTypeDimensions<panzer::Traits::Jacobian>(derivative_dimensions);
-			setKokkosExtendedDataTypeDimensions(eblocks[i],*globalIndexer,user_data,*fm);std::cout << "  OK10\n";
-std::cout << lo_factory.getComm().getRank() << ", " << eblocks[i] << ",  " << esides[i] << "," << currentWkst->num_cells << std::endl;
-			fm->postRegistrationSetup(setupData);std::cout << Identifier << "  OK1\n";
+			setKokkosExtendedDataTypeDimensions(eblocks[i],*globalIndexer,user_data,*fm);
+//std::cout << lo_factory.getComm().getRank() << ", " << eblocks[i] << ",  " << esides[i] << "," << currentWkst->num_cells << std::endl;
+			fm->postRegistrationSetup(setupData);
 		
 			sideset_response_field_manager_.push_back(fm);
 		}
 		respContainer.emplace( respname, resps );
-	};std::cout << "  OK\n";
+	};
 }
 
 //=======================================================================
