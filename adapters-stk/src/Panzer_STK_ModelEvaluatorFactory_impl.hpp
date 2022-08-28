@@ -698,15 +698,17 @@ namespace panzer_stk {
 	  std::unordered_map<std::string, std::vector<TianXin::TemplatedResponse> > respContainer;
 	  if( response_params.numParams()>0 ) fmb->setupResponseFieldManagers(response_params,m_mesh,physicsBlocks,
 					*linObjFactory,cm_factory,closure_params,user_data_params,respContainer);
-	
+
 	  // Print Phalanx DAGs
       if (write_dot_files){
         fmb->writeVolumeGraphvizDependencyFiles(dot_file_prefix, physicsBlocks);
+        fmb->writeNeumannGraphvizDependencyFiles(dot_file_prefix);
         fmb->writeBCGraphvizDependencyFiles(dot_file_prefix);
       }
       if (write_fm_files){
         fmb->writeVolumeTextDependencyFiles(fm_file_prefix, physicsBlocks);
 	    fmb->writeNeumannTextDependencyFiles(fm_file_prefix);
+		fmb->writeResponseTextDependencyFiles(fm_file_prefix);
         fmb->writeBCTextDependencyFiles(fm_file_prefix);
       }
     }

@@ -213,7 +213,7 @@ namespace panzer {
 
     void writeVolumeGraphvizDependencyFiles(std::string filename_prefix,
 					    const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks) const;
-
+    void writeNeumannGraphvizDependencyFiles(std::string filename_prefix) const;
     void writeBCGraphvizDependencyFiles(std::string filename_prefix) const;
 
     void writeVolumeTextDependencyFiles(std::string filename_prefix,

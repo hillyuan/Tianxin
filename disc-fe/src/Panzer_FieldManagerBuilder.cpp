@@ -747,6 +747,20 @@ writeBCGraphvizDependencyFiles(std::string filename_prefix) const
 //=======================================================================
 //=======================================================================
 void panzer::FieldManagerBuilder::
+writeNeumannGraphvizDependencyFiles(std::string filename_prefix) const
+{
+  if(phx_neumann_field_manager_.empty()) return;
+
+  int bc_index = 0;
+  for( const auto& fm : phx_neumann_field_manager_ ) {
+    fm->writeGraphvizFile(filename_prefix+"_Neumann_"+std::to_string(bc_index));
+  }
+
+}
+
+//=======================================================================
+//=======================================================================
+void panzer::FieldManagerBuilder::
 writeVolumeTextDependencyFiles(std::string filename_prefix,
 			       const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks) const
 {
@@ -836,7 +850,7 @@ writeResponseTextDependencyFiles(std::string filename_prefix) const
 
   int bc_index = 0;
   for( const auto& fm : sideset_response_field_manager_ ) {
-    std::string filename = filename_prefix+"_Neumann_"+std::to_string(++bc_index)+".txt";
+    std::string filename = filename_prefix+"_Response_"+std::to_string(++bc_index)+".txt";
     std::ofstream ofs;
     ofs.open(filename.c_str());
     ofs << *fm << std::endl;
