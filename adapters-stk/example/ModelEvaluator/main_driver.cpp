@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
     Teuchos::ParameterList & block_to_physics_pl    = input_params->sublist("Block ID to Physics ID Mapping");
 	Teuchos::ParameterList & dirichelt_pl           = input_params->sublist("Dirichlet Conditions");
 	Teuchos::ParameterList & neumann_pl             = input_params->sublist("Neumann Conditions");
+    Teuchos::ParameterList & response_pl            = input_params->sublist("Responses");
     Teuchos::ParameterList & closure_models_pl      = input_params->sublist("Closure Models");
     Teuchos::ParameterList & user_data_pl           = input_params->sublist("User Data");
     Teuchos::ParameterList & nonlinsolver_pl        = input_params->sublist("Nonlinear Solver");
@@ -285,9 +286,8 @@ int main(int argc, char *argv[])
                    user_data_pl,false,"");*/
 	physics->setupModel(wkstContainer,physicsBlocks,
                    *eqset_factory,
-                   cm_factory,
                    cm_factory, mesh, dofManager, dirichelt_pl,
-                   neumann_pl, closure_models_pl,
+                   neumann_pl, response_pl, closure_models_pl,
                    user_data_pl,false,"");
 
     // setup a response library to write to the mesh

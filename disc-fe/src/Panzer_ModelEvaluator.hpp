@@ -193,11 +193,11 @@ public:
                   const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
                   const panzer::EquationSetFactory & eqset_factory,
                   const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& volume_cm_factory,
-                  const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& bc_cm_factory,
 				  Teuchos::RCP<TianXin::AbstractDiscretation> mesh,
 				  Teuchos::RCP<panzer::GlobalIndexer> dofManager,
 				  const Teuchos::ParameterList& pl_dirichlet,
 				  const Teuchos::ParameterList& pl_neumann,
+				  const Teuchos::ParameterList& pl_response,
                   const Teuchos::ParameterList& closure_models,
                   const Teuchos::ParameterList& user_data,
                   bool writeGraph=false,const std::string & graphPrefix="",
@@ -710,7 +710,7 @@ private: // data members
   // responses
   mutable Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > responseLibrary_;
   std::vector<Teuchos::RCP<ResponseObject> > responses_;
-  std::unordered_map<std::string, TianXin::TemplatedResponse> responseContainer_;
+  std::unordered_map<std::string, std::vector<TianXin::TemplatedResponse>> responseContainer_;
 
   Teuchos::RCP<panzer::GlobalData> global_data_;
   bool build_transient_support_;
@@ -737,6 +737,7 @@ private: // data members
 
   bool build_volume_field_managers_;
   bool build_bc_field_managers_;
+  bool build_response_field_managers_;
   std::vector<bool> active_evaluation_types_;
 
   mutable unsigned long long write_matrix_count_;

@@ -279,6 +279,7 @@ ModelEvaluator(const Teuchos::RCP<const panzer::LinearObjFactory<panzer::Traits>
   , K_pivot_(1.0)
   , build_volume_field_managers_(true)
   , build_bc_field_managers_(true)
+  , build_response_field_managers_(true)
   , active_evaluation_types_(Sacado::mpl::size<panzer::Traits::EvalTypes>::value, true)
   , write_matrix_count_(0)
 {
@@ -389,20 +390,36 @@ template<typename Scalar>
 Teuchos::ArrayView<const std::string>
 panzer::ModelEvaluator<Scalar>::get_g_names(int i) const
 {
-  TEUCHOS_TEST_FOR_EXCEPTION(!(i>=0 && i<Teuchos::as<int>(responses_.size())),std::runtime_error,
+    if( responseContainer_.empty() ) {  // use legacy
+		TEUCHOS_TEST_FOR_EXCEPTION(!(i>=0 && i<Teuchos::as<int>(responses_.size())),std::runtime_error,
                              "panzer::ModelEvaluator::get_g_names: Requested response index out of range.");
 
-  return Teuchos::ArrayView<const std::string>(&(responses_[i]->name),1);
+		return Teuchos::ArrayView<const std::string>(&(responses_[i]->name),1);
+	} else {
+		TEUCHOS_TEST_FOR_EXCEPTION(!(i>=0 && i<responseContainer_.size()),std::runtime_error,
+                             "panzer::ModelEvaluator::get_g_names: Requested response index out of range.");
+		auto iter = responseContainer_.begin();
+		auto iteri = std::next(iter, i-1);
+		return Teuchos::ArrayView<const std::string>(&(iteri->first),1);
+	}
 }
 
 template<typename Scalar>
 const std::string &
 panzer::ModelEvaluator<Scalar>::get_g_name(int i) const
 {
-  TEUCHOS_ASSERT(i>=0 &&
+	if( responseContainer_.empty() ) {  // use legacy
+		TEUCHOS_ASSERT(i>=0 &&
                  static_cast<typename std::vector<Teuchos::RCP<const Thyra::VectorSpaceBase<Scalar> > >::size_type>(i)<responses_.size());
 
-  return responses_[i]->name;
+		return responses_[i]->name;
+	} else {
+		TEUCHOS_TEST_FOR_EXCEPTION(!(i>=0 && i<responseContainer_.size()),std::runtime_error,
+                             "panzer::ModelEvaluator::get_g_names: Requested response index out of range.");
+		auto iter = responseContainer_.begin();
+		auto iteri = std::next(iter, i-1);
+		return iteri->first;
+	}
 }
 
 template<typename Scalar>
@@ -627,11 +644,11 @@ setupModel(const Teuchos::RCP<panzer::WorksetContainer> & wc,
            const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks,
            const panzer::EquationSetFactory & eqset_factory,
            const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& volume_cm_factory,
-           const panzer::ClosureModelFactory_TemplateManager<panzer::Traits>& bc_cm_factory,
            Teuchos::RCP<TianXin::AbstractDiscretation> mesh,
 		   Teuchos::RCP<panzer::GlobalIndexer> dofManager,
 		   const Teuchos::ParameterList& pl_dirichlet,
 		   const Teuchos::ParameterList& pl_neumann,
+           const Teuchos::ParameterList& pl_response,
            const Teuchos::ParameterList& closure_models,
            const Teuchos::ParameterList& user_data,
            bool writeGraph,const std::string & graphPrefix,
@@ -664,13 +681,17 @@ setupModel(const Teuchos::RCP<panzer::WorksetContainer> & wc,
       fmb->setupDiricheltFieldManagers(pl_dirichlet,mesh,dofManager);
 	  fmb->setupNeumannFieldManagers(pl_neumann,mesh,physicsBlocks,*lof_,user_data);
     }
+	if (build_response_field_managers_) {
+      PANZER_FUNC_TIME_MONITOR_DIFF("fmb->build_response_field_managers_()",build_response_field_managers_);
+	//  fmb->setupResponseFieldManagers(pl_response,mesh,physicsBlocks,*lof_,volume_cm_factory,closure_models,user_data,responseContainer_);
+    }
 
     // Print Phalanx DAGs
     if (writeGraph){
       if (build_volume_field_managers_)
         fmb->writeVolumeGraphvizDependencyFiles(graphPrefix, physicsBlocks);
       if (build_bc_field_managers_)
-        fmb->writeBCGraphvizDependencyFiles(graphPrefix+"BC_");
+        fmb->writeNeumannGraphvizDependencyFiles(graphPrefix);
     }
 
     {

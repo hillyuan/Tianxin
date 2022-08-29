@@ -687,7 +687,7 @@ setupResponseFieldManagers(const Teuchos::ParameterList& pl,
 //std::cout << lo_factory.getComm().getRank() << ", " << eblocks[i] << ",  " << esides[i] << "," << currentWkst->num_cells << std::endl;
 			fm->postRegistrationSetup(setupData);
 		
-			sideset_response_field_manager_.push_back(fm);
+			phx_response_field_manager_.push_back(fm);
 		}
 		respContainer.emplace( respname, resps );
 	};
@@ -846,10 +846,10 @@ writeNeumannTextDependencyFiles(std::string filename_prefix) const
 void panzer::FieldManagerBuilder::
 writeResponseTextDependencyFiles(std::string filename_prefix) const
 {
-  if(sideset_response_field_manager_.empty()) return;
+  if(phx_response_field_manager_.empty()) return;
 
   int bc_index = 0;
-  for( const auto& fm : sideset_response_field_manager_ ) {
+  for( const auto& fm : phx_response_field_manager_ ) {
     std::string filename = filename_prefix+"_Response_"+std::to_string(++bc_index)+".txt";
     std::ofstream ofs;
     ofs.open(filename.c_str());
