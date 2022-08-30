@@ -668,17 +668,12 @@ setupExodusFile(const std::string& filename,
                 const bool append_after_restart_time,
                 const double restart_time)
 {
-  using std::runtime_error;
-  using stk::io::StkMeshIoBroker;
-  using stk::mesh::FieldVector;
-  using stk::ParallelMachine;
-  using Teuchos::rcp;
   PANZER_FUNC_TIME_MONITOR("STK_Interface::setupExodusFile(filename)");
 #ifdef PANZER_HAVE_IOSS
   TEUCHOS_ASSERT(not mpiComm_.is_null())
 
-  ParallelMachine comm = *mpiComm_->getRawMpiComm();
-  meshData_ = rcp(new StkMeshIoBroker(comm));
+  stk::ParallelMachine comm = *mpiComm_->getRawMpiComm();
+  meshData_ = Teuchos::rcp(new stk::io::StkMeshIoBroker(comm));
   meshData_->set_bulk_data(Teuchos::get_shared_ptr(bulkData_));
   Ioss::PropertyManager props;
   props.add(Ioss::Property("LOWER_CASE_VARIABLE_NAMES", "FALSE"));
@@ -692,7 +687,7 @@ setupExodusFile(const std::string& filename,
   }
   else
     meshIndex_ = meshData_->create_output_mesh(filename, stk::io::WRITE_RESULTS, props);
-  const FieldVector& fields = metaData_->get_fields();
+  const stk::mesh::FieldVector& fields = metaData_->get_fields();
   for (size_t i(0); i < fields.size(); ++i) {
     // Do NOT add MESH type stk fields to exodus io, but do add everything
     // else. This allows us to avoid having to catch a throw for
@@ -722,14 +717,9 @@ setupExodusFile(const std::string& filename,
 //
 ///////////////////////////////////////////////////////////////////////////////
 void
-STK_Interface::
-writeToExodus(
-  double timestep)
+STK_Interface :: 
+writeToExodus(double timestep)
 {
-  using std::cout;
-  using std::endl;
-  using Teuchos::FancyOStream;
-  using Teuchos::rcpFromRef;
   PANZER_FUNC_TIME_MONITOR("STK_Interface::writeToExodus(timestep)");
 #ifdef PANZER_HAVE_IOSS
   if (not meshData_.is_null())
@@ -743,10 +733,10 @@ writeToExodus(
   }
   else // if (meshData_.is_null())
   {
-    FancyOStream out(rcpFromRef(cout));
+    Teuchos::FancyOStream out(Teuchos::rcpFromRef(std::cout));
     out.setOutputToRootOnly(0);
     out << "WARNING:  Exodus I/O has been disabled or not setup properly; "
-        << "not writing to Exodus." << endl;
+        << "not writing to Exodus." << std::endl;
   } // end if (meshData_.is_null()) or not
 #else
   TEUCHOS_ASSERT(false);
@@ -760,11 +750,8 @@ writeToExodus(
 ///////////////////////////////////////////////////////////////////////////////
 void
 STK_Interface::
-globalToExodus(
-  const GlobalVariable& flag)
+globalToExodus(const GlobalVariable& flag)
 {
-  using std::invalid_argument;
-  using std::string;
   using Teuchos::Array;
 
   // Loop over all the global variables to be added to the Exodus output file.
@@ -772,7 +759,7 @@ globalToExodus(
   // write it accordingly, depending on the value of flag.
   for (auto i = globalData_.begin(); i != globalData_.end(); ++i)
   {
-    const string& name = globalData_.name(i);
+    const std::string& name = globalData_.name(i);
 
     // Integers.
     if (globalData_.isType<int>(name))
@@ -860,7 +847,7 @@ globalToExodus(
 
     // If the data type is something else, throw an exception.
     else
-      TEUCHOS_TEST_FOR_EXCEPTION(true, invalid_argument,
+      TEUCHOS_TEST_FOR_EXCEPTION(true, std::invalid_argument,
         "STK_Interface::globalToExodus():  The global variable to be added "  \
         "to the Exodus output file is of an invalid type.  Valid types are "  \
         "int and double, along with std::vectors of those types.")
@@ -874,9 +861,7 @@ globalToExodus(
 ///////////////////////////////////////////////////////////////////////////////
 void
 STK_Interface::
-addGlobalToExodus(
-  const std::string& key,
-  const int&         value)
+addGlobalToExodus( const std::string& key, const int& value)
 {
   globalData_.set(key, value);
 } // end of addGlobalToExodus()
@@ -888,9 +873,7 @@ addGlobalToExodus(
 ///////////////////////////////////////////////////////////////////////////////
 void
 STK_Interface::
-addGlobalToExodus(
-  const std::string& key,
-  const double&      value)
+addGlobalToExodus( const std::string& key, const double&  value)
 {
   globalData_.set(key, value);
 } // end of addGlobalToExodus()
@@ -902,9 +885,7 @@ addGlobalToExodus(
 ///////////////////////////////////////////////////////////////////////////////
 void
 STK_Interface::
-addGlobalToExodus(
-  const std::string&      key,
-  const std::vector<int>& value)
+addGlobalToExodus( const std::string&  key, const std::vector<int>& value)
 {
   using Teuchos::Array;
   globalData_.set(key, Array<int>(value));
@@ -917,9 +898,7 @@ addGlobalToExodus(
 ///////////////////////////////////////////////////////////////////////////////
 void
 STK_Interface::
-addGlobalToExodus(
-  const std::string&         key,
-  const std::vector<double>& value)
+addGlobalToExodus( const std::string&  key, const std::vector<double>& value)
 {
   using Teuchos::Array;
   globalData_.set(key, Array<double>(value));

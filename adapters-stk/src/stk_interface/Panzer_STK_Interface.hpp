@@ -1474,8 +1474,7 @@ protected:
    *                                  `std::vector<std::string>`.
    */
   void
-  globalToExodus(
-    const GlobalVariable& flag);
+  globalToExodus(const GlobalVariable& flag);
 
   /**
    *  \brief The global variable(s) to be added to the Exodus output.

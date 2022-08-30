@@ -393,6 +393,8 @@ public:
     */
   void setOneTimeDirichletBeta(const Scalar & beta) const;
   void setKPivot(const Scalar & beta);
+  Teuchos::RCP<panzer::LinearObjContainer> getGhostedContainer() const
+  { return ghostedContainer_; }
 
 
   /** Setup all the assembly input arguments required by "inArgs".

@@ -68,6 +68,7 @@
 #include "Panzer_STKConnManager.hpp"
 #include "Panzer_STK_IOClosureModel_Factory_TemplateBuilder.hpp"
 #include "Panzer_STK_ResponseEvaluatorFactory_SolutionWriter.hpp"
+#include "TianXin_STK_Utilities.hpp"
 
 #include "NOX_Thyra.H"
 
@@ -78,6 +79,14 @@
 
 #include <string>
 #include <iostream>
+
+using ST = double;
+using LO = panzer::LocalOrdinal;
+using GO = panzer::GlobalOrdinal;
+using NT = panzer::TpetraNodeType;
+using TpetraVector = Tpetra::Vector<ST,LO,GO,NT>;
+typedef Thyra::TpetraVector<ST,LO,GO,NT> Thyra_TpetraVector;
+typedef Thyra::TpetraOperatorVectorExtraction<ST, LO, GO, NT>   ConverterT;
 
 Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> >
 buildSTKIOResponseLibrary(const std::vector<Teuchos::RCP<panzer::PhysicsBlock> > & physicsBlocks,
@@ -277,13 +286,6 @@ int main(int argc, char *argv[])
     // build and setup model evaluatorlinear solver
     /////////////////////////////////////////////////////////////
     RCP<PME> physics = Teuchos::rcp(new PME(linObjFactory,lowsFactory,globalData,build_transient_support,0.0));
-    /*physics->setupModel(wkstContainer,physicsBlocks,bcs,
-                   *eqset_factory,
-                   bc_factory,
-                   cm_factory,
-                   cm_factory,
-                   closure_models_pl,
-                   user_data_pl,false,"");*/
 	physics->setupModel(wkstContainer,physicsBlocks,
                    *eqset_factory,
                    cm_factory, mesh, dofManager, dirichelt_pl,
@@ -326,8 +328,14 @@ int main(int argc, char *argv[])
     }
 
     // write to an exodus file
+	//auto tmp = Teuchos::rcp_dynamic_cast< Thyra_TpetraVector >(solution_vec,true);
+	//auto tvec = tmp->getTpetraVector();
+	auto gc = physics->getGhostedContainer();
+	//linObjFactory->globalToGhostContainer(*container,*ghostCont,LOC::X | LOC::DxDt); 
+	TianXin::write_solution_data(*dofManager,*mesh,*Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(gc)->get_x());
+    mesh->writeToExodus("output.exo");
     /////////////////////////////////////////////////////////////
-    writeToExodus(0,solution_vec,*physics,*stkIOResponseLibrary,*mesh);
+    //writeToExodus(0,solution_vec,*physics,*stkIOResponseLibrary,*mesh);
 
   }
   catch (std::exception& e) {
