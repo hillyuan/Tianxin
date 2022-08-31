@@ -328,6 +328,38 @@ public:
    // Return node dof map of fieldnum provided
    panzer::GlobalOrdinal getNodalGDofOfField(int f, panzer::GlobalOrdinal nd) const
    { return nodeGIDMap_.at(f).at(nd); }
+   
+   bool isNodalField(const int f) const
+   {
+	   if( nodeLIDMap_.empty() ) return false;
+	   auto it = nodeLIDMap_.find(f);
+	   if( it==nodeLIDMap_.end() ) return false;
+	   return true;
+   }
+   
+   bool isEdgeField(const int f) const
+   {
+	   if( edgeLIDMap_.empty() ) return false;
+	   auto it = edgeLIDMap_.find(f);
+	   if( it==edgeLIDMap_.end() ) return false;
+	   return true;
+   }
+   
+   bool isFaceField(const int f) const
+   {
+	   if( faceLIDMap_.empty() ) return false;
+	   auto it = faceLIDMap_.find(f);
+	   if( it==faceLIDMap_.end() ) return false;
+	   return true;
+   }
+   
+   /*bool isCellField(int f)
+   {
+	   if( cellLIDMap_.empty() ) return false;
+	   auto it = faceLIDMap_.find(f);
+	   if( it==faceLIDMap_.end() ) return false;
+	   return true;
+   }*/
 	
    panzer::LocalOrdinal getNodalLDofOfField(int f, panzer::GlobalOrdinal nd) const
    {

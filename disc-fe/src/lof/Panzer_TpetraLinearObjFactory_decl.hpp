@@ -112,6 +112,13 @@ public:
                                        LinearObjContainer & ghostContainer,int) const;
    virtual void ghostToGlobalContainer(const LinearObjContainer & ghostContainer,
                                        LinearObjContainer & container,int) const;
+									   
+   void ghostToGlobalTpetraVector(const Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & in,
+                                  Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & out, bool col) const;
+   void ghostToGlobalTpetraMatrix(const Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & in,
+                                  Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & out) const;
+   void globalToGhostTpetraVector(const Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>& in,
+                                  Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & out, bool col) const;
 
    /** Build a GlobalEvaluationDataContainer that handles all domain communication.
      * This is used primarily for gather operations and hides the allocation and usage
@@ -243,13 +250,6 @@ public:
    virtual void endFill(LinearObjContainer & loc) const;
 
 protected:
-
-   void ghostToGlobalTpetraVector(const Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & in,
-                                  Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & out, bool col) const;
-   void ghostToGlobalTpetraMatrix(const Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & in,
-                                  Tpetra::CrsMatrix<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & out) const;
-   void globalToGhostTpetraVector(const Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>& in,
-                                  Tpetra::Vector<ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT> & out, bool col) const;
 
    // get the map from the matrix
    virtual const Teuchos::RCP<Tpetra::Map<LocalOrdinalT,GlobalOrdinalT,NodeT> > buildMap() const;

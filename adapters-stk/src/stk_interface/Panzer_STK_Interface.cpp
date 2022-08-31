@@ -385,16 +385,16 @@ void STK_Interface::initializeFieldsInSTK(const std::map<std::pair<std::string,s
                                           bool setupIO)
 {
    std::set<SolutionFieldType*> uniqueFields;
-   std::map<std::pair<std::string,std::string>,SolutionFieldType*>::const_iterator fieldIter;
-   for(fieldIter=nameToField.begin();fieldIter!=nameToField.end();++fieldIter)
-      uniqueFields.insert(fieldIter->second); // this makes setting up IO easier!
-
-   {
-      std::set<SolutionFieldType*>::const_iterator uniqueFieldIter;
-      stk::mesh::FieldTraits<SolutionFieldType>::data_type* init_sol = nullptr; // gcc 4.8 hack
-      for(uniqueFieldIter=uniqueFields.begin();uniqueFieldIter!=uniqueFields.end();++uniqueFieldIter)
-        stk::mesh::put_field_on_mesh(*(*uniqueFieldIter),metaData_->universal_part(),init_sol);
+   for( const auto& fieldIter : nameToField ) {
+      uniqueFields.insert(fieldIter.second); // this makes setting up IO easier!
+	  nameToField_.insert( std::make_pair(fieldIter.first.second, fieldIter.second ) );
    }
+   
+   //for( const auto& field: nameToField_ )
+//	   stk::mesh::put_field_on_mesh(*field.second,metaData_->universal_part(),nullptr);
+
+   for( const auto& uniqueFieldIter : uniqueFields )
+        stk::mesh::put_field_on_mesh(*uniqueFieldIter,metaData_->universal_part(),nullptr);
 
 #ifdef PANZER_HAVE_IOSS
    if(setupIO) {
@@ -1825,6 +1825,26 @@ void STK_Interface::getMyNodeSetIds(const std::string & nodesetName,const std::s
    {
 	   nodeIds.emplace_back( bulkData_->identifier(n) );
    }
+}
+
+void STK_Interface::getAllNodes(std::vector<stk::mesh::Entity> & elements) const
+{
+   // setup local ownership
+   stk::mesh::Selector ownedPart = metaData_->locally_owned_part() | metaData_->globally_shared_part();
+
+   // grab elements
+   stk::mesh::EntityRank elementRank = getNodeRank();
+   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(elementRank),elements);
+}
+
+void STK_Interface::getMyNodes(std::vector<stk::mesh::Entity> & elements) const
+{
+   // setup local ownership
+   stk::mesh::Selector ownedPart = metaData_->locally_owned_part();
+
+   // grab elements
+   stk::mesh::EntityRank elementRank = getNodeRank();
+   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(elementRank),elements);
 }
 
 void STK_Interface::getAllNodeSetIds(const std::string & nodesetName,const std::string & blockName,std::vector<std::size_t> & nodeIds) const

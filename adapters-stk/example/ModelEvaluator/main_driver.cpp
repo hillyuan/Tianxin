@@ -66,8 +66,6 @@
 #include "Panzer_STK_SetupLOWSFactory.hpp"
 #include "Panzer_STK_WorksetFactory.hpp"
 #include "Panzer_STKConnManager.hpp"
-#include "Panzer_STK_IOClosureModel_Factory_TemplateBuilder.hpp"
-#include "Panzer_STK_ResponseEvaluatorFactory_SolutionWriter.hpp"
 #include "TianXin_STK_Utilities.hpp"
 
 #include "NOX_Thyra.H"
@@ -87,22 +85,6 @@ using NT = panzer::TpetraNodeType;
 using TpetraVector = Tpetra::Vector<ST,LO,GO,NT>;
 typedef Thyra::TpetraVector<ST,LO,GO,NT> Thyra_TpetraVector;
 typedef Thyra::TpetraOperatorVectorExtraction<ST, LO, GO, NT>   ConverterT;
-
-Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> >
-buildSTKIOResponseLibrary(const std::vector<Teuchos::RCP<panzer::PhysicsBlock> > & physicsBlocks,
-                          const Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > & linObjFactory,
-                          const Teuchos::RCP<panzer::WorksetContainer> & wkstContainer,
-                          const Teuchos::RCP<panzer::GlobalIndexer> & globalIndexer,
-                          const panzer::ClosureModelFactory_TemplateManager<panzer::Traits> & cm_factory,
-                          const Teuchos::RCP<panzer_stk::STK_Interface> & mesh,
-                          const Teuchos::ParameterList & closure_model_pl,
-                          const Teuchos::ParameterList & user_data);
-
-void writeToExodus(double time_stamp,
-                   const Teuchos::RCP<const Thyra::VectorBase<double> > & x,
-                   const panzer::ModelEvaluator<double> & model,
-                   panzer::ResponseLibrary<panzer::Traits> & stkIOResponseLibrary,
-                   panzer_stk::STK_Interface & mesh);
 
 int main(int argc, char *argv[])
 {
@@ -268,7 +250,7 @@ int main(int argc, char *argv[])
 
     // build the state dof manager and LOF
     RCP<panzer::GlobalIndexer> dofManager;
-    RCP<panzer::LinearObjFactory<panzer::Traits> > linObjFactory;
+    RCP< panzer::TpetraLinearObjFactory<panzer::Traits,double,int,panzer::GlobalOrdinal> > linObjFactory;
     {
       panzer::DOFManagerFactory globalIndexerFactory;
       dofManager = globalIndexerFactory.buildGlobalIndexer(Teuchos::opaqueWrapper(MPI_COMM_WORLD),physicsBlocks,conn_manager);
@@ -291,14 +273,6 @@ int main(int argc, char *argv[])
                    cm_factory, mesh, dofManager, dirichelt_pl,
                    neumann_pl, response_pl, closure_models_pl,
                    user_data_pl,false,"");
-
-    // setup a response library to write to the mesh
-    /////////////////////////////////////////////////////////////
-
-    RCP<panzer::ResponseLibrary<panzer::Traits> > stkIOResponseLibrary
-        = buildSTKIOResponseLibrary(physicsBlocks,linObjFactory,wkstContainer,dofManager,cm_factory,mesh,
-                                    closure_models_pl,user_data_pl);
-
 
     // setup the nonlinear solver
     /////////////////////////////////////////////////////////////
@@ -328,15 +302,14 @@ int main(int argc, char *argv[])
     }
 
     // write to an exodus file
-	//auto tmp = Teuchos::rcp_dynamic_cast< Thyra_TpetraVector >(solution_vec,true);
-	//auto tvec = tmp->getTpetraVector();
-	auto gc = physics->getGhostedContainer();
-	//linObjFactory->globalToGhostContainer(*container,*ghostCont,LOC::X | LOC::DxDt); 
-	TianXin::write_solution_data(*dofManager,*mesh,*Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(gc)->get_x());
+	auto tmp = Teuchos::rcp_dynamic_cast< Thyra_TpetraVector >(solution_vec,true);
+	auto tvec = tmp->getTpetraVector();
+	auto gvec = linObjFactory->getGhostedTpetraVector();
+	linObjFactory->globalToGhostTpetraVector(*tvec,*gvec,true); 
+	//auto gc = physics->getGhostedContainer();
+	//TianXin::write_solution_data(*dofManager,*mesh,*Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(gc)->get_x());
+    TianXin::write_solution_data(*dofManager,*mesh,*gvec);
     mesh->writeToExodus("output.exo");
-    /////////////////////////////////////////////////////////////
-    //writeToExodus(0,solution_vec,*physics,*stkIOResponseLibrary,*mesh);
-
   }
   catch (std::exception& e) {
     *out << "*********** Caught Exception: Begin Error Report ***********" << std::endl;
@@ -364,66 +337,4 @@ int main(int argc, char *argv[])
 
   return status;
 }
-
-Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> >
-buildSTKIOResponseLibrary(const std::vector<Teuchos::RCP<panzer::PhysicsBlock> > & physicsBlocks,
-                          const Teuchos::RCP<panzer::LinearObjFactory<panzer::Traits> > & linObjFactory,
-                          const Teuchos::RCP<panzer::WorksetContainer> & wkstContainer,
-                          const Teuchos::RCP<panzer::GlobalIndexer> & globalIndexer,
-                          const panzer::ClosureModelFactory_TemplateManager<panzer::Traits> & cm_factory,
-                          const Teuchos::RCP<panzer_stk::STK_Interface> & mesh,
-                          const Teuchos::ParameterList & closure_model_pl,
-                          const Teuchos::ParameterList & user_data)
-{
-  using Teuchos::RCP;
-  using Teuchos::rcp;
-
-  Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > stkIOResponseLibrary
-      = rcp(new panzer::ResponseLibrary<panzer::Traits>(wkstContainer,globalIndexer,linObjFactory));
-
-  // get a vector of all the element blocks
-  std::vector<std::string> eBlocks;
-  mesh->getElementBlockNames(eBlocks);
-
-  panzer_stk::RespFactorySolnWriter_Builder builder;
-  builder.mesh = mesh;
-
-  stkIOResponseLibrary->addResponse("Main Field Output",eBlocks,builder);
-
-  std::map<std::string,std::vector<std::string> > nodalFields,cellFields;
-
-  // this automatically adds in the nodal fields
-  panzer_stk::IOClosureModelFactory_TemplateBuilder<panzer::Traits> io_cm_builder(cm_factory,mesh,
-                                                                                          nodalFields,
-                                                                                          cellFields);
-  panzer::ClosureModelFactory_TemplateManager<panzer::Traits> io_cm_factory;
-  io_cm_factory.buildObjects(io_cm_builder);
-
-  stkIOResponseLibrary->buildResponseEvaluators(physicsBlocks,
-                                    io_cm_factory,
-                                    closure_model_pl,
-                                    user_data);
-
-  return stkIOResponseLibrary;
-}
-
-void writeToExodus(double time_stamp,
-                   const Teuchos::RCP<const Thyra::VectorBase<double> > & x,
-                   const panzer::ModelEvaluator<double> & model,
-                   panzer::ResponseLibrary<panzer::Traits> & stkIOResponseLibrary,
-                   panzer_stk::STK_Interface & mesh)
-{
-  // fill STK mesh objects
-  Thyra::ModelEvaluatorBase::InArgs<double> inArgs = model.createInArgs();
-  inArgs.set_x(x);
-
-  panzer::AssemblyEngineInArgs respInput;
-  model.setupAssemblyInArgs(inArgs,respInput);
-
-  stkIOResponseLibrary.addResponsesToInArgs<panzer::Traits::Residual>(respInput);
-  stkIOResponseLibrary.evaluate<panzer::Traits::Residual>(respInput);
-
-  mesh.writeToExodus(time_stamp);
-}
-
 

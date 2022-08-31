@@ -58,7 +58,8 @@ void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_In
 void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_Interface & mesh,const Epetra_Vector & x,const std::string & prefix="",const std::string & postfix="");
 #endif 
 void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_Interface & mesh,const Tpetra::Vector<double,panzer::LocalOrdinal,panzer::GlobalOrdinal>& x,const std::string & prefix="",const std::string & postfix="");
-
+void pushSolutionOnFields(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_Interface & mesh,
+	const Tpetra::Vector<double,panzer::LocalOrdinal,panzer::GlobalOrdinal>& x, double scal=0.0 );
 }
 
 #endif

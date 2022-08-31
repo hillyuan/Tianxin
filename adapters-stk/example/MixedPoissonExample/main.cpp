@@ -69,6 +69,7 @@
 #include "Panzer_STK_CubeHexMeshFactory.hpp"
 #include "Panzer_STK_CubeTetMeshFactory.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
+#include "TianXin_STK_Utilities.hpp"
 
 #include "Panzer_STK_ResponseEvaluatorFactory_SolutionWriter.hpp"
 #include "Panzer_HierarchicParallelism.hpp"
@@ -486,6 +487,7 @@ int main(int argc,char * argv[])
 
         // write to exodus
         // ---------------
+		//TianXin::write_solution_data(*dofManager,*mesh,*Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(ghostCont)->get_x());
         // Due to multiple instances of this test being run at the
         // same time (one for each order), we need to differentiate
         // output to prevent race conditions on output file. Multiple

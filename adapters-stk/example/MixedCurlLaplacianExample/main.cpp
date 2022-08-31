@@ -72,7 +72,6 @@
 #include "Panzer_STK_SquareTriMeshFactory.hpp"
 #include "Panzer_STK_CubeHexMeshFactory.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
-#include "Panzer_STK_ResponseEvaluatorFactory_SolutionWriter.hpp"
 
 #include "BelosPseudoBlockGmresSolMgr.hpp"
 #include "BelosTpetraAdapter.hpp"
@@ -382,27 +381,6 @@ int main(int argc,char * argv[])
    wkstContainer->setWorksetSize(workset_size);
    wkstContainer->setGlobalIndexer(dofManager);
 
-   // Setup STK response library for writing out the solution fields
-   ////////////////////////////////////////////////////////////////////////
-   Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > stkIOResponseLibrary
-      = Teuchos::rcp(new panzer::ResponseLibrary<panzer::Traits>(wkstContainer,dofManager,linObjFactory));
-
-   {
-      // get a vector of all the element blocks
-      std::vector<std::string> eBlocks;
-      {
-         // get all element blocks and add them to the list
-         std::vector<std::string> eBlockNames;
-         mesh->getElementBlockNames(eBlockNames);
-         for(std::size_t i=0;i<eBlockNames.size();i++)
-            eBlocks.push_back(eBlockNames[i]);
-      }
-
-      panzer_stk::RespFactorySolnWriter_Builder builder;
-      builder.mesh = mesh;
-      stkIOResponseLibrary->addResponse("Main Field Output",eBlocks,builder);
-   }
-
    // Setup response library for checking the error in this manufactered solution
    ////////////////////////////////////////////////////////////////////////
 
@@ -485,12 +463,6 @@ int main(int argc,char * argv[])
    /////////////////////////////////////////////////////////////
    {
       user_data.set<int>("Workset Size",workset_size);
-      stkIOResponseLibrary->buildResponseEvaluators(physicsBlocks,
-                                        cm_factory,
-                                        closure_models,
-                                        user_data,true,"io");
-
-      user_data.set<int>("Workset Size",workset_size);
       errorResponseLibrary->buildResponseEvaluators(physicsBlocks,
                                                     cm_factory,
                                                     closure_models,
@@ -536,13 +508,7 @@ int main(int argc,char * argv[])
    // write out solution
    if(true) {
       // fill STK mesh objects
-      Teuchos::RCP<panzer::ResponseBase> resp = stkIOResponseLibrary->getResponse<panzer::Traits::Residual>("Main Field Output");
-      panzer::AssemblyEngineInArgs respInput(ghostCont,container);
-      respInput.alpha = 0;
-      respInput.beta = 1;
 
-      stkIOResponseLibrary->addResponsesToInArgs<panzer::Traits::Residual>(respInput);
-      stkIOResponseLibrary->evaluate<panzer::Traits::Residual>(respInput);
 
       // write to exodus
       // ---------------

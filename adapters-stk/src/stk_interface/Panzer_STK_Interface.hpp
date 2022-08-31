@@ -443,7 +443,7 @@ public:
      * \param[in] blockName Name of block
      * \param[in,out] nodes Vector of entities containing the requested nodes.
      */
-
+   void getMyNodes(std::vector<stk::mesh::Entity> & nodes) const;
    void getMyNodes(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const;
    
    void getMyNodeSet(const std::string & sideName,const std::string & blockName,std::vector<stk::mesh::Entity> & nodes) const;
@@ -464,6 +464,7 @@ public:
      * \param[in] nodesetName Name of node set
      * \param[in,out] nodes Vector of entities containing the requested nodes.
      */
+   void getAllNodes(std::vector<stk::mesh::Entity> & nodes) const;
    void getAllNodeSet(const std::string & nodesetName, std::vector<stk::mesh::Entity> & nodes) const;
    //void getAllNodeSetIds(const std::string & nodesetName, std::vector<stk::mesh::EntityId> & nodeIds) const;
    void getAllNodeSetIds(const std::string & nodesetName, std::vector<panzer::GlobalOrdinal> & nodeIds) const;
@@ -1421,6 +1422,7 @@ protected:
    std::map<std::pair<std::string,std::string>,SolutionFieldType*> fieldNameToCellField_;
    std::map<std::pair<std::string,std::string>,SolutionFieldType*> fieldNameToEdgeField_;
    std::map<std::pair<std::string,std::string>,SolutionFieldType*> fieldNameToFaceField_;
+   std::map<std::string,SolutionFieldType*> nameToField_;
 
    // use a set to maintain a list of unique information records
    std::set<std::string> informationRecords_;

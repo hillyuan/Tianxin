@@ -148,8 +148,9 @@ void write_solution_data(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_In
       gather_in_block_tpetra(blockId,dofMngr,x,localCellIds,data);
 
       // write out to stk mesh
-      for(const auto & dataItr : data)
+      for(const auto & dataItr : data) {
          mesh.setSolutionFieldData(prefix+dataItr.first+postfix,blockId,localCellIds,dataItr.second);
+	  }
    }
 }
 
@@ -219,6 +220,39 @@ void build_local_ids(const panzer_stk::STK_Interface & mesh,
 
       std::sort(localBlockIds.begin(),localBlockIds.end());
    }
+}
+
+void pushSolutionOnFields(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_Interface & mesh,
+	const Tpetra::Vector<double,panzer::LocalOrdinal,panzer::GlobalOrdinal>& x, double scal )
+{
+	auto xview = x.getData();
+	// Prepare: All fields in mesh must in dofMngr
+	std::vector<stk::mesh::Entity> nodes;
+	mesh.getAllNodes( nodes );
+	/*int num_field = dofMngr.getNumFields();
+    std::vector<std::string> fnames;
+	for( unsigned i =0; i<num_field; ++i ) {
+		const std::string name_field = dofMngr.getFieldString(i);
+		fnames.emplace_back(name_field);
+	}*/
+	const stk::mesh::FieldVector &fields = mesh.getMetaData()->get_fields();
+	for (size_t field_index = 0; field_index < fields.size(); field_index++) {
+		const stk::mesh::FieldBase &field = *fields[field_index];
+		const std::string fname = field.name();
+		const stk::mesh::EntityRank rank = field.entity_rank();
+		const int fnum = dofMngr.getFieldNum(fname);
+		assert( fnum>=0 );   // must exist
+		
+		/*if( dofMngr.isNodalField(fnum) ) {
+			for( const auto& nd : nodes ) {
+				double *fieldDataForNode = stk::mesh::field_data( field, nd );
+				auto offset = dofMngr.getNodalLDofOfField( fnum, mesh.EntityGlobalId(nd) );
+				*fieldDataForNode = xview[offset];
+			}
+		} else if ( dofMngr.isEdgeField(fnum) ) {
+		} else if ( dofMngr.isFaceField(fnum) ) {
+		}*/
+	}
 }
 
 }
