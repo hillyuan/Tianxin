@@ -387,7 +387,7 @@ void STK_Interface::initializeFieldsInSTK(const std::map<std::pair<std::string,s
    std::set<SolutionFieldType*> uniqueFields;
    for( const auto& fieldIter : nameToField ) {
       uniqueFields.insert(fieldIter.second); // this makes setting up IO easier!
-	  nameToField_.insert( std::make_pair(fieldIter.first.second, fieldIter.second ) );
+	  nameToField_.insert( std::make_pair(fieldIter.first.first, fieldIter.second ) );
    }
    
    //for( const auto& field: nameToField_ )
@@ -1424,6 +1424,16 @@ void STK_Interface::getMyFaces(std::vector<stk::mesh::Entity> & faces) const
 {
    // setup local ownership
    stk::mesh::Selector ownedPart = metaData_->locally_owned_part();
+
+   // grab elements
+   stk::mesh::EntityRank faceRank = getFaceRank();
+   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(faceRank),faces);
+}
+
+void STK_Interface::getAllFaces(std::vector<stk::mesh::Entity> & faces) const
+{
+   // setup local ownership
+   stk::mesh::Selector ownedPart = metaData_->locally_owned_part() | metaData_->globally_shared_part();
 
    // grab elements
    stk::mesh::EntityRank faceRank = getFaceRank();

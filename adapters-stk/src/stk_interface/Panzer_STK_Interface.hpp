@@ -338,6 +338,7 @@ public:
    /** Get a vector of faces owned by this processor
      */
    void getMyFaces(std::vector<stk::mesh::Entity> & faces) const;
+   void getAllFaces(std::vector<stk::mesh::Entity> & faces) const;
 
    /** Get Entities corresponding to the face block requested.
      * The Entites in the vector should be a dimension
@@ -1325,6 +1326,8 @@ public: // static operations
    static const std::string edgeBlockString;
    static const std::string faceBlockString;
    static const std::string facesString;
+   
+   std::map<std::string,SolutionFieldType*> nameToField_;
 
 protected:
 
@@ -1422,7 +1425,6 @@ protected:
    std::map<std::pair<std::string,std::string>,SolutionFieldType*> fieldNameToCellField_;
    std::map<std::pair<std::string,std::string>,SolutionFieldType*> fieldNameToEdgeField_;
    std::map<std::pair<std::string,std::string>,SolutionFieldType*> fieldNameToFaceField_;
-   std::map<std::string,SolutionFieldType*> nameToField_;
 
    // use a set to maintain a list of unique information records
    std::set<std::string> informationRecords_;

@@ -227,31 +227,42 @@ void pushSolutionOnFields(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_I
 {
 	auto xview = x.getData();
 	// Prepare: All fields in mesh must in dofMngr
-	std::vector<stk::mesh::Entity> nodes;
+	std::vector<stk::mesh::Entity> nodes, faces;
 	mesh.getAllNodes( nodes );
+	mesh.getAllFaces( faces );
 	/*int num_field = dofMngr.getNumFields();
     std::vector<std::string> fnames;
 	for( unsigned i =0; i<num_field; ++i ) {
 		const std::string name_field = dofMngr.getFieldString(i);
 		fnames.emplace_back(name_field);
 	}*/
-	const stk::mesh::FieldVector &fields = mesh.getMetaData()->get_fields();
-	for (size_t field_index = 0; field_index < fields.size(); field_index++) {
-		const stk::mesh::FieldBase &field = *fields[field_index];
-		const std::string fname = field.name();
-		const stk::mesh::EntityRank rank = field.entity_rank();
-		const int fnum = dofMngr.getFieldNum(fname);
-		assert( fnum>=0 );   // must exist
-		
-		/*if( dofMngr.isNodalField(fnum) ) {
+	//const stk::mesh::FieldVector &fields = mesh.getMetaData()->get_fields();
+	//for (size_t field_index = 0; field_index < fields.size(); field_index++) {
+	for (const auto& item : mesh.nameToField_) { 
+		//const stk::mesh::FieldBase &field = *fields[field_index];
+		//const std::string fname = field.name();
+		//const stk::mesh::EntityRank rank = field.entity_rank();
+		const int fnum = dofMngr.getFieldNum(item.first);
+		TEUCHOS_ASSERT( fnum>=0 );   // must exist
+
+		if( dofMngr.isNodalField(fnum) ) {
 			for( const auto& nd : nodes ) {
-				double *fieldDataForNode = stk::mesh::field_data( field, nd );
+				double *fieldDataForNode = stk::mesh::field_data( *item.second, nd );
 				auto offset = dofMngr.getNodalLDofOfField( fnum, mesh.EntityGlobalId(nd) );
 				*fieldDataForNode = xview[offset];
 			}
 		} else if ( dofMngr.isEdgeField(fnum) ) {
 		} else if ( dofMngr.isFaceField(fnum) ) {
-		}*/
+			for( const auto& fc : faces ) {
+				double *fieldDataForFace = stk::mesh::field_data( *item.second, fc );
+				TEUCHOS_ASSERT(fieldDataForFace!=0); // only needed if blockId is not specified
+				auto offset = dofMngr.getFaceLDofOfField( fnum, mesh.EntityGlobalId(fc) );
+				double val = 0.0;
+				for( const auto& off : offset )
+					val += xview[off];
+				fieldDataForFace[0] = val/offset.size();//std::cout << mesh.EntityGlobalId(fc) << ", " << val << std::endl;
+			}
+		} 
 	}
 }
 
