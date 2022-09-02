@@ -244,6 +244,8 @@ public:
     void getElementalFaces(const LocalOrdinal& elmtLid, std::vector<GlobalOrdinal>& nodesgid) const;
     int getFaceRank() const final {return stkMeshDB_->getFaceRank();}
 
+    int getElementRank() const final {return stkMeshDB_->getElementRank();}
+
 	virtual void fillLocalCellIDs(Kokkos::View<panzer::GlobalOrdinal*> & owned_cells,
                  Kokkos::View<panzer::GlobalOrdinal*> & ghost_cells,
                  Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells) final

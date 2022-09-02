@@ -305,10 +305,11 @@ int main(int argc, char *argv[])
 	auto tmp = Teuchos::rcp_dynamic_cast< Thyra_TpetraVector >(solution_vec,true);
 	auto tvec = tmp->getTpetraVector();
 	auto gvec = linObjFactory->getGhostedTpetraVector();
-	linObjFactory->globalToGhostTpetraVector(*tvec,*gvec,true); 
+	linObjFactory->globalToGhostTpetraVector(*tvec,*gvec,true);
 	//auto gc = physics->getGhostedContainer();
 	//TianXin::write_solution_data(*dofManager,*mesh,*Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(gc)->get_x());
-    TianXin::write_solution_data(*dofManager,*mesh,*gvec);
+    //TianXin::write_solution_data(*dofManager,*mesh,*gvec);
+	TianXin::pushSolutionOnFields(*dofManager,*mesh,*gvec);
     mesh->writeToExodus("output.exo");
   }
   catch (std::exception& e) {

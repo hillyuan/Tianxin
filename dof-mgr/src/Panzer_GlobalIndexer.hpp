@@ -353,14 +353,6 @@ public:
 	   return true;
    }
    
-   /*bool isCellField(int f)
-   {
-	   if( cellLIDMap_.empty() ) return false;
-	   auto it = faceLIDMap_.find(f);
-	   if( it==faceLIDMap_.end() ) return false;
-	   return true;
-   }*/
-	
    panzer::LocalOrdinal getNodalLDofOfField(int f, panzer::GlobalOrdinal nd) const
    {
 	   if( nodeLIDMap_.empty() ) return -1;

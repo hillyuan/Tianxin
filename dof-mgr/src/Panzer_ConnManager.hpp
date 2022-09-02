@@ -156,6 +156,8 @@ class FieldPattern; // from DOFManager
     virtual void getElementalFaces(const LocalOrdinal&, std::vector<GlobalOrdinal>&) const {}
     virtual int getFaceRank() const {return 2;}
 
+    virtual int getElementRank() const {return 3;}
+
 	virtual void fillLocalCellIDs(Kokkos::View<panzer::GlobalOrdinal*> & owned_cells,
                  Kokkos::View<panzer::GlobalOrdinal*> & ghost_cells,
                  Kokkos::View<panzer::GlobalOrdinal*> & virtual_cells) {}

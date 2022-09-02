@@ -73,6 +73,7 @@
 #include "Panzer_STK_SquareTriMeshFactory.hpp"
 #include "Panzer_STK_CubeHexMeshFactory.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
+#include "TianXin_STK_Utilities.hpp"
 #include "Panzer_STK_ResponseEvaluatorFactory_SolutionWriter.hpp"
 
 #include "BelosPseudoBlockGmresSolMgr.hpp"
@@ -207,6 +208,7 @@ int main(int argc,char * argv[])
      pl->set("Xf",x_size);
      pl->set("Yf",y_size);
      pl->set("Zf",z_size);
+	 pl->set("Create Edge Blocks",true);
      mesh_factory->setParameterList(pl);
    }
    else {
@@ -223,6 +225,7 @@ int main(int argc,char * argv[])
      pl->set("Y Elements",y_elements);
      pl->set("Xf",x_size);
      pl->set("Yf",y_size);
+	 pl->set("Create Edge Blocks",true);
      mesh_factory->setParameterList(pl);
    }
 
@@ -324,8 +327,8 @@ int main(int argc,char * argv[])
          if(basis->getElementSpace()==panzer::PureBasis::HGRAD)
             mesh->addSolutionField(fieldItr->first,pb->elementBlockID());
          else if(basis->getElementSpace()==panzer::PureBasis::HCURL) {
-            for(int i=0;i<basis->dimension();i++)
-               mesh->addCellField(fieldItr->first+dimenStr[i],pb->elementBlockID());
+        //    for(int i=0;i<basis->dimension();i++)
+            mesh->addEdgeField(fieldItr->first,pb->elementBlockID());
          }
       }
    }
@@ -534,16 +537,17 @@ int main(int argc,char * argv[])
    // write out solution
    if(true) {
       // fill STK mesh objects
-      Teuchos::RCP<panzer::ResponseBase> resp = stkIOResponseLibrary->getResponse<panzer::Traits::Residual>("Main Field Output");
+      /*Teuchos::RCP<panzer::ResponseBase> resp = stkIOResponseLibrary->getResponse<panzer::Traits::Residual>("Main Field Output");
       panzer::AssemblyEngineInArgs respInput(ghostCont,container);
       respInput.alpha = 0;
       respInput.beta = 1;
 
       stkIOResponseLibrary->addResponsesToInArgs<panzer::Traits::Residual>(respInput);
-      stkIOResponseLibrary->evaluate<panzer::Traits::Residual>(respInput);
+      stkIOResponseLibrary->evaluate<panzer::Traits::Residual>(respInput);*/
 
       // write to exodus
       // ---------------
+	  TianXin::pushSolutionOnFields(*dofManager,*mesh,*Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_x());
       // Due to multiple instances of this test being run at the same
       // time (one for each order), we need to differentiate output to
       // prevent race conditions on output file. Multiple runs for the

@@ -324,6 +324,7 @@ public:
      * \param[in] edgeBlockName Name of edge block
      * \param[in,out] edges Vector of entities containing the requested edges.
      */
+   void getAllEdges(std::vector<stk::mesh::Entity> & edges) const;
    void getAllEdges(const std::string & edgeBlockName,std::vector<stk::mesh::Entity> & edges) const;
 
    /** Get Entities corresponding to the edge block requested. This also limits the entities

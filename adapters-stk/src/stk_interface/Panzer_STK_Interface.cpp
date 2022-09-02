@@ -1371,6 +1371,16 @@ void STK_Interface::getMyEdgeSetIds(const std::string & edgeBlockName,const std:
    }
 }
 
+void STK_Interface::getAllEdges(std::vector<stk::mesh::Entity> & faces) const
+{
+   // setup local ownership
+   stk::mesh::Selector ownedPart = metaData_->locally_owned_part() | metaData_->globally_shared_part();
+
+   // grab elements
+   stk::mesh::EntityRank edgeRank = getEdgeRank();
+   stk::mesh::get_selected_entities(ownedPart,bulkData_->buckets(edgeRank),faces);
+}
+
 void STK_Interface::getAllEdges(const std::string & edgeBlockName,std::vector<stk::mesh::Entity> & edges) const
 {
    stk::mesh::Part * edgeBlockPart = getEdgeBlock(edgeBlockName);

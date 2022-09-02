@@ -1421,7 +1421,7 @@ void DOFManager::buildDofsInfo()
 				GidTuple_nd.emplace_back( std::make_tuple(fd1, ndgid, gid) );
 			}
 		}
-		if( dofcount>=fields.size() ) continue;  // no edge/face dofs
+	//	if( dofcount>=fields.size() ) continue;  // no edge/face dofs
 			
 		connMngr_->getElementalEdges(ele, edgeGIDs);
 		for( std::size_t i =0; i<edgeGIDs.size(); i++ )
@@ -1452,7 +1452,7 @@ void DOFManager::buildDofsInfo()
 				GidTuple_ed.emplace_back( std::make_tuple(fd1, ndgid, gids) );
 			}
 		}
-        if( dofcount>=fields.size() ) continue;  // no face dofs
+    //    if( dofcount>=fields.size() ) continue;  // no face dofs
 		  
         if( dimension>1 ) {
 		   connMngr_->getElementalFaces(ele, faceGIDs);
@@ -1472,8 +1472,10 @@ void DOFManager::buildDofsInfo()
 				{
 					++dofcount;
 			
-					gid = GIDs[offsets[0]];
-					lid = LIDs[offsets[0]];
+					gid = GIDs[offsets[j]];
+					lid = LIDs[offsets[j]];
+                    lids[j] = lid;
+					gids[j] = gid;
 					auto itr_find = lid_defined.find(lid);
 					if( itr_find != lid_defined.end() ) continue;  // emblaced already!
 					lid_defined.emplace(lid);

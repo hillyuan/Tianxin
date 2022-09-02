@@ -70,8 +70,6 @@
 #include "Panzer_STK_CubeTetMeshFactory.hpp"
 #include "Panzer_STK_SetupUtilities.hpp"
 #include "TianXin_STK_Utilities.hpp"
-
-#include "Panzer_STK_ResponseEvaluatorFactory_SolutionWriter.hpp"
 #include "Panzer_HierarchicParallelism.hpp"
 
 #include "BelosPseudoBlockGmresSolMgr.hpp"
@@ -177,6 +175,7 @@ int main(int argc,char * argv[])
      pl->set("X Elements",x_elements/x_blocks);
      pl->set("Y Elements",y_elements);
      pl->set("Z Elements",z_elements);
+	 pl->set("Create Face Blocks",true);
      mesh_factory->setParameterList(pl);
 
      RCP<panzer_stk::STK_Interface> mesh = mesh_factory->buildUncommitedMesh(MPI_COMM_WORLD);
@@ -291,8 +290,8 @@ int main(int argc,char * argv[])
                  mesh->addCellField(fieldItr->first+dimenStr[i],pb->elementBlockID());
            }
            else if(basis->getElementSpace()==panzer::PureBasis::HDIV) {
-              for(int i=0;i<basis->dimension();i++)
-                 mesh->addCellField(fieldItr->first+dimenStr[i],pb->elementBlockID());
+        //      for(int i=0;i<basis->dimension();i++)
+                 mesh->addFaceField(fieldItr->first,pb->elementBlockID());
            }
         }
      }
@@ -329,21 +328,6 @@ int main(int argc,char * argv[])
        wkstContainer->setNeeds(physicsBlocks[i]->elementBlockID(),physicsBlocks[i]->getWorksetNeeds());
      wkstContainer->setWorksetSize(workset_size);
      wkstContainer->setGlobalIndexer(dofManager);
-
-     // Setup STK response library for writing out the solution fields
-     ////////////////////////////////////////////////////////////////////////
-     Teuchos::RCP<panzer::ResponseLibrary<panzer::Traits> > stkIOResponseLibrary
-        = Teuchos::rcp(new panzer::ResponseLibrary<panzer::Traits>(wkstContainer,dofManager,linObjFactory));
-
-     {
-        // get a vector of all the element blocks
-        std::vector<std::string> eBlocks;
-        mesh->getElementBlockNames(eBlocks);
-
-        panzer_stk::RespFactorySolnWriter_Builder builder;
-        builder.mesh = mesh;
-        stkIOResponseLibrary->addResponse("Main Field Output",eBlocks,builder);
-     }
 
      // Setup response library for checking the error in this manufactered solution
      ////////////////////////////////////////////////////////////////////////
@@ -414,12 +398,6 @@ int main(int argc,char * argv[])
      /////////////////////////////////////////////////////////////
      {
         user_data.set<int>("Workset Size",workset_size);
-        stkIOResponseLibrary->buildResponseEvaluators(physicsBlocks,
-                                          cm_factory,
-                                          closure_models,
-                                          user_data);
-
-        user_data.set<int>("Workset Size",workset_size);
         errorResponseLibrary->buildResponseEvaluators(physicsBlocks,
                                                       cm_factory,
                                                       closure_models,
@@ -477,17 +455,9 @@ int main(int argc,char * argv[])
 
      // write out solution
      if(true) {
-        // fill STK mesh objects
-        panzer::AssemblyEngineInArgs respInput(ghostCont,container);
-        respInput.alpha = 0;
-        respInput.beta = 1;
-
-        stkIOResponseLibrary->addResponsesToInArgs<panzer::Traits::Residual>(respInput);
-        stkIOResponseLibrary->evaluate<panzer::Traits::Residual>(respInput);
-
         // write to exodus
         // ---------------
-		//TianXin::write_solution_data(*dofManager,*mesh,*Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(ghostCont)->get_x());
+		TianXin::pushSolutionOnFields(*dofManager,*mesh,*Teuchos::rcp_dynamic_cast<panzer::TpetraLinearObjContainer<double,int,panzer::GlobalOrdinal>>(container)->get_x());
         // Due to multiple instances of this test being run at the
         // same time (one for each order), we need to differentiate
         // output to prevent race conditions on output file. Multiple
