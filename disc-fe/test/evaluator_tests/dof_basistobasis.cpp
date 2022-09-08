@@ -73,7 +73,7 @@ using Teuchos::rcp;
 
 // for making explicit instantiated tests easier
 #define UNIT_TEST_GROUP(TYPE) \
-  TEUCHOS_UNIT_TEST_TEMPLATE_1_INSTANT(dof_pointfield,value,TYPE)
+  TEUCHOS_UNIT_TEST_TEMPLATE_1_INSTANT(DOF_BasisToBasis,value,TYPE)
   //TEUCHOS_UNIT_TEST_TEMPLATE_1_INSTANT(dof_pointfield,gradient,TYPE)
 
 namespace panzer {
@@ -142,7 +142,7 @@ evaluateFields(
 
 //**********************************************************************
 
-TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(dof_pointfield,value,EvalType)
+TEUCHOS_UNIT_TEST_TEMPLATE_1_DECL(DOF_BasisToBasis,value,EvalType)
 {
 
   using Teuchos::RCP;
