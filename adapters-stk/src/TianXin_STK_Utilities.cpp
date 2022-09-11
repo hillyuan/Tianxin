@@ -39,6 +39,7 @@
 
 #include "TianXin_STK_Utilities.hpp"
 #include "Panzer_GlobalIndexer.hpp"
+#include "Panzer_PhysicsBlock.hpp"
 
 #include "Kokkos_DynRankView.hpp"
 
@@ -254,6 +255,55 @@ void pushSolutionOnFields(const panzer::GlobalIndexer& dofMngr,panzer_stk::STK_I
 				for( const auto& off : offset )
 					val += xview[off];
 				fieldDataForEdge[0] = val/offset.size();
+			}
+		} else if ( rank == mesh.getFaceRank() ) {
+			for( const auto& fc : faces ) {
+				double *fieldDataForFace = stk::mesh::field_data( *item.second, fc );
+				TEUCHOS_ASSERT(fieldDataForFace!=0); // only needed if blockId is not specified
+				auto offset = dofMngr.getFaceLDofOfField( fnum, mesh.EntityGlobalId(fc) );
+				double val = 0.0;
+				for( const auto& off : offset )
+					val += xview[off];
+				fieldDataForFace[0] = val/offset.size();
+			}
+		} 
+	}
+}
+
+void writeSolutionToFile(const panzer::GlobalIndexer& dofMngr,const panzer_stk::STK_Interface& mesh,const std::vector<Teuchos::RCP<panzer::PhysicsBlock> >& physicsBlocks 
+	, const Tpetra::Vector<double,panzer::LocalOrdinal,panzer::GlobalOrdinal>& x )
+{
+	auto xview = x.getData();
+	// Prepare: All fields in mesh must in dofMngr
+	std::vector<stk::mesh::Entity> nodes, edges, faces;
+	mesh.getAllNodes( nodes );
+	mesh.getAllEdges( edges );
+	mesh.getAllFaces( faces );
+	//const stk::mesh::FieldVector &fields = mesh.getMetaData()->get_fields();
+	//for (size_t field_index = 0; field_index < fields.size(); field_index++) {
+	for (const auto& item : mesh.nameToField_) { 
+		//const stk::mesh::FieldBase &field = *fields[field_index];
+		//const std::string fname = field.name();
+		const stk::mesh::EntityRank rank = item.second ->entity_rank();
+		const int fnum = dofMngr.getFieldNum(item.first);
+		const std::string dofname = item.first;
+		TEUCHOS_ASSERT( fnum>=0 );   // must exist
+		if( rank == mesh.getNodeRank() ) {
+			for( const auto& nd : nodes ) {
+				double *fieldDataForNode = stk::mesh::field_data( *item.second, nd );
+				auto offset = dofMngr.getNodalLDofOfField( fnum, mesh.EntityGlobalId(nd) );
+				*fieldDataForNode = xview[offset];
+			}
+		} else if ( rank == mesh.getEdgeRank() ) {
+			for( const auto& pb : physicsBlocks ) {
+				const auto& basis = pb->getBasisForDOF( dofname );
+				/*double *fieldDataForEdge = stk::mesh::field_data( *item.second, eg );
+				TEUCHOS_ASSERT(fieldDataForEdge!=0); // only needed if blockId is not specified
+				auto offset = dofMngr.getEdgeLDofOfField( fnum, mesh.EntityGlobalId(eg) );
+				double val = 0.0;
+				for( const auto& off : offset )
+					val += xview[off];
+				fieldDataForEdge[0] = val/offset.size();*/
 			}
 		} else if ( rank == mesh.getFaceRank() ) {
 			for( const auto& fc : faces ) {
