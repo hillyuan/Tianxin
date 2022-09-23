@@ -274,6 +274,16 @@ void writeSolutionToFile(const panzer::GlobalIndexer& dofMngr,const panzer_stk::
 	, const Tpetra::Vector<double,panzer::LocalOrdinal,panzer::GlobalOrdinal>& x )
 {
 	auto xview = x.getData();
+	auto x_data = x.getLocalViewDevice(Tpetra::Access::ReadOnly);
+	//globalIndexer_->getElementLIDs(this->wda(workset).cell_local_ids_k,scratch_lids_);
+
+	for( const auto& pb : physicsBlocks ) {
+		const auto& bases = pb->getBases();
+		for( auto const& basis : bases ) {
+			if( basis.second->isScalarBasis() ) continue;
+			PHX::MDField<double,panzer::Cell,panzer::NODE> gatherField(basis.first, basis.second->functional);
+		}
+	}
 	// Prepare: All fields in mesh must in dofMngr
 	std::vector<stk::mesh::Entity> nodes, edges, faces;
 	mesh.getAllNodes( nodes );
