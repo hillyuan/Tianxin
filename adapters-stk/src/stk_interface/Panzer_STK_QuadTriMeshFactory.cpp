@@ -137,6 +137,7 @@ Teuchos::RCP<STK_Interface> QuadTriMeshFactory::buildUncommitedMesh(stk::Paralle
    buildMetaData(parallelMach,*mesh);
 
    mesh->addPeriodicBCs(periodicBCVec_);
+   mesh->setBoundingBoxSearchFlag(useBBoxSearch_);
  
    return mesh;
 }
@@ -196,7 +197,7 @@ void QuadTriMeshFactory::setParameterList(const Teuchos::RCP<Teuchos::ParameterL
    yProcs_ = paramList->get<int>("Y Procs");
 
    // read in periodic boundary conditions
-   parsePeriodicBCList(Teuchos::rcpFromRef(paramList->sublist("Periodic BCs")),periodicBCVec_);
+   parsePeriodicBCList(Teuchos::rcpFromRef(paramList->sublist("Periodic BCs")),periodicBCVec_,useBBoxSearch_);
 }
 
 //! From ParameterListAcceptor

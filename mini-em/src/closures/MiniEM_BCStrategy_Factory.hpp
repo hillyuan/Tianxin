@@ -12,10 +12,10 @@
 
 namespace mini_em {
   
-  /*PANZER_DECLARE_BCSTRATEGY_TEMPLATE_BUILDER(mini_em::BCStrategy_Dirichlet_Constant,
-					     BCStrategy_Dirichlet_Constant)
-  PANZER_DECLARE_BCSTRATEGY_TEMPLATE_BUILDER(mini_em::BCStrategy_Dirichlet_AuxConstant,
-					     BCStrategy_Dirichlet_AuxConstant)*/
+  //PANZER_DECLARE_BCSTRATEGY_TEMPLATE_BUILDER(mini_em::BCStrategy_Dirichlet_Constant,
+	//				     BCStrategy_Dirichlet_Constant)
+  //PANZER_DECLARE_BCSTRATEGY_TEMPLATE_BUILDER(mini_em::BCStrategy_Dirichlet_AuxConstant,
+//					     BCStrategy_Dirichlet_AuxConstant)
 
   struct BCFactory : public panzer::BCStrategyFactory {
 
@@ -28,8 +28,8 @@ namespace mini_em {
       
       bool found = false;
 
-      //PANZER_BUILD_BCSTRATEGY_OBJECTS("Constant", BCStrategy_Dirichlet_Constant)
-      //PANZER_BUILD_BCSTRATEGY_OBJECTS("AuxConstant", BCStrategy_Dirichlet_AuxConstant)
+    //  PANZER_BUILD_BCSTRATEGY_OBJECTS("Constant", BCStrategy_Dirichlet_Constant)
+    //  PANZER_BUILD_BCSTRATEGY_OBJECTS("AuxConstant", BCStrategy_Dirichlet_AuxConstant)
 
       TEUCHOS_TEST_FOR_EXCEPTION(!found, std::logic_error, 
 			 "Error - the BC Strategy called \"" << bc.strategy() <<

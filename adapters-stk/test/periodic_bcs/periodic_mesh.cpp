@@ -53,7 +53,6 @@
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_SquareQuadMeshFactory.hpp"
 #include "Panzer_STK_CubeHexMeshFactory.hpp"
-#include "TianXin_STK_Utilities.hpp"
 #include "Panzer_STK_PeriodicBC_Matcher.hpp"
 #include "Panzer_STK_PeriodicBC_Parser.hpp"
 #include "Panzer_STK_PeriodicBC_MatchConditions.hpp"
@@ -190,63 +189,44 @@ namespace panzer {
     }
   }
 
-  TEUCHOS_UNIT_TEST(periodic_mesh, pbc_search)
+  TEUCHOS_UNIT_TEST(periodic_mesh, add_get_vector)
   {
-    Kokkos::View<panzer::GlobalOrdinal*> owned_cells,ghost_cells,virtual_cells;
+    using Teuchos::RCP;
+    using Teuchos::Tuple;
 
-    std::unique_ptr<panzer_stk::STK_MeshFactory> mesh_factory( new panzer_stk::SquareQuadMeshFactory );
-    std::vector< std::tuple<std::string, std::string, std::string> > periodicBC;
+    panzer_stk::SquareQuadMeshFactory mesh_factory;
 
     // setup mesh
     /////////////////////////////////////////////
-    Teuchos::RCP<panzer_stk::STK_Interface> mesh;
+    RCP<panzer_stk::STK_Interface> mesh;
     {
-       Teuchos::RCP<Teuchos::ParameterList> pl0 = Teuchos::rcp(new Teuchos::ParameterList);
-       pl0->set("X Blocks",2);
-       pl0->set("Y Blocks",1);
-       pl0->set("X Elements",6);
-       pl0->set("Y Elements",4);
-       mesh_factory->setParameterList(pl0);
-       mesh = mesh_factory->buildMesh(MPI_COMM_WORLD);
+       RCP<Teuchos::ParameterList> pl = rcp(new Teuchos::ParameterList);
+       pl->set("X Blocks",2);
+       pl->set("Y Blocks",1);
+       pl->set("X Elements",6);
+       pl->set("Y Elements",4);
+       mesh_factory.setParameterList(pl);
+       mesh = mesh_factory.buildMesh(MPI_COMM_WORLD);
     }
 
-    Teuchos::ParameterList pl("top_list");
-    pl.set("Count",2);
-    //pl.set("Periodic Condition 1","y-coord left;right");
-    //pl.set("Periodic Condition 2","x-coord top;bottom");
-	pl.set("Periodic Condition 1","y-edge left;right");
-    pl.set("Periodic Condition 2","x-edge top;bottom");
-    mesh_factory->parsePeriodicBCList(pl,periodicBC);
-    TEST_EQUALITY(mesh->num_pbc_search(),0);
-	mesh->addPeriodicBC(periodicBC);
-	 
-    Epetra_MpiComm Comm(MPI_COMM_WORLD);
-    TEUCHOS_ASSERT(Comm.NumProc()==2);
-    int myRank = Comm.MyPID();
+    panzer_stk::CoordMatcher x_matcher(0);
+    panzer_stk::CoordMatcher y_matcher(1);
+    mesh->addPeriodicBC(panzer_stk::buildPeriodicBC_Matcher("top","bottom",x_matcher));
+    mesh->addPeriodicBC(panzer_stk::buildPeriodicBC_Matcher("left","right",y_matcher));
+    mesh->addPeriodicBC(panzer_stk::buildPeriodicBC_Matcher("top","bottom",x_matcher,"edge"));
+    mesh->addPeriodicBC(panzer_stk::buildPeriodicBC_Matcher("left","right",y_matcher,"edge"));
 
-    mesh->fillLocalCellIDs(owned_cells,ghost_cells,virtual_cells);
-	unsigned num_o = owned_cells.extent(0);
-	unsigned num_v = virtual_cells.extent(0);
-    // 12*4 elements; with 12+12+4+4=32 virtual elements 
-	if(myRank==0) {
-	   TEST_EQUALITY(mesh->num_pbc_search(),13);
-	   TEST_EQUALITY(num_o,24);
-	   TEST_EQUALITY(num_v,16);
-    } else {
-		TEST_EQUALITY(mesh->num_pbc_search(),12);
-		TEST_EQUALITY(num_o,24);
-		TEST_EQUALITY(num_v,16);
-	}
-	
-	/*num_v = owned_cells.extent(0);
-	Kokkos::parallel_for( num_v, KOKKOS_LAMBDA(const int i) {
-		std::cout << i << ", " << owned_cells(i)<< std::endl;
-	});*/
+    std::vector<RCP<const panzer_stk::PeriodicBC_MatcherBase> > & mod_vec = mesh->getPeriodicBCVector();
+    TEST_EQUALITY(mod_vec.size(),4);
+
+    const std::vector<RCP<const panzer_stk::PeriodicBC_MatcherBase> > & const_vec = mesh.getConst()->getPeriodicBCVector();
+    TEST_EQUALITY(const_vec.size(),4);
   }
 
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager)
   {
     using Teuchos::RCP;
+    using Teuchos::Tuple;
 
     Epetra_MpiComm Comm(MPI_COMM_WORLD);
     TEUCHOS_ASSERT(Comm.NumProc()==2);
@@ -312,6 +292,7 @@ namespace panzer {
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager_edge)
   {
     using Teuchos::RCP;
+    using Teuchos::Tuple;
 
     Epetra_MpiComm Comm(MPI_COMM_WORLD);
     TEUCHOS_ASSERT(Comm.NumProc()==2);
@@ -358,6 +339,7 @@ namespace panzer {
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager2)
   {
     using Teuchos::RCP;
+    using Teuchos::Tuple;
 
     Epetra_MpiComm Comm(MPI_COMM_WORLD);
     TEUCHOS_ASSERT(Comm.NumProc()==2);
@@ -422,6 +404,7 @@ namespace panzer {
   TEUCHOS_UNIT_TEST(periodic_mesh, conn_manager2_edge)
   {
     using Teuchos::RCP;
+    using Teuchos::Tuple;
 
     Epetra_MpiComm Comm(MPI_COMM_WORLD);
     TEUCHOS_ASSERT(Comm.NumProc()==2);

@@ -90,7 +90,8 @@ Teuchos::RCP<STK_Interface> LineMeshFactory::buildUncommitedMesh(stk::ParallelMa
    // build meta information: blocks and side set setups
    buildMetaData(parallelMach,*mesh);
 
-   //mesh->addPeriodicBCs(periodicBCVec_);
+   mesh->addPeriodicBCs(periodicBCVec_);
+   mesh->setBoundingBoxSearchFlag(useBBoxSearch_);
  
    return mesh;
 }
@@ -130,7 +131,7 @@ void LineMeshFactory::setParameterList(const Teuchos::RCP<Teuchos::ParameterList
    nXElems_ = paramList->get<int>("X Elements");
 
    // read in periodic boundary conditions
-   parsePeriodicBCList(Teuchos::rcpFromRef(paramList->sublist("Periodic BCs")),periodicBCVec_);
+   parsePeriodicBCList(Teuchos::rcpFromRef(paramList->sublist("Periodic BCs")),periodicBCVec_,useBBoxSearch_);
    parsePeriodicBCList(paramList->sublist("Periodic BCs"),periodicity_);
 }
 

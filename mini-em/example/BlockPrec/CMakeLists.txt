@@ -60,21 +60,21 @@ INSTALL(TARGETS "${PACKAGE_NAME}_BlockPrec"
 #################################################
 # Augmentation solver
 
-TRIBITS_ADD_TEST(
-   BlockPrec
-   NAME "MiniEM-BlockPrec_Augmentation"
-   ARGS "--solver=Augmentation --numTimeSteps=1 --linAlgebra=Tpetra"
-   COMM serial mpi
-   NUM_MPI_PROCS 1
-   )
+#TRIBITS_ADD_TEST(
+#   BlockPrec
+#   NAME "MiniEM-BlockPrec_Augmentation"
+#   ARGS "--solver=Augmentation --numTimeSteps=1 --linAlgebra=Tpetra"
+#   COMM serial mpi
+#   NUM_MPI_PROCS 1
+#   )
 
-TRIBITS_ADD_TEST(
-   BlockPrec
-   NAME "MiniEM-BlockPrec_Augmentation"
-   ARGS "--solver=Augmentation --numTimeSteps=1 --linAlgebra=Tpetra"
-   COMM mpi
-   NUM_MPI_PROCS 4
-   )
+#TRIBITS_ADD_TEST(
+#   BlockPrec
+#   NAME "MiniEM-BlockPrec_Augmentation"
+#   ARGS "--solver=Augmentation --numTimeSteps=1 --linAlgebra=Tpetra"
+#   COMM mpi
+#   NUM_MPI_PROCS 4
+#   )
 
 IF(NOT Kokkos_ENABLE_CUDA AND NOT Kokkos_ENABLE_OPENMP AND MueLu_ENABLE_Epetra AND NOT HAVE_TPETRA_INST_INT_LONG_LONG AND HAVE_TPETRA_INST_INT_INT)
  # We want GlobalOrdinal=int. Panzer picks long long, if it is available, and otherwise Tpetra's default.

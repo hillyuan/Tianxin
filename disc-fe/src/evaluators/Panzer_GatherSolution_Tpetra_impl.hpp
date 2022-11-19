@@ -309,7 +309,7 @@ postRegistrationSetup(typename TRAITS::SetupData /* d */,
       }
     }
   }
-  
+
   gatherFieldsVoV_.syncHostToDevice();
   tangentFieldsVoV_.syncHostToDevice();
 

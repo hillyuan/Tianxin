@@ -60,7 +60,6 @@
 
 #include <Shards_CellTopology.hpp>
 #include <Shards_CellTopologyData.h>
-#include <Intrepid2_Orientation.hpp>
 
 #include <PanzerAdaptersSTK_config.hpp>
 #include <Kokkos_ViewFactory.hpp>
@@ -68,7 +67,6 @@
 #include "TianXin_AbstractDiscretation.hpp"
 
 #include <unordered_map>
-#include <memory>
 
 #ifdef PANZER_HAVE_IOSS
 #include <stk_io/StkMeshIoBroker.hpp>
@@ -1184,6 +1182,15 @@ public:
    getPeriodicBCVector()
    { return periodicBCs_; }
 
+   /** Return a flag indicating if the bounding box search is used
+    * when matching periodic Ids. */ 
+   const bool & useBoundingBoxSearch() const
+   { return useBBoxSearch_; }
+
+   /** Set the periodic search flag. Indicates if the bounding box search is used */
+   void setBoundingBoxSearchFlag(const bool & searchFlag)
+   { useBBoxSearch_ = searchFlag; return; }
+
    /** Add a periodic boundary condition.
      *
      * \note This does not actually change the underlying mesh.
@@ -1200,6 +1207,8 @@ public:
    void addPeriodicBCs(const std::vector<Teuchos::RCP<const PeriodicBC_MatcherBase> > & bc_vec)
    { periodicBCs_.insert(periodicBCs_.end(),bc_vec.begin(),bc_vec.end()); }
 
+   /** Pairs DOFs on periodic entities 
+    */
    std::pair<Teuchos::RCP<std::vector<std::pair<std::size_t,std::size_t> > >, Teuchos::RCP<std::vector<unsigned int> > >
    getPeriodicNodePairing() const;
 
@@ -1261,6 +1270,13 @@ public:
    bool getUseFieldCoordinates() const
    { return useFieldCoordinates_; }
 
+   /** Use lower case (or not) for I/O */
+   void setUseLowerCaseForIO(bool useLowerCase)
+   { useLowerCase_ = useLowerCase; }
+
+   /** Use lower case (or not) for I/O */
+   bool getUseLowerCaseForIO() const
+   { return useLowerCase_; }
 
    /** Get vertices associated with a number of elements of the same geometry, note that a coordinate field
      * will be used (if not is available an exception will be thrown).
@@ -1384,6 +1400,7 @@ protected:
                          const std::vector<std::size_t> & localElementIds,const ArrayT & solutionValues);
 
    std::vector<Teuchos::RCP<const PeriodicBC_MatcherBase> > periodicBCs_;
+   bool useBBoxSearch_ = false;  // TODO swap this to change default periodic BC search (see also PeriodicBC_Parser.cpp)
 
    Teuchos::RCP<stk::mesh::MetaData> metaData_;
    Teuchos::RCP<stk::mesh::BulkData> bulkData_;
@@ -1512,6 +1529,8 @@ protected:
    std::map<std::string,std::vector<std::string> > meshDispFields_;  // displacement fields, output to exodus
 
    bool useFieldCoordinates_;
+
+   bool useLowerCase_;
 
    // Object describing how to sort a vector of elements using
    // local ID as the key, very short lived object
@@ -1686,6 +1705,11 @@ void STK_Interface::setFaceFieldData(const std::string & fieldName,const std::st
 template <typename ArrayT>
 void STK_Interface::getElementVertices(const std::vector<std::size_t> & localElementIds, ArrayT & vertices) const
 {
+   if(!useFieldCoordinates_) {
+     //
+     // gather from the intrinsic mesh coordinates (non-lagrangian)
+     //
+
      const std::vector<stk::mesh::Entity> & elements = *(this->getElementsOrderedByLID());
 
      // convert to a vector of entity objects
@@ -1694,6 +1718,12 @@ void STK_Interface::getElementVertices(const std::vector<std::size_t> & localEle
        selected_elements.push_back(elements[localElementIds[cell]]);
 
      getElementVertices_FromCoords(selected_elements,vertices);
+   }
+   else {
+     TEUCHOS_TEST_FOR_EXCEPTION(true,std::invalid_argument,
+                                "STK_Interface::getElementVertices: Cannot call this method when field coordinates are used "
+                                "without specifying an element block.");
+   }
 }
 
 template <typename ArrayT>

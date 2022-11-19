@@ -56,6 +56,7 @@ using Teuchos::rcp;
 #include "Panzer_STK_Interface.hpp"
 #include "Panzer_STK_SquareQuadMeshFactory.hpp"
 #include "Panzer_STK_CubeHexMeshFactory.hpp"
+#include "TianXin_STK_Utilities.hpp"
 #include "Panzer_STK_PeriodicBC_Matcher.hpp"
 #include "Panzer_STK_PeriodicBC_MatchConditions.hpp"
 
@@ -68,12 +69,29 @@ using Teuchos::rcp;
 #include "Epetra_Export.h"
 #include "Epetra_Import.h"
 
-#include <numeric>
-
 using panzer_stk::CoordMatcher;
 using panzer_stk::PlaneMatcher;
 
 namespace panzer {
+
+  TEUCHOS_UNIT_TEST(periodic_bcs, sorted_permutation)
+  {
+
+     std::vector<double> vec(5.0);
+     std::vector<std::size_t> permute;
+     vec[0] = 0.0;
+     vec[1] = 4.0;
+     vec[2] = 2.0;
+     vec[3] = 3.0;
+     vec[4] = 1.0;
+
+     TianXin::sorted_permutation(vec,permute);
+
+     TEST_EQUALITY(permute.size(),5);
+     for(std::size_t i=0;i<permute.size();i++)
+        TEST_EQUALITY(vec[permute[i]],(double) i);
+
+  }
 
   TEUCHOS_UNIT_TEST(periodic_bcs, getSideIdsAndCoords)
   {
@@ -113,10 +131,8 @@ namespace panzer {
     TEST_EQUALITY(sideCoords.size(),5);
     TEST_EQUALITY(sideCoords_edge.size(),4);
 
-    std::vector<std::size_t> permute(sideIds.size());
-    std::iota(permute.begin(), permute.end(), 0);
-    std::stable_sort(permute.begin(), permute.end(),
-       [&sideIds](size_t i1, size_t i2) {return sideIds[i1] < sideIds[i2];});
+    std::vector<std::size_t> permute;
+    TianXin::sorted_permutation(sideIds,permute);
     for(std::size_t i=0;i<permute.size();i++) {
        std::size_t p = permute[i];
 
@@ -130,10 +146,8 @@ namespace panzer {
     //   For any edge, find the two nodes associated with it using its coordinates
     //   Use their numbers for comparison, since we know what those should be
 
-    std::vector<std::size_t> permute_edge(sideIds_edge.size());
-    std::iota(permute_edge.begin(), permute_edge.end(), 0);
-    std::stable_sort(permute_edge.begin(), permute_edge.end(),
-       [&sideIds_edge](size_t i1, size_t i2) {return sideIds_edge[i1] < sideIds_edge[i2];});
+    std::vector<std::size_t> permute_edge;
+    TianXin::sorted_permutation(sideIds_edge,permute_edge);
     for(std::size_t i=0;i<permute_edge.size();i++) {
        std::size_t p = permute_edge[i];
 
@@ -259,10 +273,8 @@ namespace panzer {
           TEST_EQUALITY(pair.first,pair.second-12);
        }
 
-       std::vector<std::size_t> permute_edge(sideIds_edge.size());
-       std::iota(permute_edge.begin(), permute_edge.end(), 0);
-       std::stable_sort(permute_edge.begin(), permute_edge.end(),
-         [&sideIds_edge](size_t i1, size_t i2) {return sideIds_edge[i1] < sideIds_edge[i2];});
+       std::vector<std::size_t> permute_edge;
+       TianXin::sorted_permutation(sideIds_edge,permute_edge);
        for(std::size_t i=0;i<matchedIds_edge->size();i++) {
           std::pair<std::size_t,std::size_t> pair = (*matchedIds_edge)[i];
 

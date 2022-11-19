@@ -137,6 +137,7 @@ Teuchos::RCP<STK_Interface> SquareTriMeshFactory::buildUncommitedMesh(stk::Paral
    buildMetaData(parallelMach,*mesh);
 
    mesh->addPeriodicBCs(periodicBCVec_);
+   mesh->setBoundingBoxSearchFlag(useBBoxSearch_);
  
    return mesh;
 }
@@ -198,7 +199,7 @@ void SquareTriMeshFactory::setParameterList(const Teuchos::RCP<Teuchos::Paramete
    createEdgeBlocks_ = paramList->get<bool>("Create Edge Blocks");
 
    // read in periodic boundary conditions
-   parsePeriodicBCList(Teuchos::rcpFromRef(paramList->sublist("Periodic BCs")),periodicBCVec_);
+   parsePeriodicBCList(Teuchos::rcpFromRef(paramList->sublist("Periodic BCs")),periodicBCVec_,useBBoxSearch_);
    parsePeriodicBCList(paramList->sublist("Periodic BCs"),periodicity_);
 }
 
