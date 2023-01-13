@@ -45,7 +45,6 @@
 
 // Panzer
 #include "Panzer_BlockedVector_ReadOnly_GlobalEvaluationData.hpp"
-#include "Panzer_EpetraVector_Write_GlobalEvaluationData.hpp"                    // JMG:  Remove this eventually.
 #include "Panzer_TpetraVector_ReadOnly_GlobalEvaluationData.hpp"
 #include "Panzer_GlobalIndexer.hpp"
 
@@ -214,25 +213,6 @@ buildReadOnlyDomainContainer() const
   return ged;
 } // end of buildReadOnlyDomainContainer()
 
-///////////////////////////////////////////////////////////////////////////////
-//
-//  buildWriteDomainContainer()
-//
-///////////////////////////////////////////////////////////////////////////////
-template<typename Traits, typename ScalarT, typename LocalOrdinalT,
-  typename GlobalOrdinalT, typename NodeT>
-Teuchos::RCP<WriteVector_GlobalEvaluationData>
-BlockedTpetraLinearObjFactory<Traits, ScalarT, LocalOrdinalT, GlobalOrdinalT,
-  NodeT>::
-buildWriteDomainContainer() const
-{
-  using std::logic_error;
-  using Teuchos::rcp;
-  using EVWGED = panzer::EpetraVector_Write_GlobalEvaluationData;
-  auto ged = rcp(new EVWGED);
-  TEUCHOS_TEST_FOR_EXCEPTION(true, logic_error, "NOT YET IMPLEMENTED")
-  return ged;
-} // end of buildWriteDomainContainer()
 
 template <typename Traits,typename ScalarT,typename LocalOrdinalT,typename GlobalOrdinalT,typename NodeT>
 Teuchos::MpiComm<int> BlockedTpetraLinearObjFactory<Traits,ScalarT,LocalOrdinalT,GlobalOrdinalT,NodeT>::
