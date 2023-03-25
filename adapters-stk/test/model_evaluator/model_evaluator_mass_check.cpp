@@ -48,7 +48,7 @@
 using Teuchos::RCP;
 using Teuchos::rcp;
 
-#include "Kokkos_DefaultNode.hpp"
+#include <Tpetra_KokkosCompat_DefaultNode.hpp>
 #include "Teuchos_DefaultComm.hpp"
 #include "Teuchos_GlobalMPISession.hpp"
 #include "PanzerAdaptersSTK_config.hpp"
