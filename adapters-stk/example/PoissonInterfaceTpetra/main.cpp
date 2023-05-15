@@ -860,8 +860,6 @@ int main (int argc, char* argv[])
     status = -1;
   }
 
-  Kokkos::finalize();
-
   return status;
 }
 
