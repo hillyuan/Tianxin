@@ -84,6 +84,9 @@ PointEvaluatorBase<EvalT, Traits>::PointEvaluatorBase(const Teuchos::ParameterLi
 		else if( !f_set_name.empty() ) {
 			m_sideset_name=f_set_name; m_sideset_rank =2;
 		}
+		else if( !eblock_name.empty() ) {
+			m_sideset_name=eblock_name; m_sideset_rank =3;
+		}
 		else {
 			throw std::runtime_error("error in PointEvaluator defintion. Sideset name not given!");
 		}
