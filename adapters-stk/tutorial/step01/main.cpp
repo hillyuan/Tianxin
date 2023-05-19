@@ -77,7 +77,6 @@
 
 #include "Step01_ClosureModel_Factory_TemplateBuilder.hpp"
 #include "Step01_EquationSetFactory.hpp"
-#include "Step01_BCStrategy_Factory.hpp"
 
 #include <Ioss_SerializeIO.h>
 
@@ -152,7 +151,9 @@ int main(int argc, char *argv[])
     RCP<Teuchos::ParameterList> physics_blocks_pl   = rcp(new Teuchos::ParameterList(input_params->sublist("Physics Blocks")));
     RCP<Teuchos::ParameterList> lin_solver_pl       = rcp(new Teuchos::ParameterList(input_params->sublist("Linear Solver")));
     Teuchos::ParameterList & block_to_physics_pl    = input_params->sublist("Block ID to Physics ID Mapping");
-    Teuchos::ParameterList & bcs_pl                 = input_params->sublist("Boundary Conditions");
+    Teuchos::ParameterList & dirichelt_pl           = input_params->sublist("Dirichlet Conditions");
+	Teuchos::ParameterList & neumann_pl             = input_params->sublist("Neumann Conditions");
+    Teuchos::ParameterList & response_pl            = input_params->sublist("Responses");
     Teuchos::ParameterList & closure_models_pl      = input_params->sublist("Closure Models");
     Teuchos::ParameterList & user_data_pl           = input_params->sublist("User Data");
 
@@ -160,7 +161,6 @@ int main(int argc, char *argv[])
 
     RCP<panzer::GlobalData> globalData = panzer::createGlobalData();
     RCP<user_app::EquationSetFactory> eqset_factory = Teuchos::rcp(new user_app::EquationSetFactory);
-    user_app::BCStrategyFactory bc_factory;
 
     user_app::ClosureModelFactory_TemplateBuilder cm_builder;
     panzer::ClosureModelFactory_TemplateManager<panzer::Traits> cm_factory;
@@ -274,16 +274,11 @@ int main(int argc, char *argv[])
     // build and setup model evaluatorlinear solver
     /////////////////////////////////////////////////////////////
 
-    std::vector<panzer::BC> bcs;
-    panzer::buildBCs(bcs,bcs_pl,globalData);
-
     RCP<PME> physics = Teuchos::rcp(new PME(linObjFactory,lowsFactory,globalData,build_transient_support,0.0));
-    physics->setupModel(wkstContainer,physicsBlocks,bcs,
+    physics->setupModel(wkstContainer,physicsBlocks,
                    *eqset_factory,
-                   bc_factory,
-                   cm_factory,
-                   cm_factory,
-                   closure_models_pl,
+                   cm_factory, mesh, dofManager, dirichelt_pl,
+                   neumann_pl, response_pl, closure_models_pl,
                    user_data_pl,false,"");
 
     // setup a response library to write to the mesh
