@@ -206,7 +206,9 @@ int main_(Teuchos::CommandLineProcessor &clp, int argc,char * argv[])
     Teuchos::ParameterList & block_to_aux_physics_pl = input_params->sublist("Block ID to Auxiliary Physics ID Mapping");
     Teuchos::ParameterList & ops_pl                  = input_params->sublist("Operators");
     Teuchos::ParameterList & aux_ops_pl              = input_params->sublist("Auxiliary Operators");
-    Teuchos::ParameterList & bcs_pl                  = input_params->sublist("Boundary Conditions");
+    Teuchos::ParameterList & dirichelt_pl           = input_params->sublist("Dirichlet Conditions");
+	Teuchos::ParameterList & neumann_pl             = input_params->sublist("Neumann Conditions");
+    Teuchos::ParameterList & response_pl            = input_params->sublist("Responses");
     Teuchos::ParameterList & aux_bcs_pl              = input_params->sublist("Auxiliary Boundary Conditions");
     Teuchos::ParameterList & closure_models          = input_params->sublist("Closure Models");
     Teuchos::ParameterList responses                 = input_params->sublist("Responses");
@@ -306,9 +308,6 @@ int main_(Teuchos::CommandLineProcessor &clp, int argc,char * argv[])
     setAuxiliaryOperatorParameters(physics, solver, basis_order, pCoarsenScheduleStr, matrixFree, *input_params, *lin_solver_pl, auxFieldOrder);
 
     // define physics block parameter list and boundary conditions
-    std::vector<panzer::BC> bcs;
-    panzer::buildBCs(bcs,bcs_pl,globalData);
-
     std::vector<panzer::BC> aux_bcs;
     panzer::buildBCs(aux_bcs,aux_bcs_pl,globalData);
 
@@ -534,13 +533,18 @@ int main_(Teuchos::CommandLineProcessor &clp, int argc,char * argv[])
 
     {
       Teuchos::TimeMonitor tMphysicsEval(*Teuchos::TimeMonitor::getNewTimer(std::string("Mini-EM: setup physics model evaluator")));
-      physicsME->setupModel(wkstContainer,physicsBlocks,bcs,
+      /*physicsME->setupModel(wkstContainer,physicsBlocks,bcs,
                             *eqset_factory,
                             bc_factory,
                             cm_factory,
                             cm_factory,
                             closure_models,
-                            user_data,false,"");
+                            user_data,false,"");*/
+      physicsME->setupModel(wkstContainer,physicsBlocks,
+                   *eqset_factory,
+                   cm_factory, mesh, dofManager, dirichelt_pl,
+                   neumann_pl, response_pl, closure_models,
+                   user_data,false,"");
 
       // add auxiliary data to model evaluator
       for(panzer::GlobalEvaluationDataContainer::const_iterator itr=auxGlobalData->begin();itr!=auxGlobalData->end();++itr)

@@ -128,6 +128,17 @@
     </ParameterList>
   </ParameterList>
 
+  <ParameterList name="Dirichlet Conditions">
+    <ParameterList>
+      <Parameter name="Sideset Name" type="string" value="top"/> 
+      <Parameter name="DOF Names" type="Array(string)" value="{u}"/> 
+      <Parameter name="Value Type" type="string" value="Constant"/>
+      <ParameterList name="Constant">
+        <Parameter name="Value" type="double" value="0.0"/>
+      </ParameterList>
+    </ParameterList>
+  </ParameterList>
+
   <ParameterList name="Boundary Conditions">
     <!-- Conditions on u-field -->
     <ParameterList>
