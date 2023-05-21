@@ -33,15 +33,6 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   COMM serial mpi
   )
 
-#IF (PANZER_HAVE_EPETRA)
-#  TRIBITS_ADD_EXECUTABLE_AND_TEST(
-#    tEpetraLinObjFactory
-#    SOURCES tEpetraLinearObjFactory.cpp ${UNIT_TEST_DRIVER}
-#    NUM_MPI_PROCS 2
-#    COMM serial mpi
-#    )
-#ENDIF (PANZER_HAVE_EPETRA)
-
 TRIBITS_ADD_EXECUTABLE_AND_TEST(
   tCubeHexMeshDOFManager
   SOURCES tCubeHexMeshDOFManager.cpp ${UNIT_TEST_DRIVER}
