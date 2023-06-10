@@ -1456,10 +1456,6 @@ evalModel_D2fDx2(const Thyra::ModelEvaluatorBase::InArgs<Scalar> & inArgs,
   // by using a modified version of ae_inargs instead.
   thGlobalContainer->set_A_th(Teuchos::null);
 
-  // Holding a rcp to f produces a seg fault in Rythmos when the next
-  // f comes in and the resulting dtor is called.  Need to discuss
-  // with Ross.  Clearing all references here works!
-
   thGlobalContainer->set_x_th(Teuchos::null);
   thGlobalContainer->set_dxdt_th(Teuchos::null);
   thGlobalContainer->set_f_th(Teuchos::null);
@@ -1561,10 +1557,6 @@ evalModel_D2fDxDp(int pIndex,
   // the Jacobian after it has been properly assembled.  Should be fixed
   // by using a modified version of ae_inargs instead.
   thGlobalContainer->set_A_th(Teuchos::null);
-
-  // Holding a rcp to f produces a seg fault in Rythmos when the next
-  // f comes in and the resulting dtor is called.  Need to discuss
-  // with Ross.  Clearing all references here works!
 
   thGlobalContainer->set_x_th(Teuchos::null);
   thGlobalContainer->set_dxdt_th(Teuchos::null);
@@ -1834,10 +1826,6 @@ evalModelImpl_basic(const Thyra::ModelEvaluatorBase::InArgs<Scalar> &inArgs,
   // the Jacobian after it has been properly assembled.  Should be fixed
   // by using a modified version of ae_inargs instead.
   thGlobalContainer->set_A_th(Teuchos::null);
-
-  // Holding a rcp to f produces a seg fault in Rythmos when the next
-  // f comes in and the resulting dtor is called.  Need to discuss
-  // with Ross.  Clearing all references here works!
 
   thGlobalContainer->set_x_th(Teuchos::null);
   thGlobalContainer->set_dxdt_th(Teuchos::null);

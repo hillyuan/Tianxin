@@ -9,8 +9,6 @@ SET(main_driver_SOURCES
   user_app_NOXObserverFactory.hpp
   user_app_NOXObserver_WriteToExodus.hpp
   user_app_NOXObserver_NeumannBCAnalyticSystemTest.hpp
-  user_app_RythmosObserverFactory.hpp
-  user_app_RythmosObserver_WriteToExodus.hpp
   )
 
 TRIBITS_ADD_EXECUTABLE(
