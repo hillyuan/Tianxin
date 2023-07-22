@@ -44,6 +44,7 @@
 #include <Panzer_STK_Interface.hpp>
 
 #include <Teuchos_as.hpp>
+#include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
 #include <stk_mesh/base/Comm.hpp>
 #include <stk_mesh/base/Selector.hpp>
